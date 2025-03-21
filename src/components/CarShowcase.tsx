@@ -16,11 +16,11 @@ const CarShowcase = () => {
 
   return (
     <section className="relative min-h-screen w-full overflow-hidden bg-tarabut-dark pt-24 pb-16">
-      {/* Video background with overlay */}
-      <div className="absolute inset-0 bg-gradient-to-b from-tarabut-dark/90 to-tarabut-dark/70 z-10"></div>
+      {/* Video background with adjusted overlay */}
+      <div className="absolute inset-0 bg-tarabut-dark/10 z-10"></div>
       <div className="absolute inset-0 overflow-hidden">
         <video 
-          className="absolute w-full h-full object-cover opacity-20"
+          className="absolute w-full h-full object-cover opacity-90"
           autoPlay
           muted
           loop
@@ -44,7 +44,7 @@ const CarShowcase = () => {
           </h1>
           
           <p 
-            className={`text-lg md:text-xl text-gray-200 max-w-2xl mx-auto mb-8 transition-all duration-700 delay-200 font-founder ${
+            className={`text-lg md:text-xl text-white max-w-2xl mx-auto mb-8 transition-all duration-700 delay-200 font-founder ${
               isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
           >
@@ -69,27 +69,27 @@ const CarShowcase = () => {
           }`}
         >
           <div className="text-center">
-            <div className="text-xs text-gray-300 uppercase tracking-wider mb-1">ENGINE</div>
+            <div className="text-xs text-white/80 uppercase tracking-wider mb-1">ENGINE</div>
             <div className="text-2xl font-medium text-white mb-1">2.5L</div>
-            <div className="text-sm text-gray-300">4-Cylinder</div>
+            <div className="text-sm text-white/80">4-Cylinder</div>
           </div>
           
           <div className="text-center">
-            <div className="text-xs text-gray-300 uppercase tracking-wider mb-1">MONTHLY PAYMENT</div>
+            <div className="text-xs text-white/80 uppercase tracking-wider mb-1">MONTHLY PAYMENT</div>
             <div className="text-2xl font-medium text-white mb-1">SAR 1,299</div>
-            <div className="text-sm text-gray-300">0% Interest</div>
+            <div className="text-sm text-white/80">0% Interest</div>
           </div>
           
           <div className="text-center">
-            <div className="text-xs text-gray-300 uppercase tracking-wider mb-1">HORSEPOWER</div>
+            <div className="text-xs text-white/80 uppercase tracking-wider mb-1">HORSEPOWER</div>
             <div className="text-2xl font-medium text-white mb-1">203 hp</div>
-            <div className="text-sm text-gray-300">@ 6,600 rpm</div>
+            <div className="text-sm text-white/80">@ 6,600 rpm</div>
           </div>
           
           <div className="text-center">
-            <div className="text-xs text-gray-300 uppercase tracking-wider mb-1">FUEL ECONOMY</div>
+            <div className="text-xs text-white/80 uppercase tracking-wider mb-1">FUEL ECONOMY</div>
             <div className="text-2xl font-medium text-white mb-1">7.2L/100km</div>
-            <div className="text-sm text-gray-300">Combined</div>
+            <div className="text-sm text-white/80">Combined</div>
           </div>
         </div>
       </div>
