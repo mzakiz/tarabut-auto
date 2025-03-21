@@ -1,5 +1,5 @@
 
-import React, { useEffect } from 'react';
+import React from 'react';
 import Header from '@/components/Header';
 import CarShowcase from '@/components/CarShowcase';
 import FeaturesSection from '@/components/FeaturesSection';
@@ -7,7 +7,7 @@ import AffordabilityCalculator from '@/components/AffordabilityCalculator';
 import Footer from '@/components/Footer';
 
 const Index = () => {
-  useEffect(() => {
+  React.useEffect(() => {
     // Smooth scroll for anchor links
     document.querySelectorAll('a[href^="#"]').forEach(anchor => {
       anchor.addEventListener('click', function(e) {
@@ -26,10 +26,6 @@ const Index = () => {
         }
       });
     });
-    
-    // Preload car image for better performance
-    const img = new Image();
-    img.src = '/lovable-uploads/dde3e8d4-1508-4bc3-b59a-d11fa0c674dd.png';
     
     return () => {
       document.querySelectorAll('a[href^="#"]').forEach(anchor => {
