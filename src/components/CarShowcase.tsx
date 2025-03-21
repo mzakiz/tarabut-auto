@@ -1,15 +1,21 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useRef } from 'react';
 import { ArrowRight, Check, Tag, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 
 const CarShowcase = () => {
   const [isLoaded, setIsLoaded] = useState(false);
+  const videoRef = useRef<HTMLVideoElement>(null);
   
   useEffect(() => {
     const timer = setTimeout(() => {
       setIsLoaded(true);
     }, 500);
+    
+    // Try to manually load the video if needed
+    if (videoRef.current) {
+      videoRef.current.load();
+    }
     
     return () => clearTimeout(timer);
   }, []);
@@ -20,6 +26,7 @@ const CarShowcase = () => {
       <div className="absolute inset-0 bg-tarabut-dark/10 z-10"></div>
       <div className="absolute inset-0 overflow-hidden">
         <video 
+          ref={videoRef}
           className="absolute w-full h-full object-cover opacity-90"
           autoPlay
           muted
