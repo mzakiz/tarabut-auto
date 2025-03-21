@@ -16,16 +16,25 @@ const CarShowcase = () => {
   }, []);
 
   return (
-    <section className="relative min-h-screen w-full overflow-hidden bg-gradient-to-br from-black via-gray-900 to-ksa-dark pt-24 pb-16">
-      {/* Background overlay */}
+    <section className="relative min-h-screen w-full overflow-hidden bg-tarabut-dark pt-24 pb-16">
+      {/* Background overlay with subtle pattern */}
       <div className="absolute inset-0 bg-hero-pattern opacity-50"></div>
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
+        {/* Tarabut logo */}
+        <div className="absolute top-4 left-4 w-16 h-16">
+          <img 
+            src="/lovable-uploads/e36808ad-ab3e-4800-8df3-7ee5779a2624.png" 
+            alt="Tarabut Logo" 
+            className="w-full h-full object-contain"
+          />
+        </div>
+        
         <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12">
           {/* Text content */}
           <div className="w-full lg:w-1/2 space-y-6 text-center lg:text-left mb-8 lg:mb-0">
             <div 
-              className={`inline-block px-4 py-1 rounded-full bg-ksa-secondary/20 text-ksa-secondary border border-ksa-secondary/30 mb-2 transition-all duration-500 ${
+              className={`inline-block px-4 py-1 rounded-full bg-tarabut-purple/20 text-tarabut-purple border border-tarabut-purple/30 mb-2 transition-all duration-500 ${
                 isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
               }`}
             >
@@ -38,7 +47,7 @@ const CarShowcase = () => {
               }`}
             >
               Toyota Camry 2024
-              <span className="block text-ksa-secondary mt-2">Yours for Only SAR 1,299/month</span>
+              <span className="block text-tarabut-blue mt-2">Yours for Only SAR 1,299/month</span>
             </h1>
             
             <p 
@@ -55,12 +64,12 @@ const CarShowcase = () => {
                 isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
               }`}
             >
-              <Button className="bg-ksa-secondary hover:bg-ksa-secondary/90 text-white rounded-full px-8 py-6 text-lg animate-pulse-button">
+              <Button className="bg-tarabut-purple hover:bg-tarabut-purple/90 text-white rounded-full px-8 py-6 text-lg">
                 Calculate Affordability
                 <ArrowRight className="ml-2 h-5 w-5" />
               </Button>
               
-              <a href="#specs" className="text-white hover:text-ksa-secondary transition-colors flex items-center">
+              <a href="#specs" className="text-white hover:text-tarabut-blue transition-colors flex items-center">
                 View Specifications
                 <ChevronDown className="ml-1 h-4 w-4" />
               </a>
@@ -72,22 +81,22 @@ const CarShowcase = () => {
               }`}
             >
               <div className="flex items-center justify-center sm:justify-start">
-                <div className="p-2 rounded-full bg-ksa-secondary/20 mr-3">
-                  <Check className="h-5 w-5 text-ksa-secondary" />
+                <div className="p-2 rounded-full bg-tarabut-teal/20 mr-3">
+                  <Check className="h-5 w-5 text-tarabut-teal" />
                 </div>
                 <span className="text-white">5-Year Warranty</span>
               </div>
               
               <div className="flex items-center justify-center sm:justify-start">
-                <div className="p-2 rounded-full bg-ksa-secondary/20 mr-3">
-                  <Check className="h-5 w-5 text-ksa-secondary" />
+                <div className="p-2 rounded-full bg-tarabut-teal/20 mr-3">
+                  <Check className="h-5 w-5 text-tarabut-teal" />
                 </div>
                 <span className="text-white">Free Service</span>
               </div>
               
               <div className="flex items-center justify-center sm:justify-start">
-                <div className="p-2 rounded-full bg-ksa-secondary/20 mr-3">
-                  <Tag className="h-5 w-5 text-ksa-secondary" />
+                <div className="p-2 rounded-full bg-tarabut-teal/20 mr-3">
+                  <Tag className="h-5 w-5 text-tarabut-teal" />
                 </div>
                 <span className="text-white">0% Interest</span>
               </div>
@@ -102,7 +111,7 @@ const CarShowcase = () => {
           >
             <div className="relative">
               {/* Main offer badge */}
-              <div className="absolute -top-8 -right-8 z-20 bg-ksa-primary text-white p-4 rounded-full h-28 w-28 flex flex-col items-center justify-center transform rotate-12 shadow-lg border-4 border-white/10 animate-float">
+              <div className="absolute -top-8 -right-8 z-20 bg-tarabut-blue text-white p-4 rounded-full h-28 w-28 flex flex-col items-center justify-center transform rotate-12 shadow-lg border-4 border-white/10 animate-float">
                 <span className="text-xs font-semibold">STARTING AT</span>
                 <span className="text-2xl font-bold">SAR 1,299</span>
                 <span className="text-xs">PER MONTH</span>
@@ -110,14 +119,14 @@ const CarShowcase = () => {
               
               <div className="relative rounded-lg overflow-hidden shadow-2xl">
                 <img 
-                  src="/lovable-uploads/dde3e8d4-1508-4bc3-b59a-d11fa0c674dd.png" 
+                  src="/lovable-uploads/eac017b9-fb41-4f12-aa84-7562362a378d.png" 
                   alt="Toyota Camry 2024" 
                   className="w-full h-auto object-cover rounded-lg"
                   onLoad={() => setIsLoaded(true)} 
                 />
                 
                 {/* Reflective surface under the car */}
-                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-black/40 to-transparent"></div>
+                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-tarabut-dark/80 to-transparent"></div>
               </div>
             </div>
           </div>
@@ -129,21 +138,21 @@ const CarShowcase = () => {
             isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
-          <div className="glass p-6 rounded-xl border border-white/10 hover:border-ksa-secondary/30 transition-all duration-300 group">
+          <div className="glass p-6 rounded-xl border border-white/10 hover:border-tarabut-purple/30 transition-all duration-300 group bg-tarabut-dark/50 backdrop-blur-lg">
             <div className="text-3xl font-bold text-white mb-2">0%</div>
-            <div className="text-xl font-semibold text-ksa-secondary mb-1">Down Payment</div>
+            <div className="text-xl font-semibold text-tarabut-blue mb-1">Down Payment</div>
             <p className="text-gray-300">Drive home today with no initial payment</p>
           </div>
           
-          <div className="glass p-6 rounded-xl border border-white/10 hover:border-ksa-secondary/30 transition-all duration-300 group">
+          <div className="glass p-6 rounded-xl border border-white/10 hover:border-tarabut-purple/30 transition-all duration-300 group bg-tarabut-dark/50 backdrop-blur-lg">
             <div className="text-3xl font-bold text-white mb-2">0%</div>
-            <div className="text-xl font-semibold text-ksa-secondary mb-1">Interest Rate</div>
+            <div className="text-xl font-semibold text-tarabut-blue mb-1">Interest Rate</div>
             <p className="text-gray-300">Zero interest financing available for qualified buyers</p>
           </div>
           
-          <div className="glass p-6 rounded-xl border border-white/10 hover:border-ksa-secondary/30 transition-all duration-300 group">
+          <div className="glass p-6 rounded-xl border border-white/10 hover:border-tarabut-purple/30 transition-all duration-300 group bg-tarabut-dark/50 backdrop-blur-lg">
             <div className="text-3xl font-bold text-white mb-2">60</div>
-            <div className="text-xl font-semibold text-ksa-secondary mb-1">Months</div>
+            <div className="text-xl font-semibold text-tarabut-blue mb-1">Months</div>
             <p className="text-gray-300">Flexible payment terms up to 5 years</p>
           </div>
         </div>

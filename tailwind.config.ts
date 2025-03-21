@@ -60,6 +60,14 @@ export default {
 					highlight: "#4CD964", // Success green
 					dark: "#1A202C",      // Almost black
 				},
+				tarabut: {
+					purple: "#6155DD",    // Purple (01)
+					dark: "#02081E",      // Dark blue/black (02)
+					gray: "#EEF1F6",      // Light gray (03)
+					white: "#FFFFFF",     // White (04)
+					blue: "#2B8EFF",      // Blue (05)
+					teal: "#42DFB8",      // Teal (06)
+				}
 			},
 			fontFamily: {
 				sans: ['Inter', 'sans-serif'],
@@ -117,8 +125,8 @@ export default {
 				'fade-in': 'fade-in 0.5s ease-out',
 			},
 			backgroundImage: {
-				'hero-pattern': 'linear-gradient(to bottom, rgba(0, 0, 0, 0.7), rgba(0, 0, 0, 0.4))',
-				'card-gradient': 'linear-gradient(135deg, #046A38 0%, #00A3E0 100%)',
+				'hero-pattern': 'linear-gradient(to bottom, rgba(2, 8, 30, 0.7), rgba(2, 8, 30, 0.4))',
+				'card-gradient': 'linear-gradient(135deg, #6155DD 0%, #2B8EFF 100%)',
 			}
 		}
 	},
