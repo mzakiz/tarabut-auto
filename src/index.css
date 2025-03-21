@@ -75,14 +75,54 @@
     @apply border-border;
   }
 
+  html, body {
+    @apply overflow-x-hidden;
+    max-width: 100%;
+  }
+
   body {
     @apply bg-background text-foreground;
     font-family: 'Inter', sans-serif;
+    font-size: 16px;
+    line-height: 1.5;
   }
   
   /* Ensure fonts are properly loaded */
   .font-founder {
     font-family: 'Space Grotesk', system-ui, sans-serif !important;
+  }
+
+  /* Mobile-optimized button touch targets */
+  button, 
+  [role="button"],
+  .button,
+  a.button,
+  input[type="button"],
+  input[type="submit"] {
+    @apply min-h-[44px] min-w-[44px];
+  }
+
+  /* Mobile-optimized spacing */
+  @media (max-width: 768px) {
+    .container {
+      @apply px-4;
+    }
+    
+    h1 {
+      @apply text-3xl;
+    }
+    
+    h2 {
+      @apply text-2xl;
+    }
+    
+    h3 {
+      @apply text-xl;
+    }
+    
+    p {
+      @apply text-base;
+    }
   }
 }
 
@@ -163,6 +203,22 @@
   border: 1px solid rgba(255, 255, 255, 0.1);
 }
 
+/* Mobile menu animation */
+@keyframes slide-down {
+  from {
+    opacity: 0;
+    transform: translateY(-10px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.animate-slide-down {
+  animation: slide-down 0.3s ease-out forwards;
+}
+
 /* Image loading effect */
 .image-loading {
   position: relative;
@@ -179,4 +235,26 @@
   background: linear-gradient(90deg, #f0f0f0 0%, #f8f8f8 50%, #f0f0f0 100%);
   background-size: 200% 100%;
   animation: shimmer 1.5s infinite;
+}
+
+/* Mobile responsiveness */
+@media (max-width: 768px) {
+  .container {
+    padding-left: 16px;
+    padding-right: 16px;
+  }
+  
+  .py-20 {
+    padding-top: 40px;
+    padding-bottom: 40px;
+  }
+  
+  .gap-8 {
+    gap: 16px;
+  }
+  
+  .text-lg {
+    font-size: 1rem;
+    line-height: 1.5;
+  }
 }

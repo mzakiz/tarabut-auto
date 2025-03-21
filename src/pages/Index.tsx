@@ -35,26 +35,26 @@ const Index = () => {
   }, []);
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white overflow-x-hidden">
       <Header />
       <CarShowcase />
       <FeaturesSection />
       
       {/* Car Specifications Section */}
-      <section id="specs" className="py-20 bg-gray-100">
+      <section id="specs" className="py-12 md:py-20 bg-gray-100">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="text-center mb-16">
-            <h2 className="text-3xl md:text-4xl font-bold text-ksa-dark mb-4">Technical Specifications</h2>
-            <p className="text-lg text-gray-600 max-w-3xl mx-auto">
+          <div className="text-center mb-8 md:mb-16">
+            <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-ksa-dark mb-3 md:mb-4">Technical Specifications</h2>
+            <p className="text-base md:text-lg text-gray-600 max-w-3xl mx-auto px-2">
               The Toyota Camry is packed with advanced technology and engineering excellence.
             </p>
           </div>
           
           <div className="max-w-4xl mx-auto">
-            <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold mb-4 text-ksa-dark">Engine & Performance</h3>
-                <ul className="space-y-3">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-6 md:gap-8">
+              <div className="bg-white p-5 md:p-6 rounded-lg shadow-md">
+                <h3 className="text-lg md:text-xl font-semibold mb-3 md:mb-4 text-ksa-dark">Engine & Performance</h3>
+                <ul className="space-y-2 md:space-y-3 text-sm md:text-base">
                   <li className="flex justify-between border-b border-gray-100 pb-2">
                     <span className="text-gray-600">Engine Type</span>
                     <span className="font-medium">2.5L 4-Cylinder</span>
@@ -72,15 +72,15 @@ const Index = () => {
                     <span className="font-medium">8-Speed Automatic</span>
                   </li>
                   <li className="flex justify-between">
-                    <span className="text-gray-600">Acceleration (0-100 km/h)</span>
+                    <span className="text-gray-600">Acceleration</span>
                     <span className="font-medium">8.3 seconds</span>
                   </li>
                 </ul>
               </div>
               
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold mb-4 text-ksa-dark">Dimensions & Capacity</h3>
-                <ul className="space-y-3">
+              <div className="bg-white p-5 md:p-6 rounded-lg shadow-md">
+                <h3 className="text-lg md:text-xl font-semibold mb-3 md:mb-4 text-ksa-dark">Dimensions & Capacity</h3>
+                <ul className="space-y-2 md:space-y-3 text-sm md:text-base">
                   <li className="flex justify-between border-b border-gray-100 pb-2">
                     <span className="text-gray-600">Length</span>
                     <span className="font-medium">4,880 mm</span>
@@ -98,30 +98,30 @@ const Index = () => {
                     <span className="font-medium">2,825 mm</span>
                   </li>
                   <li className="flex justify-between">
-                    <span className="text-gray-600">Fuel Tank Capacity</span>
+                    <span className="text-gray-600">Fuel Tank</span>
                     <span className="font-medium">60 Liters</span>
                   </li>
                 </ul>
               </div>
               
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold mb-4 text-ksa-dark">Comfort & Convenience</h3>
-                <ul className="space-y-3">
+              <div className="bg-white p-5 md:p-6 rounded-lg shadow-md">
+                <h3 className="text-lg md:text-xl font-semibold mb-3 md:mb-4 text-ksa-dark">Comfort & Convenience</h3>
+                <ul className="space-y-2 md:space-y-3 text-sm md:text-base">
                   <li className="flex justify-between border-b border-gray-100 pb-2">
                     <span className="text-gray-600">Infotainment</span>
                     <span className="font-medium">9" Touchscreen</span>
                   </li>
                   <li className="flex justify-between border-b border-gray-100 pb-2">
                     <span className="text-gray-600">Climate Control</span>
-                    <span className="font-medium">Dual-Zone Automatic</span>
+                    <span className="font-medium">Dual-Zone Auto</span>
                   </li>
                   <li className="flex justify-between border-b border-gray-100 pb-2">
                     <span className="text-gray-600">Seating</span>
-                    <span className="font-medium">Leather, Heated & Ventilated</span>
+                    <span className="font-medium">Leather, Heated</span>
                   </li>
                   <li className="flex justify-between border-b border-gray-100 pb-2">
                     <span className="text-gray-600">Sound System</span>
-                    <span className="font-medium">JBL 9-Speaker Premium</span>
+                    <span className="font-medium">JBL 9-Speaker</span>
                   </li>
                   <li className="flex justify-between">
                     <span className="text-gray-600">Wireless Charging</span>
@@ -130,28 +130,28 @@ const Index = () => {
                 </ul>
               </div>
               
-              <div className="bg-white p-6 rounded-lg shadow-md">
-                <h3 className="text-xl font-semibold mb-4 text-ksa-dark">Safety & Technology</h3>
-                <ul className="space-y-3">
+              <div className="bg-white p-5 md:p-6 rounded-lg shadow-md">
+                <h3 className="text-lg md:text-xl font-semibold mb-3 md:mb-4 text-ksa-dark">Safety & Technology</h3>
+                <ul className="space-y-2 md:space-y-3 text-sm md:text-base">
                   <li className="flex justify-between border-b border-gray-100 pb-2">
                     <span className="text-gray-600">Airbags</span>
                     <span className="font-medium">7 Total</span>
                   </li>
                   <li className="flex justify-between border-b border-gray-100 pb-2">
                     <span className="text-gray-600">Advanced Safety</span>
-                    <span className="font-medium">Toyota Safety Sense™ 2.5+</span>
+                    <span className="font-medium">Toyota Safety Sense™</span>
                   </li>
                   <li className="flex justify-between border-b border-gray-100 pb-2">
-                    <span className="text-gray-600">Parking Assistance</span>
-                    <span className="font-medium">360° Camera System</span>
+                    <span className="text-gray-600">Parking Help</span>
+                    <span className="font-medium">360° Camera</span>
                   </li>
                   <li className="flex justify-between border-b border-gray-100 pb-2">
-                    <span className="text-gray-600">Blind Spot Monitor</span>
-                    <span className="font-medium">Yes, with Cross Traffic Alert</span>
+                    <span className="text-gray-600">Blind Spot</span>
+                    <span className="font-medium">With Cross Alert</span>
                   </li>
                   <li className="flex justify-between">
-                    <span className="text-gray-600">Stability Control</span>
-                    <span className="font-medium">Vehicle Stability Control (VSC)</span>
+                    <span className="text-gray-600">Stability</span>
+                    <span className="font-medium">VSC</span>
                   </li>
                 </ul>
               </div>
