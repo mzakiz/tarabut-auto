@@ -16,9 +16,19 @@ const CarShowcase = () => {
 
   return (
     <section className="relative min-h-screen w-full overflow-hidden bg-tarabut-dark pt-24 pb-16">
-      {/* Full-width background image with overlay */}
+      {/* Video background with overlay */}
       <div className="absolute inset-0 bg-gradient-to-b from-tarabut-dark/90 to-tarabut-dark/70 z-10"></div>
-      <div className="absolute inset-0 bg-[url('/lovable-uploads/0e82e572-7514-4b00-8914-a3aa33fd1489.png')] bg-cover bg-center opacity-20"></div>
+      <div className="absolute inset-0 overflow-hidden">
+        <video 
+          className="absolute w-full h-full object-cover opacity-20"
+          autoPlay
+          muted
+          loop
+          playsInline
+        >
+          <source src="/Camry-2.mp4" type="video/mp4" />
+        </video>
+      </div>
       
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
         <div className="flex flex-col items-center justify-center min-h-[80vh] text-center">
