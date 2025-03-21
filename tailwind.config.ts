@@ -71,6 +71,11 @@ export default {
 			},
 			fontFamily: {
 				sans: ['Inter', 'sans-serif'],
+				serif: ['Georgia', 'serif'],
+			},
+			letterSpacing: {
+				wider: '0.05em',
+				widest: '0.1em',
 			},
 			borderRadius: {
 				lg: 'var(--radius)',

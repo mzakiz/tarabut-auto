@@ -2,7 +2,6 @@
 import React, { useState, useEffect } from 'react';
 import { ArrowRight, Check, Tag, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
 
 const CarShowcase = () => {
   const [isLoaded, setIsLoaded] = useState(false);
@@ -17,143 +16,70 @@ const CarShowcase = () => {
 
   return (
     <section className="relative min-h-screen w-full overflow-hidden bg-tarabut-dark pt-24 pb-16">
-      {/* Background overlay with subtle pattern */}
-      <div className="absolute inset-0 bg-hero-pattern opacity-50"></div>
+      {/* Full-width background image with overlay */}
+      <div className="absolute inset-0 bg-gradient-to-b from-tarabut-dark/90 to-tarabut-dark/70 z-10"></div>
+      <div className="absolute inset-0 bg-[url('/lovable-uploads/0e82e572-7514-4b00-8914-a3aa33fd1489.png')] bg-cover bg-center opacity-20"></div>
       
-      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-10">
-        {/* Tarabut logo */}
-        <div className="absolute top-4 left-4 w-16 h-16">
-          <img 
-            src="/lovable-uploads/e36808ad-ab3e-4800-8df3-7ee5779a2624.png" 
-            alt="Tarabut Logo" 
-            className="w-full h-full object-contain"
-          />
-        </div>
-        
-        <div className="flex flex-col lg:flex-row items-center justify-between gap-8 lg:gap-12">
-          {/* Text content */}
-          <div className="w-full lg:w-1/2 space-y-6 text-center lg:text-left mb-8 lg:mb-0">
-            <div 
-              className={`inline-block px-4 py-1 rounded-full bg-tarabut-purple/20 text-tarabut-purple border border-tarabut-purple/30 mb-2 transition-all duration-500 ${
-                isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-              }`}
-            >
-              <span className="text-sm font-semibold tracking-wider">EXCLUSIVE OFFER</span>
-            </div>
-            
-            <h1 
-              className={`text-4xl md:text-5xl lg:text-6xl font-bold text-white leading-tight transition-all duration-700 delay-100 ${
-                isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-              }`}
-            >
-              Toyota Camry 2024
-              <span className="block text-tarabut-blue mt-2">Yours for Only SAR 1,299/month</span>
-            </h1>
-            
-            <p 
-              className={`text-lg md:text-xl text-gray-300 max-w-xl mx-auto lg:mx-0 transition-all duration-700 delay-200 ${
-                isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-              }`}
-            >
-              Experience the Kingdom's best-selling sedan with an unbeatable financing offer. 
-              Zero down payment and 0% interest for limited time only.
-            </p>
-            
-            <div 
-              className={`flex flex-col sm:flex-row items-center gap-4 justify-center lg:justify-start transition-all duration-700 delay-300 ${
-                isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-              }`}
-            >
-              <Button className="bg-tarabut-purple hover:bg-tarabut-purple/90 text-white rounded-full px-8 py-6 text-lg">
-                Calculate Affordability
-                <ArrowRight className="ml-2 h-5 w-5" />
-              </Button>
-              
-              <a href="#specs" className="text-white hover:text-tarabut-blue transition-colors flex items-center">
-                View Specifications
-                <ChevronDown className="ml-1 h-4 w-4" />
-              </a>
-            </div>
-            
-            <div 
-              className={`grid grid-cols-1 sm:grid-cols-3 gap-4 mt-8 transition-all duration-700 delay-400 ${
-                isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
-              }`}
-            >
-              <div className="flex items-center justify-center sm:justify-start">
-                <div className="p-2 rounded-full bg-tarabut-teal/20 mr-3">
-                  <Check className="h-5 w-5 text-tarabut-teal" />
-                </div>
-                <span className="text-white">5-Year Warranty</span>
-              </div>
-              
-              <div className="flex items-center justify-center sm:justify-start">
-                <div className="p-2 rounded-full bg-tarabut-teal/20 mr-3">
-                  <Check className="h-5 w-5 text-tarabut-teal" />
-                </div>
-                <span className="text-white">Free Service</span>
-              </div>
-              
-              <div className="flex items-center justify-center sm:justify-start">
-                <div className="p-2 rounded-full bg-tarabut-teal/20 mr-3">
-                  <Tag className="h-5 w-5 text-tarabut-teal" />
-                </div>
-                <span className="text-white">0% Interest</span>
-              </div>
-            </div>
-          </div>
-          
-          {/* Car image */}
-          <div 
-            className={`w-full lg:w-1/2 transition-all duration-1000 delay-500 ${
-              isLoaded ? 'opacity-100 translate-x-0' : 'opacity-0 translate-x-20'
+      <div className="container mx-auto px-4 sm:px-6 lg:px-8 relative z-20">
+        <div className="flex flex-col items-center justify-center min-h-[80vh] text-center">
+          {/* Main headline - similar to the template */}
+          <h1 
+            className={`text-4xl md:text-6xl lg:text-7xl font-light text-white leading-tight mb-4 transition-all duration-700 delay-100 max-w-4xl mx-auto ${
+              isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
           >
-            <div className="relative">
-              {/* Main offer badge */}
-              <div className="absolute -top-8 -right-8 z-20 bg-tarabut-blue text-white p-4 rounded-full h-28 w-28 flex flex-col items-center justify-center transform rotate-12 shadow-lg border-4 border-white/10 animate-float">
-                <span className="text-xs font-semibold">STARTING AT</span>
-                <span className="text-2xl font-bold">SAR 1,299</span>
-                <span className="text-xs">PER MONTH</span>
-              </div>
-              
-              <div className="relative rounded-lg overflow-hidden shadow-2xl">
-                <img 
-                  src="/lovable-uploads/eac017b9-fb41-4f12-aa84-7562362a378d.png" 
-                  alt="Toyota Camry 2024" 
-                  className="w-full h-auto object-cover rounded-lg"
-                  onLoad={() => setIsLoaded(true)} 
-                />
-                
-                {/* Reflective surface under the car */}
-                <div className="absolute bottom-0 left-0 right-0 h-20 bg-gradient-to-t from-tarabut-dark/80 to-transparent"></div>
-              </div>
-            </div>
+            Advanced. Reliable.
+            <br />
+            Japanese. <span className="font-semibold text-tarabut-teal">Toyota Camry.</span>
+          </h1>
+          
+          <p 
+            className={`text-lg md:text-xl text-gray-300 max-w-2xl mx-auto mb-8 transition-all duration-700 delay-200 ${
+              isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}
+          >
+            Experience the Kingdom's best-selling sedan from SAR 1,299/month
+          </p>
+          
+          <div 
+            className={`transition-all duration-700 delay-300 ${
+              isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
+            }`}
+          >
+            <Button className="bg-tarabut-teal hover:bg-tarabut-teal/90 text-tarabut-dark font-medium rounded-md px-10 py-6 text-lg">
+              CALCULATE AFFORDABILITY
+            </Button>
           </div>
         </div>
         
-        {/* Financing highlights */}
+        {/* Vehicle specs at the bottom - similar to the template */}
         <div 
-          className={`grid grid-cols-1 md:grid-cols-3 gap-6 mt-16 transition-all duration-700 delay-700 ${
+          className={`grid grid-cols-1 md:grid-cols-4 gap-6 mt-auto border-t border-white/10 pt-10 transition-all duration-700 delay-700 ${
             isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
           }`}
         >
-          <div className="glass p-6 rounded-xl border border-white/10 hover:border-tarabut-purple/30 transition-all duration-300 group bg-tarabut-dark/50 backdrop-blur-lg">
-            <div className="text-3xl font-bold text-white mb-2">0%</div>
-            <div className="text-xl font-semibold text-tarabut-blue mb-1">Down Payment</div>
-            <p className="text-gray-300">Drive home today with no initial payment</p>
+          <div className="text-center">
+            <div className="text-xs text-gray-400 uppercase tracking-wider mb-1">ENGINE</div>
+            <div className="text-2xl font-semibold text-white mb-1">2.5L</div>
+            <div className="text-sm text-gray-300">4-Cylinder</div>
           </div>
           
-          <div className="glass p-6 rounded-xl border border-white/10 hover:border-tarabut-purple/30 transition-all duration-300 group bg-tarabut-dark/50 backdrop-blur-lg">
-            <div className="text-3xl font-bold text-white mb-2">0%</div>
-            <div className="text-xl font-semibold text-tarabut-blue mb-1">Interest Rate</div>
-            <p className="text-gray-300">Zero interest financing available for qualified buyers</p>
+          <div className="text-center">
+            <div className="text-xs text-gray-400 uppercase tracking-wider mb-1">MONTHLY PAYMENT</div>
+            <div className="text-2xl font-semibold text-white mb-1">SAR 1,299</div>
+            <div className="text-sm text-gray-300">0% Interest</div>
           </div>
           
-          <div className="glass p-6 rounded-xl border border-white/10 hover:border-tarabut-purple/30 transition-all duration-300 group bg-tarabut-dark/50 backdrop-blur-lg">
-            <div className="text-3xl font-bold text-white mb-2">60</div>
-            <div className="text-xl font-semibold text-tarabut-blue mb-1">Months</div>
-            <p className="text-gray-300">Flexible payment terms up to 5 years</p>
+          <div className="text-center">
+            <div className="text-xs text-gray-400 uppercase tracking-wider mb-1">HORSEPOWER</div>
+            <div className="text-2xl font-semibold text-white mb-1">203 hp</div>
+            <div className="text-sm text-gray-300">@ 6,600 rpm</div>
+          </div>
+          
+          <div className="text-center">
+            <div className="text-xs text-gray-400 uppercase tracking-wider mb-1">FUEL ECONOMY</div>
+            <div className="text-2xl font-semibold text-white mb-1">7.2L/100km</div>
+            <div className="text-sm text-gray-300">Combined</div>
           </div>
         </div>
       </div>
