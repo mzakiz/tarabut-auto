@@ -1,4 +1,3 @@
-
 import React, { useEffect } from 'react';
 import Header from '@/components/Header';
 import CarShowcase from '@/components/CarShowcase';
@@ -31,18 +30,32 @@ const Index = () => {
     const img = new Image();
     img.src = '/lovable-uploads/dde3e8d4-1508-4bc3-b59a-d11fa0c674dd.png';
     
-    // Preload the video
+    // Preload the video with complete path
     const video = document.createElement('video');
     video.preload = 'auto';
     const source = document.createElement('source');
     source.src = '/Camry-2.mp4';
     source.type = 'video/mp4';
     video.appendChild(source);
+    document.head.appendChild(video);
+    video.style.display = 'none';
+    
+    // Ensure Space Grotesk font is loaded
+    const font = new FontFace('Space Grotesk', 'url(https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap)');
+    font.load().then(() => {
+      document.fonts.add(font);
+    }).catch(err => {
+      console.error('Font loading error:', err);
+    });
     
     return () => {
       document.querySelectorAll('a[href^="#"]').forEach(anchor => {
         anchor.removeEventListener('click', function() {});
       });
+      // Remove hidden video element when component unmounts
+      if (document.head.contains(video)) {
+        document.head.removeChild(video);
+      }
     };
   }, []);
 

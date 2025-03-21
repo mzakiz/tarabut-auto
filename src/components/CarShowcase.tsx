@@ -25,8 +25,10 @@ const CarShowcase = () => {
           muted
           loop
           playsInline
+          preload="auto"
         >
           <source src="/Camry-2.mp4" type="video/mp4" />
+          Your browser does not support the video tag.
         </video>
       </div>
       
