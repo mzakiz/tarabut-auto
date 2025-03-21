@@ -27,9 +27,17 @@ const Index = () => {
       });
     });
     
-    // Preload car image for better performance
+    // Preload video and car image for better performance
     const img = new Image();
     img.src = '/lovable-uploads/dde3e8d4-1508-4bc3-b59a-d11fa0c674dd.png';
+    
+    // Preload the video
+    const video = document.createElement('video');
+    video.preload = 'auto';
+    const source = document.createElement('source');
+    source.src = '/Camry-2.mp4';
+    source.type = 'video/mp4';
+    video.appendChild(source);
     
     return () => {
       document.querySelectorAll('a[href^="#"]').forEach(anchor => {
