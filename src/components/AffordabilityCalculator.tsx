@@ -1,9 +1,11 @@
 
 import React, { useState, useEffect } from 'react';
-import { Calculator, DollarSign, Calendar, ArrowRight } from 'lucide-react';
+import { Calculator, DollarSign, Calendar, ArrowRight, Shield, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { toast } from '@/components/ui/use-toast';
+import { useNavigate } from 'react-router-dom';
+import { useIsMobile } from '@/hooks/use-mobile';
 
 const AffordabilityCalculator = () => {
   const [carPrice, setCarPrice] = useState(120000); // SAR
@@ -11,6 +13,8 @@ const AffordabilityCalculator = () => {
   const [loanTerm, setLoanTerm] = useState(60); // months
   const [monthlyPayment, setMonthlyPayment] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const navigate = useNavigate();
+  const isMobile = useIsMobile();
   
   const interestRate = 0; // 0% promotion
   
@@ -58,6 +62,10 @@ const AffordabilityCalculator = () => {
       description: `Your estimated monthly payment is SAR ${monthlyPayment.toFixed(2)} for ${loanTerm} months.`,
       duration: 5000,
     });
+  };
+
+  const handleAffordabilityCheck = () => {
+    navigate('/affordability-check');
   };
   
   const formatCurrency = (value: number) => {
@@ -114,6 +122,26 @@ const AffordabilityCalculator = () => {
                       <div className="text-sm text-white/80">Choose 36-60 months</div>
                     </div>
                   </div>
+
+                  <div className="flex items-center">
+                    <div className="p-2 rounded-full bg-white/10 mr-3">
+                      <Shield className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="font-medium">Personalized Rate</div>
+                      <div className="text-sm text-white/80">Based on your financial profile</div>
+                    </div>
+                  </div>
+
+                  <div className="flex items-center">
+                    <div className="p-2 rounded-full bg-white/10 mr-3">
+                      <Clock className="h-5 w-5" />
+                    </div>
+                    <div>
+                      <div className="font-medium">Priority Waitlist</div>
+                      <div className="text-sm text-white/80">Get early access to exclusive offers</div>
+                    </div>
+                  </div>
                 </div>
               </div>
               
@@ -164,10 +192,23 @@ const AffordabilityCalculator = () => {
                     />
                   </div>
                   
-                  <Button type="submit" className="w-full bg-ksa-secondary hover:bg-ksa-secondary/90 text-white">
+                  <Button type="submit" className="w-full bg-ksa-secondary hover:bg-ksa-secondary/90 text-white mb-4">
                     Calculate Payment
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
+
+                  <Button 
+                    type="button" 
+                    onClick={handleAffordabilityCheck}
+                    className="w-full bg-ksa-primary hover:bg-ksa-primary/90 text-white"
+                  >
+                    Check My Affordability
+                    <ArrowRight className="ml-2 h-4 w-4" />
+                  </Button>
+
+                  <p className="text-xs text-center text-gray-500 mt-2">
+                    Securely check your actual financing options based on your financial profile
+                  </p>
                 </form>
               </div>
             </div>
