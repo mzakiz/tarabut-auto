@@ -2,10 +2,12 @@
 import React, { useState, useEffect, useRef } from 'react';
 import { ArrowRight, Check, Tag, ChevronDown } from 'lucide-react';
 import { Button } from '@/components/ui/button';
+import { useNavigate } from 'react-router-dom';
 
 const CarShowcase = () => {
   const [isLoaded, setIsLoaded] = useState(false);
   const videoRef = useRef<HTMLVideoElement>(null);
+  const navigate = useNavigate();
   
   useEffect(() => {
     const timer = setTimeout(() => {
@@ -19,6 +21,10 @@ const CarShowcase = () => {
     
     return () => clearTimeout(timer);
   }, []);
+
+  const handleAffordabilityCheck = () => {
+    navigate('/affordability-check');
+  };
 
   return (
     <section className="relative min-h-screen w-full overflow-hidden bg-tarabut-dark pt-16 md:pt-24 pb-8 md:pb-16">
@@ -65,7 +71,10 @@ const CarShowcase = () => {
               isLoaded ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-4'
             }`}
           >
-            <Button className="bg-tarabut-teal hover:bg-tarabut-teal/90 text-tarabut-dark font-medium rounded-md px-6 md:px-10 py-5 md:py-6 text-base md:text-lg min-h-[44px] min-w-[200px]">
+            <Button 
+              className="bg-tarabut-teal hover:bg-tarabut-teal/90 text-tarabut-dark font-medium rounded-md px-6 md:px-10 py-5 md:py-6 text-base md:text-lg min-h-[44px] min-w-[200px]"
+              onClick={handleAffordabilityCheck}
+            >
               CALCULATE AFFORDABILITY
             </Button>
           </div>
