@@ -8,6 +8,7 @@ import Index from "./pages/Index";
 import NotFound from "./pages/NotFound";
 import AffordabilityCheck from "./pages/AffordabilityCheck";
 import NafathVerification from "./pages/NafathVerification";
+import FinancingOffers from "./pages/FinancingOffers";
 import BankConnection from "./pages/BankConnection";
 import Confirmation from "./pages/Confirmation";
 
@@ -23,6 +24,7 @@ const App = () => (
           <Route path="/" element={<Index />} />
           <Route path="/affordability-check" element={<AffordabilityCheck />} />
           <Route path="/nafath-verification" element={<NafathVerification />} />
+          <Route path="/financing-offers" element={<FinancingOffers />} />
           <Route path="/bank-connection" element={<BankConnection />} />
           <Route path="/confirmation" element={<Confirmation />} />
           {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}

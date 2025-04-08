@@ -39,7 +39,7 @@ const BankConnection = () => {
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <Button 
           variant="ghost" 
-          onClick={() => navigate('/nafath-verification')}
+          onClick={() => navigate('/financing-offers')}
           className="mb-6"
           size={isMobile ? "sm" : "default"}
         >

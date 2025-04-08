@@ -1,40 +1,34 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Clock } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Shield, Lock, UserCheck } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Progress } from '@/components/ui/progress';
 import { useIsMobile } from '@/hooks/use-mobile';
 
 const NafathVerification = () => {
-  const [timeLeft, setTimeLeft] = useState(120); // 2 minutes in seconds
-  const [verificationNumber, setVerificationNumber] = useState('71');
+  const [verificationCode, setVerificationCode] = useState<string>('');
+  const [isVerified, setIsVerified] = useState<boolean>(false);
+  const [isLoading, setIsLoading] = useState<boolean>(false);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Timer countdown
+  // Generate a random 6-digit code on component mount
   useEffect(() => {
-    if (timeLeft <= 0) return;
-    
-    const timer = setInterval(() => {
-      setTimeLeft(prevTime => prevTime - 1);
-    }, 1000);
-    
-    return () => clearInterval(timer);
-  }, [timeLeft]);
+    const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
+    setVerificationCode(randomCode);
+  }, []);
 
-  // Format time as MM:SS
-  const formatTime = () => {
-    const minutes = Math.floor(timeLeft / 60);
-    const seconds = timeLeft % 60;
-    return `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+  const handleVerify = () => {
+    // Simulate verification process
+    setIsLoading(true);
+    setTimeout(() => {
+      setIsVerified(true);
+      setIsLoading(false);
+    }, 2000);
   };
 
-  // Calculate progress percentage
-  const progressPercentage = (timeLeft / 120) * 100;
-
-  const handleConfirm = () => {
-    navigate('/bank-connection');
+  const handleContinue = () => {
+    navigate('/financing-offers');
   };
 
   return (
@@ -52,61 +46,86 @@ const NafathVerification = () => {
         
         <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:shadow-xl">
           <div className="p-6 md:p-8">
-            <div className="flex flex-col items-center justify-center mb-8">
-              <img 
-                src="/lovable-uploads/9505a328-a74d-4a44-95f5-546b93ce1ec3.png" 
-                alt="NIC Logo" 
-                className="h-16 w-auto mb-6"
-              />
-              
-              <h1 className="text-2xl font-bold text-center text-gray-800">
-                Verification by Nafath
-              </h1>
-            </div>
-            
-            <div className="relative flex items-center justify-center mb-8">
-              <div className="w-32 h-32 rounded-full border-[12px] border-gray-100 flex items-center justify-center">
-                <span className="text-2xl font-bold text-gray-800">{formatTime()}</span>
-              </div>
-              <svg className="absolute top-0 left-0 w-32 h-32 -rotate-90">
-                <circle
-                  cx="64" 
-                  cy="64" 
-                  r="54"
-                  stroke="#5EBEC4"
-                  strokeWidth="12"
-                  fill="transparent"
-                  strokeDasharray={`${2 * Math.PI * 54}`}
-                  strokeDashoffset={`${2 * Math.PI * 54 * (1 - progressPercentage / 100)}`}
-                />
-              </svg>
-            </div>
-            
-            <div className="text-center mb-8">
-              <p className="text-gray-700 mb-4">
-                Please open the application and confirm the request by 
-                choosing the number below for approval and then press 
-                the confirm button below to complete registration
-              </p>
-              
-              <div className="bg-[#5EBEC4] text-white text-4xl font-bold w-20 h-20 rounded-lg flex items-center justify-center mx-auto mb-6">
-                {verificationNumber}
+            <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
+              Identity Verification
+            </h1>
+            <p className="text-center text-gray-600 mb-8">
+              Verify your identity using Nafath to proceed with your financing application
+            </p>
+
+            <div className="flex items-center justify-center mb-8">
+              <div className="p-3 bg-green-50 rounded-full">
+                <UserCheck className="h-6 w-6 text-green-500" />
               </div>
             </div>
             
-            <Button 
-              onClick={handleConfirm} 
-              className="w-full bg-[#5EBEC4] hover:bg-[#5EBEC4]/90 text-white h-12"
-            >
-              Click here to confirm
-            </Button>
-            
-            <div className="flex items-center justify-center mt-6">
-              <Clock className="h-4 w-4 text-gray-400 mr-2" />
-              <p className="text-xs text-gray-500">
-                This verification will expire in {formatTime()}
-              </p>
-            </div>
+            {!isVerified ? (
+              <div className="space-y-6">
+                <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
+                  <div className="text-center">
+                    <p className="text-sm text-gray-600 mb-2">Your verification code:</p>
+                    <div className="flex justify-center space-x-2">
+                      {verificationCode.split('').map((digit, index) => (
+                        <div 
+                          key={index} 
+                          className="w-9 h-12 flex items-center justify-center text-xl font-bold border border-gray-300 rounded-md bg-white"
+                        >
+                          {digit}
+                        </div>
+                      ))}
+                    </div>
+                  </div>
+                  
+                  <div className="mt-4 space-y-4">
+                    <p className="text-xs text-center text-gray-500">
+                      1. Open the Nafath App on your phone
+                    </p>
+                    <p className="text-xs text-center text-gray-500">
+                      2. Enter the verification code shown above
+                    </p>
+                    <p className="text-xs text-center text-gray-500">
+                      3. Complete the authentication on your device
+                    </p>
+                  </div>
+                </div>
+                
+                <Button 
+                  onClick={handleVerify}
+                  disabled={isLoading}
+                  className="w-full bg-ksa-primary hover:bg-ksa-primary/90 text-white h-12"
+                >
+                  {isLoading ? "Verifying..." : "I've Completed Verification in Nafath"}
+                </Button>
+                
+                <div className="flex items-center justify-center space-x-2 pt-2">
+                  <Lock className="h-4 w-4 text-gray-400" />
+                  <p className="text-xs text-gray-500">Secure & encrypted verification</p>
+                </div>
+              </div>
+            ) : (
+              <div className="space-y-6">
+                <div className="p-4 bg-green-50 rounded-lg border border-green-100 text-center">
+                  <div className="h-12 w-12 bg-green-100 mx-auto rounded-full flex items-center justify-center mb-3">
+                    <UserCheck className="h-6 w-6 text-green-500" />
+                  </div>
+                  <h3 className="text-lg font-medium text-gray-800">Verification Successful</h3>
+                  <p className="text-sm text-gray-600 mt-1">Your identity has been verified successfully.</p>
+                </div>
+                
+                <Button 
+                  onClick={handleContinue}
+                  className="w-full bg-ksa-primary hover:bg-ksa-primary/90 text-white h-12"
+                >
+                  Continue
+                  <ArrowRight className="ml-2 h-4 w-4" />
+                </Button>
+                
+                <div className="flex items-center justify-center space-x-2 pt-2">
+                  <Shield className="h-4 w-4 text-gray-400" />
+                  <p className="text-xs text-gray-500">Your data is securely protected</p>
+                </div>
+              </div>
+            )}
           </div>
         </div>
       </div>
