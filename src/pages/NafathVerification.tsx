@@ -88,7 +88,7 @@ const NafathVerification = () => {
 
             <div className="flex items-center justify-center mb-6">
               <img 
-                src="/public/Logos/Nafath.svg.png" 
+                src="/Logos/Nafath.svg.png" 
                 alt="Nafath Logo" 
                 className="h-16 object-contain" 
               />

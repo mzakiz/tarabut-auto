@@ -13,6 +13,7 @@ const AffordabilityCheck = () => {
   const [idNumber, setIdNumber] = useState('');
   const [agreed, setAgreed] = useState(false);
   const [error, setError] = useState('');
+  const [referralCode, setReferralCode] = useState('');
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
@@ -50,8 +51,8 @@ const AffordabilityCheck = () => {
           <div className="p-6 md:p-8">
             <div className="flex items-center justify-center mb-6">
               <img 
-                src="/lovable-uploads/9505a328-a74d-4a44-95f5-546b93ce1ec3.png" 
-                alt="NIC Logo" 
+                src="/Logos/Nafath.svg.png" 
+                alt="Nafath Logo" 
                 className="h-12 w-auto"
               />
             </div>
@@ -90,6 +91,23 @@ const AffordabilityCheck = () => {
                     onChange={(e) => setIdNumber(e.target.value)}
                     className="w-full h-12"
                   />
+                </div>
+                
+                <div className="space-y-2">
+                  <Label htmlFor="referralCode" className="text-sm font-medium">
+                    Referral Code (Optional)
+                  </Label>
+                  <Input
+                    id="referralCode"
+                    type="text"
+                    placeholder="Enter referral code"
+                    value={referralCode}
+                    onChange={(e) => setReferralCode(e.target.value)}
+                    className="w-full h-12"
+                  />
+                  <p className="text-xs text-gray-500">
+                    Enter a referral code to gain priority access
+                  </p>
                 </div>
                 
                 <div className="flex items-start space-x-2">

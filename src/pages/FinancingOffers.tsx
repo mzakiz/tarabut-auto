@@ -89,7 +89,7 @@ const FinancingOffers = () => {
                     <div className="flex flex-col items-center space-y-4 h-full">
                       <div className="h-16 w-full flex items-center justify-center">
                         <img
-                          src={offer.logo}
+                          src={offer.logo.replace('/public', '')}
                           alt={offer.name}
                           className="max-h-full max-w-full object-contain"
                         />

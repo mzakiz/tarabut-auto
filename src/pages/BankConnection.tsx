@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { ArrowLeft, ArrowRight, Link as LinkIcon, Shield, Check, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
-import BankCarousel from '@/components/BankCarousel';
+import BankSelector from '@/components/BankSelector';
 import { motion } from 'framer-motion';
 
 interface StepProps {
@@ -134,7 +134,7 @@ const BankConnection = () => {
                   <h3 className="text-sm font-medium text-gray-700 mb-4">
                     Select your bank from the options below:
                   </h3>
-                  <BankCarousel
+                  <BankSelector
                     onBankSelect={setSelectedBank}
                     selectedBank={selectedBank}
                   />
@@ -161,8 +161,10 @@ const BankConnection = () => {
                   {!isConnecting ? (
                     <div className="text-center">
                       <img
-                        src={`/public/Symbols/${selectedBank === 'jazira' ? 'Aljazira_symbol.svg' : 
+                        src={`/Symbols/${selectedBank === 'jazira' ? 'Aljazira_symbol.svg' : 
                           selectedBank === 'sib' ? 'Saudi_Investment_Bank_symbol.svg' :
+                          selectedBank === 'rajhi' ? 'Alrajhi_symbol.svg' :
+                          selectedBank === 'albilad' ? 'BankAlBilad_symbol.svg' :
                           `${selectedBank.charAt(0).toUpperCase() + selectedBank.slice(1)}_symbol.svg`}`}
                         alt="Bank Logo"
                         className="h-16 w-16 mx-auto mb-4"
