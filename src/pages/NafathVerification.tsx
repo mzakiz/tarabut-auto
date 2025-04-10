@@ -1,22 +1,36 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, ArrowRight, Shield, Lock, UserCheck } from 'lucide-react';
+import { ArrowLeft, ArrowRight, Shield, Lock, UserCheck, ExternalLink, RefreshCw } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
+import { Progress } from '@/components/ui/progress';
 
 const NafathVerification = () => {
   const [verificationCode, setVerificationCode] = useState<string>('');
   const [isVerified, setIsVerified] = useState<boolean>(false);
   const [isLoading, setIsLoading] = useState<boolean>(false);
+  const [timeRemaining, setTimeRemaining] = useState<number>(120); // 2 minutes in seconds
+  const [showAppDownload, setShowAppDownload] = useState<boolean>(true);
   const navigate = useNavigate();
   const isMobile = useIsMobile();
 
-  // Generate a random 6-digit code on component mount
+  // Generate a random 2-digit number (10-99) on component mount
   useEffect(() => {
-    const randomCode = Math.floor(100000 + Math.random() * 900000).toString();
+    const randomCode = Math.floor(10 + Math.random() * 90).toString();
     setVerificationCode(randomCode);
   }, []);
+
+  // Timer countdown effect
+  useEffect(() => {
+    if (timeRemaining > 0 && !isVerified) {
+      const timer = setTimeout(() => {
+        setTimeRemaining(prev => prev - 1);
+      }, 1000);
+      
+      return () => clearTimeout(timer);
+    }
+  }, [timeRemaining, isVerified]);
 
   const handleVerify = () => {
     // Simulate verification process
@@ -27,8 +41,27 @@ const NafathVerification = () => {
     }, 2000);
   };
 
+  const handleRestart = () => {
+    // Reset the verification flow
+    setTimeRemaining(120);
+    const randomCode = Math.floor(10 + Math.random() * 90).toString();
+    setVerificationCode(randomCode);
+    setIsVerified(false);
+  };
+
   const handleContinue = () => {
     navigate('/financing-offers');
+  };
+
+  const handleAppDownload = () => {
+    setShowAppDownload(false);
+  };
+
+  // Format time as mm:ss
+  const formatTime = (seconds: number) => {
+    const mins = Math.floor(seconds / 60);
+    const secs = seconds % 60;
+    return `${mins}:${secs < 10 ? '0' : ''}${secs}`;
   };
 
   return (
@@ -47,55 +80,105 @@ const NafathVerification = () => {
         <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:shadow-xl">
           <div className="p-6 md:p-8">
             <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
-              Identity Verification
+              Verify Your Identity
             </h1>
-            <p className="text-center text-gray-600 mb-8">
-              Verify your identity using Nafath to proceed with your financing application
+            <p className="text-center text-gray-600 mb-6">
+              Use Nafath to securely verify your identity and proceed with your financing application
             </p>
 
-            <div className="flex items-center justify-center mb-8">
-              <div className="p-3 bg-green-50 rounded-full">
-                <UserCheck className="h-6 w-6 text-green-500" />
-              </div>
+            <div className="flex items-center justify-center mb-6">
+              <img 
+                src="/public/Logos/Nafath.svg.png" 
+                alt="Nafath Logo" 
+                className="h-16 object-contain" 
+              />
             </div>
             
-            {!isVerified ? (
+            {showAppDownload ? (
+              <div className="space-y-6 mb-6">
+                <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
+                  <p className="text-center text-gray-700 mb-4">
+                    To continue, you need the Nafath app installed on your device
+                  </p>
+                  <div className="flex flex-col sm:flex-row gap-3 justify-center">
+                    <Button 
+                      variant="outline"
+                      className="flex items-center justify-center"
+                      onClick={handleAppDownload}
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      App Store
+                    </Button>
+                    <Button 
+                      variant="outline"
+                      className="flex items-center justify-center"
+                      onClick={handleAppDownload}
+                    >
+                      <ExternalLink className="mr-2 h-4 w-4" />
+                      Play Store
+                    </Button>
+                  </div>
+                  <div className="mt-4 text-center">
+                    <Button 
+                      variant="ghost"
+                      onClick={handleAppDownload}
+                      className="text-sm text-gray-600"
+                    >
+                      I already have Nafath installed
+                    </Button>
+                  </div>
+                </div>
+              </div>
+            ) : !isVerified ? (
               <div className="space-y-6">
                 <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
-                  <div className="text-center">
-                    <p className="text-sm text-gray-600 mb-2">Your verification code:</p>
-                    <div className="flex justify-center space-x-2">
-                      {verificationCode.split('').map((digit, index) => (
-                        <div 
-                          key={index} 
-                          className="w-9 h-12 flex items-center justify-center text-xl font-bold border border-gray-300 rounded-md bg-white"
-                        >
-                          {digit}
-                        </div>
-                      ))}
+                  <div className="text-center mb-4">
+                    <p className="text-sm text-gray-600 mb-1">Your verification code:</p>
+                    <div className="text-4xl font-bold text-gray-800 tracking-widest">
+                      {verificationCode}
                     </div>
+                    <p className="text-xs text-gray-500 mt-2">
+                      Valid for {formatTime(timeRemaining)}
+                    </p>
                   </div>
                   
+                  <Progress 
+                    value={(timeRemaining / 120) * 100} 
+                    className="h-2 mb-4"
+                    color={timeRemaining < 30 ? "bg-red-500" : "bg-green-500"}
+                  />
+                  
                   <div className="mt-4 space-y-4">
-                    <p className="text-xs text-center text-gray-500">
-                      1. Open the Nafath App on your phone
+                    <p className="text-sm text-center text-gray-700 font-medium">
+                      Follow these steps:
                     </p>
-                    <p className="text-xs text-center text-gray-500">
-                      2. Enter the verification code shown above
-                    </p>
-                    <p className="text-xs text-center text-gray-500">
-                      3. Complete the authentication on your device
-                    </p>
+                    <ol className="list-decimal text-sm text-gray-600 pl-5 space-y-2">
+                      <li>Open the Nafath App on your phone</li>
+                      <li>Select "Verify" from the main menu</li>
+                      <li>Enter the verification code shown above</li>
+                      <li>Confirm your identity using fingerprint or face ID</li>
+                    </ol>
                   </div>
                 </div>
                 
                 <Button 
                   onClick={handleVerify}
-                  disabled={isLoading}
+                  disabled={isLoading || timeRemaining === 0}
                   className="w-full bg-ksa-primary hover:bg-ksa-primary/90 text-white h-12"
                 >
                   {isLoading ? "Verifying..." : "I've Completed Verification in Nafath"}
                 </Button>
+                
+                {timeRemaining === 0 && (
+                  <Button 
+                    onClick={handleRestart}
+                    variant="outline"
+                    className="w-full h-12"
+                  >
+                    <RefreshCw className="mr-2 h-4 w-4" />
+                    Generate New Code
+                  </Button>
+                )}
                 
                 <div className="flex items-center justify-center space-x-2 pt-2">
                   <Lock className="h-4 w-4 text-gray-400" />

@@ -9,9 +9,6 @@ interface BankOffer {
   id: string;
   name: string;
   logo: string;
-  rate: string;
-  monthlyPayment: string;
-  term: string;
 }
 
 const FinancingOffers = () => {
@@ -23,26 +20,42 @@ const FinancingOffers = () => {
     { 
       id: 'snb', 
       name: 'Saudi National Bank', 
-      logo: '/lovable-uploads/580cdf86-1e30-4e43-b478-918ba8465477.png',
-      rate: '3.25%',
-      monthlyPayment: 'SAR 1,299',
-      term: '60 months'
+      logo: '/public/Logos/SNB_bank.jpg'
     },
     { 
       id: 'alinma', 
       name: 'Alinma Bank', 
-      logo: '/lovable-uploads/31b970d9-aa94-423f-810d-5bdbbcc48de1.png',
-      rate: '3.5%',
-      monthlyPayment: 'SAR 1,325',
-      term: '60 months'
+      logo: '/public/Logos/Alinma_bank.png'
+    },
+    { 
+      id: 'rajhi', 
+      name: 'Al Rajhi Bank', 
+      logo: '/public/Logos/Al_Rajhi_Bank.svg.png'
     },
     { 
       id: 'albilad', 
       name: 'Bank Albilad', 
-      logo: '/lovable-uploads/4adab54e-e074-48a5-8c91-4c7eee0656f0.png',
-      rate: '3.75%',
-      monthlyPayment: 'SAR 1,350',
-      term: '60 months'
+      logo: '/public/Logos/Albilad_bank.svg.png'
+    },
+    { 
+      id: 'riyad', 
+      name: 'Riyad Bank', 
+      logo: '/public/Logos/Riyadbank.png'
+    },
+    { 
+      id: 'sab', 
+      name: 'Saudi British Bank (SABB)', 
+      logo: '/public/Logos/SAB_bank.png'
+    },
+    { 
+      id: 'anb', 
+      name: 'Arab National Bank', 
+      logo: '/public/Logos/ANB_bank.png'
+    },
+    { 
+      id: 'bsf', 
+      name: 'Banque Saudi Fransi', 
+      logo: '/public/Logos/BSF_bank.png'
     },
   ];
 
@@ -70,13 +83,13 @@ const FinancingOffers = () => {
           Back
         </Button>
         
-        <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden md:shadow-xl">
+        <div className="max-w-3xl mx-auto bg-white rounded-xl shadow-md overflow-hidden md:shadow-xl">
           <div className="p-6 md:p-8">
             <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
-              Choose Your Financing Offer
+              Choose Your Financing Bank
             </h1>
             <p className="text-center text-gray-600 mb-8">
-              Select from tailored auto financing offers from leading Saudi banks
+              Select your preferred bank for auto financing
             </p>
 
             <div className="flex items-center justify-center mb-8">
@@ -86,19 +99,19 @@ const FinancingOffers = () => {
             </div>
             
             <form onSubmit={handleSubmit}>
-              <div className="space-y-4">
+              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
                 {bankOffers.map((offer) => (
                   <div 
                     key={offer.id} 
                     className={`border rounded-lg p-4 cursor-pointer transition-all duration-200 ${
                       selectedOffer === offer.id 
-                        ? 'border-ksa-primary bg-ksa-primary/5 ring-2 ring-ksa-primary/20' 
-                        : 'border-gray-200 hover:border-ksa-primary/50'
+                        ? 'border-ksa-primary bg-ksa-primary/5 ring-2 ring-ksa-primary/20 transform scale-105' 
+                        : 'border-gray-200 hover:border-ksa-primary/50 hover:transform hover:scale-[1.02]'
                     }`}
                     onClick={() => handleSelectOffer(offer.id)}
                   >
-                    <div className="flex items-center space-x-4">
-                      <div className="flex-shrink-0 w-16 h-16 flex items-center justify-center bg-white rounded-lg p-2">
+                    <div className="flex flex-col items-center space-y-4 h-full">
+                      <div className="h-16 w-full flex items-center justify-center">
                         <img
                           src={offer.logo}
                           alt={offer.name}
@@ -106,34 +119,16 @@ const FinancingOffers = () => {
                         />
                       </div>
                       
-                      <div className="flex-1 min-w-0">
-                        <h3 className="text-lg font-medium text-gray-900">{offer.name}</h3>
-                        <div className="grid grid-cols-3 gap-2 mt-2">
-                          <div>
-                            <p className="text-xs text-gray-500">Rate</p>
-                            <p className="text-sm font-medium">{offer.rate}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500">Monthly</p>
-                            <p className="text-sm font-medium">{offer.monthlyPayment}</p>
-                          </div>
-                          <div>
-                            <p className="text-xs text-gray-500">Term</p>
-                            <p className="text-sm font-medium">{offer.term}</p>
-                          </div>
-                        </div>
-                      </div>
+                      <p className="text-sm font-medium text-center text-gray-800">{offer.name}</p>
                       
-                      <div className="flex-shrink-0">
-                        <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center ${
-                          selectedOffer === offer.id 
-                            ? 'border-ksa-primary bg-ksa-primary/10' 
-                            : 'border-gray-300'
-                        }`}>
-                          {selectedOffer === offer.id && (
-                            <div className="w-3 h-3 rounded-full bg-ksa-primary" />
-                          )}
-                        </div>
+                      <div className={`w-6 h-6 rounded-full border-2 flex items-center justify-center mt-auto ${
+                        selectedOffer === offer.id 
+                          ? 'border-ksa-primary bg-ksa-primary/10' 
+                          : 'border-gray-300'
+                      }`}>
+                        {selectedOffer === offer.id && (
+                          <div className="w-3 h-3 rounded-full bg-ksa-primary" />
+                        )}
                       </div>
                     </div>
                   </div>
@@ -146,7 +141,7 @@ const FinancingOffers = () => {
                   disabled={!selectedOffer}
                   className="w-full bg-ksa-primary hover:bg-ksa-primary/90 text-white h-12"
                 >
-                  Continue with Selected Offer
+                  Continue with Selected Bank
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
               </div>
@@ -159,9 +154,6 @@ const FinancingOffers = () => {
                   Your information is secure and will only be used to process your financing application
                 </p>
               </div>
-              <p className="text-xs text-gray-400 text-center">
-                By continuing, you agree to our terms and conditions for auto financing
-              </p>
             </div>
           </div>
         </div>
