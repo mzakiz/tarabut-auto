@@ -1,7 +1,6 @@
 
-import React, { useEffect, useState } from 'react';
-import { Carousel, CarouselContent, CarouselItem, CarouselNext, CarouselPrevious } from '@/components/ui/carousel';
-import { motion } from 'framer-motion';
+import React, { useState, useEffect } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
 
 interface BankSymbol {
   id: string;
@@ -15,8 +14,9 @@ interface BankCarouselProps {
 }
 
 const BankCarousel: React.FC<BankCarouselProps> = ({ onBankSelect, selectedBank }) => {
-  const [currentIndex, setCurrentIndex] = useState(0);
+  const [visibleBanks, setVisibleBanks] = useState<BankSymbol[]>([]);
   const [autoplay, setAutoplay] = useState(true);
+  const [currentPage, setCurrentPage] = useState(0);
   
   const banks: BankSymbol[] = [
     { id: 'snb', name: 'Saudi National Bank', svgPath: '/public/Symbols/SNB_symbol.svg' },
@@ -32,19 +32,30 @@ const BankCarousel: React.FC<BankCarouselProps> = ({ onBankSelect, selectedBank 
     { id: 'gib', name: 'Gulf International Bank', svgPath: '/public/Symbols/GIB_symbol.svg' },
   ];
 
+  const itemsPerPage = 4;
+  const totalPages = Math.ceil(banks.length / itemsPerPage);
+
+  // Update visible banks when page changes
+  useEffect(() => {
+    const startIndex = currentPage * itemsPerPage;
+    const endIndex = startIndex + itemsPerPage;
+    setVisibleBanks(banks.slice(startIndex, endIndex));
+  }, [currentPage]);
+
+  // Autoplay functionality
   useEffect(() => {
     let interval: NodeJS.Timeout;
     
     if (autoplay && !selectedBank) {
       interval = setInterval(() => {
-        setCurrentIndex((prevIndex) => (prevIndex + 1) % banks.length);
-      }, 2000);
+        setCurrentPage((prevPage) => (prevPage + 1) % totalPages);
+      }, 3000);
     }
     
     return () => {
       if (interval) clearInterval(interval);
     };
-  }, [autoplay, banks.length, selectedBank]);
+  }, [autoplay, selectedBank, totalPages]);
 
   const handleBankClick = (bankId: string) => {
     if (onBankSelect) {
@@ -53,25 +64,57 @@ const BankCarousel: React.FC<BankCarouselProps> = ({ onBankSelect, selectedBank 
     }
   };
 
-  // Stop autoplay when user interacts with carousel
   const handleUserInteraction = () => {
     setAutoplay(false);
   };
 
+  const goToNextPage = () => {
+    handleUserInteraction();
+    setCurrentPage((prevPage) => (prevPage + 1) % totalPages);
+  };
+
+  const goToPrevPage = () => {
+    handleUserInteraction();
+    setCurrentPage((prevPage) => (prevPage - 1 + totalPages) % totalPages);
+  };
+
   return (
     <div className="w-full max-w-md mx-auto" onClick={handleUserInteraction}>
-      <Carousel 
-        className="w-full"
-        opts={{
-          align: "center",
-          loop: true,
-        }}
-      >
-        <CarouselContent>
-          {banks.map((bank) => (
-            <CarouselItem key={bank.id} className="md:basis-1/3 lg:basis-1/4">
-              <div 
-                className={`h-28 flex flex-col items-center justify-center p-4 ${
+      <div className="relative overflow-hidden">
+        <div className="flex justify-between items-center mb-4">
+          <button 
+            onClick={goToPrevPage} 
+            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+            aria-label="Previous banks"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m15 18-6-6 6-6"/>
+            </svg>
+          </button>
+          <button 
+            onClick={goToNextPage} 
+            className="p-2 rounded-full bg-gray-100 hover:bg-gray-200 transition-colors"
+            aria-label="Next banks"
+          >
+            <svg xmlns="http://www.w3.org/2000/svg" width="20" height="20" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+              <path d="m9 18 6-6-6-6"/>
+            </svg>
+          </button>
+        </div>
+        
+        <motion.div 
+          className="grid grid-cols-4 gap-4"
+          initial={{ opacity: 1 }}
+        >
+          <AnimatePresence mode="wait">
+            {visibleBanks.map((bank) => (
+              <motion.div
+                key={bank.id}
+                initial={{ opacity: 0, scale: 0.8 }}
+                animate={{ opacity: 1, scale: 1 }}
+                exit={{ opacity: 0, scale: 0.8 }}
+                transition={{ duration: 0.3 }}
+                className={`flex flex-col items-center justify-center p-3 ${
                   selectedBank === bank.id 
                     ? 'scale-110 opacity-100' 
                     : 'opacity-70 hover:opacity-100'
@@ -86,29 +129,32 @@ const BankCarousel: React.FC<BankCarouselProps> = ({ onBankSelect, selectedBank 
                   <img 
                     src={bank.svgPath} 
                     alt={bank.name} 
-                    className="h-12 w-12 object-contain" 
+                    className="h-12 w-12 object-contain"
                   />
                 </motion.div>
                 <p className="text-xs text-center mt-2 font-medium text-gray-700 truncate w-full">
                   {bank.name}
                 </p>
-              </div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <CarouselPrevious className="left-0" />
-        <CarouselNext className="right-0" />
-      </Carousel>
+              </motion.div>
+            ))}
+          </AnimatePresence>
+        </motion.div>
+      </div>
 
       <div className="flex justify-center mt-4 space-x-1">
-        {banks.map((_, index) => (
-          <div 
+        {Array.from({ length: totalPages }).map((_, index) => (
+          <button
             key={index}
-            className={`h-1.5 rounded-full transition-all duration-300 ${
-              currentIndex === index || selectedBank === banks[index].id
-                ? 'w-4 bg-ksa-primary' 
-                : 'w-1.5 bg-gray-300'
+            onClick={() => {
+              setCurrentPage(index);
+              handleUserInteraction();
+            }}
+            className={`h-2 rounded-full transition-all duration-300 ${
+              currentPage === index
+                ? 'w-6 bg-ksa-primary' 
+                : 'w-2 bg-gray-300'
             }`}
+            aria-label={`Go to page ${index + 1}`}
           />
         ))}
       </div>

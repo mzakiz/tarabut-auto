@@ -1,7 +1,7 @@
 
-import React, { useState } from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Check, Copy, Share2, ArrowRight } from 'lucide-react';
+import { Check, Copy, Share2, ArrowRight, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { Progress } from '@/components/ui/progress';
@@ -14,6 +14,7 @@ const Confirmation = () => {
   const isMobile = useIsMobile();
   const referralCode = 'TOYOTA25';
   const affordabilityAmount = 320000;
+  const waitlistPosition = 42; // This would typically come from your backend
   
   React.useEffect(() => {
     // Launch confetti when component mounts
@@ -50,9 +51,21 @@ const Confirmation = () => {
               <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
                 Congratulations!
               </h1>
-              <p className="text-center text-gray-600 mb-8">
+              <p className="text-center text-gray-600 mb-4">
                 You've been added to our exclusive waitlist
               </p>
+              
+              {/* Waitlist Position */}
+              <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6 text-center">
+                <div className="flex items-center justify-center mb-2">
+                  <Trophy className="h-5 w-5 text-blue-500 mr-2" />
+                  <span className="text-sm font-medium text-gray-700">Your position in waitlist</span>
+                </div>
+                <p className="text-3xl font-bold text-blue-600 mb-2">#{waitlistPosition}</p>
+                <p className="text-xs text-gray-500">
+                  Refer friends to move up in the waitlist
+                </p>
+              </div>
               
               <div className="bg-gray-50 rounded-lg p-5 mb-6">
                 <p className="text-sm text-gray-600 mb-2">Based on your financial profile:</p>

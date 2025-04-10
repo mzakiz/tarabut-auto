@@ -16,6 +16,7 @@ const FinancingOffers = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
+  // Limit banks to only SNB, Al Rajhi, and Alinma
   const bankOffers: BankOffer[] = [
     { 
       id: 'snb', 
@@ -31,31 +32,6 @@ const FinancingOffers = () => {
       id: 'rajhi', 
       name: 'Al Rajhi Bank', 
       logo: '/public/Logos/Al_Rajhi_Bank.svg.png'
-    },
-    { 
-      id: 'albilad', 
-      name: 'Bank Albilad', 
-      logo: '/public/Logos/Albilad_bank.svg.png'
-    },
-    { 
-      id: 'riyad', 
-      name: 'Riyad Bank', 
-      logo: '/public/Logos/Riyadbank.png'
-    },
-    { 
-      id: 'sab', 
-      name: 'Saudi British Bank (SABB)', 
-      logo: '/public/Logos/SAB_bank.png'
-    },
-    { 
-      id: 'anb', 
-      name: 'Arab National Bank', 
-      logo: '/public/Logos/ANB_bank.png'
-    },
-    { 
-      id: 'bsf', 
-      name: 'Banque Saudi Fransi', 
-      logo: '/public/Logos/BSF_bank.png'
     },
   ];
 
@@ -99,7 +75,7 @@ const FinancingOffers = () => {
             </div>
             
             <form onSubmit={handleSubmit}>
-              <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
                 {bankOffers.map((offer) => (
                   <div 
                     key={offer.id} 
