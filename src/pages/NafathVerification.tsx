@@ -94,7 +94,7 @@ const NafathVerification = () => {
               />
             </div>
             
-            {showAppDownload ? (
+            {showAppDownload && (
               <div className="space-y-6 mb-6">
                 <div className="p-4 bg-blue-50 rounded-lg border border-blue-100">
                   <p className="text-center text-gray-700 mb-4">
@@ -129,7 +129,9 @@ const NafathVerification = () => {
                   </div>
                 </div>
               </div>
-            ) : !isVerified ? (
+            )}
+            
+            {!isVerified && (
               <div className="space-y-6">
                 <div className="p-4 bg-gray-50 rounded-lg border border-gray-200">
                   <div className="text-center mb-4">
@@ -185,7 +187,9 @@ const NafathVerification = () => {
                   <p className="text-xs text-gray-500">Secure & encrypted verification</p>
                 </div>
               </div>
-            ) : (
+            )}
+            
+            {isVerified && (
               <div className="space-y-6">
                 <div className="p-4 bg-green-50 rounded-lg border border-green-100 text-center">
                   <div className="h-12 w-12 bg-green-100 mx-auto rounded-full flex items-center justify-center mb-3">

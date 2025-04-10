@@ -1,12 +1,5 @@
 
-import React, { useState } from 'react';
-import { 
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious
-} from "@/components/ui/carousel";
+import React from 'react';
 import { motion } from 'framer-motion';
 
 interface BankSymbol {
@@ -21,8 +14,6 @@ interface BankSelectorProps {
 }
 
 const BankSelector: React.FC<BankSelectorProps> = ({ onBankSelect, selectedBank }) => {
-  const [currentPage, setCurrentPage] = useState(0);
-  
   const banks: BankSymbol[] = [
     { id: 'snb', name: 'Saudi National Bank', svgPath: '/Symbols/SNB_symbol.svg' },
     { id: 'rajhi', name: 'Al Rajhi Bank', svgPath: '/Symbols/Alrajhi_symbol.svg' },
@@ -43,54 +34,57 @@ const BankSelector: React.FC<BankSelectorProps> = ({ onBankSelect, selectedBank 
     }
   };
 
+  // Grid layout with hover animations
   return (
     <div className="w-full mx-auto">
-      <Carousel className="w-full max-w-md mx-auto">
-        <CarouselContent>
-          {banks.map((bank) => (
-            <CarouselItem key={bank.id} className="md:basis-1/4">
-              <motion.div
-                whileHover={{ scale: 1.05 }}
-                whileTap={{ scale: 0.95 }}
-                className={`flex flex-col items-center justify-center p-3 cursor-pointer ${
-                  selectedBank === bank.id 
-                    ? 'scale-110 opacity-100' 
-                    : 'opacity-70 hover:opacity-100'
-                }`}
-                onClick={() => handleBankClick(bank.id)}
-              >
-                <div className={`p-3 rounded-full ${selectedBank === bank.id ? 'bg-ksa-primary/10' : ''}`}>
-                  <img 
-                    src={bank.svgPath} 
-                    alt={bank.name} 
-                    className="h-12 w-12 object-contain"
-                  />
-                </div>
-                <p className="text-xs text-center mt-2 font-medium text-gray-700 truncate w-full">
-                  {bank.name}
-                </p>
-              </motion.div>
-            </CarouselItem>
-          ))}
-        </CarouselContent>
-        <div className="flex items-center justify-center mt-4">
-          <CarouselPrevious className="relative static translate-y-0 left-0 mr-2 h-8 w-8" />
-          <CarouselNext className="relative static translate-y-0 right-0 h-8 w-8" />
-        </div>
-      </Carousel>
-      
-      <div className="flex justify-center mt-4 space-x-1">
-        {Array.from({ length: Math.ceil(banks.length / 4) }).map((_, index) => (
-          <button
-            key={index}
-            onClick={() => setCurrentPage(index)}
-            className={`h-2 rounded-full transition-all duration-300 ${
-              currentPage === index
-                ? 'w-6 bg-ksa-primary' 
-                : 'w-2 bg-gray-300'
+      <div className="grid grid-cols-2 gap-4 md:gap-6">
+        {banks.map((bank) => (
+          <motion.div
+            key={bank.id}
+            whileHover={{ 
+              scale: 1.05,
+              boxShadow: "0 10px 25px -5px rgba(0, 0, 0, 0.1), 0 8px 10px -6px rgba(0, 0, 0, 0.1)"
+            }}
+            whileTap={{ scale: 0.95 }}
+            initial={{ opacity: 0, y: 20 }}
+            animate={{ opacity: 1, y: 0 }}
+            transition={{ 
+              type: "spring",
+              stiffness: 260,
+              damping: 20,
+              duration: 0.3 
+            }}
+            className={`flex flex-col items-center justify-center p-4 rounded-lg border cursor-pointer ${
+              selectedBank === bank.id 
+                ? 'border-ksa-primary bg-ksa-primary/5 scale-105' 
+                : 'border-gray-200 bg-white hover:bg-gray-50'
             }`}
-            aria-label={`Go to page ${index + 1}`}
-          />
+            onClick={() => handleBankClick(bank.id)}
+          >
+            <div className={`p-3 rounded-full mb-2 ${selectedBank === bank.id ? 'bg-ksa-primary/10' : 'bg-gray-50'}`}>
+              <img 
+                src={bank.svgPath} 
+                alt={bank.name} 
+                className="h-12 w-12 object-contain"
+              />
+            </div>
+            <p className="text-xs text-center mt-2 font-medium text-gray-700 truncate w-full">
+              {bank.name}
+            </p>
+            {selectedBank === bank.id && (
+              <motion.div 
+                initial={{ scale: 0 }}
+                animate={{ scale: 1 }}
+                className="mt-2 w-4 h-4 rounded-full bg-ksa-primary flex items-center justify-center"
+              >
+                <motion.div 
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  className="w-2 h-2 rounded-full bg-white"
+                />
+              </motion.div>
+            )}
+          </motion.div>
         ))}
       </div>
     </div>

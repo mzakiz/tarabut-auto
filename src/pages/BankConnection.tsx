@@ -100,7 +100,7 @@ const BankConnection = () => {
           Back
         </Button>
         
-        <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:shadow-xl">
+        <div className="max-w-2xl mx-auto bg-white rounded-xl shadow-md overflow-hidden md:shadow-xl">
           <div className="p-6 md:p-8">
             <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
               Link Your Bank Account
@@ -130,7 +130,12 @@ const BankConnection = () => {
             
             {currentStep === 1 && (
               <div className="space-y-8">
-                <div className="border rounded-lg p-4">
+                <motion.div 
+                  initial={{ opacity: 0, y: 10 }}
+                  animate={{ opacity: 1, y: 0 }}
+                  transition={{ duration: 0.5 }}
+                  className="border rounded-lg p-4"
+                >
                   <h3 className="text-sm font-medium text-gray-700 mb-4">
                     Select your bank from the options below:
                   </h3>
@@ -138,7 +143,7 @@ const BankConnection = () => {
                     onBankSelect={setSelectedBank}
                     selectedBank={selectedBank}
                   />
-                </div>
+                </motion.div>
                 
                 <Button 
                   onClick={() => setCurrentStep(2)}

@@ -16,22 +16,22 @@ const FinancingOffers = () => {
   const navigate = useNavigate();
   const isMobile = useIsMobile();
   
-  // Limit banks to only SNB, Al Rajhi, and Alinma
+  // Update banks to SNB, Alinma, and AlBilad
   const bankOffers: BankOffer[] = [
     { 
       id: 'snb', 
       name: 'Saudi National Bank', 
-      logo: '/public/Logos/SNB_bank.jpg'
+      logo: '/Logos/SNB_bank.jpg'
     },
     { 
       id: 'alinma', 
       name: 'Alinma Bank', 
-      logo: '/public/Logos/Alinma_bank.png'
+      logo: '/Logos/Alinma_bank.png'
     },
     { 
-      id: 'rajhi', 
-      name: 'Al Rajhi Bank', 
-      logo: '/public/Logos/Al_Rajhi_Bank.svg.png'
+      id: 'albilad', 
+      name: 'Bank Albilad', 
+      logo: '/Logos/Albilad_bank.svg.png'
     },
   ];
 
@@ -89,7 +89,7 @@ const FinancingOffers = () => {
                     <div className="flex flex-col items-center space-y-4 h-full">
                       <div className="h-16 w-full flex items-center justify-center">
                         <img
-                          src={offer.logo.replace('/public', '')}
+                          src={offer.logo}
                           alt={offer.name}
                           className="max-h-full max-w-full object-contain"
                         />
