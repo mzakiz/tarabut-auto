@@ -1,10 +1,10 @@
-
 import React, { useState, useEffect } from 'react';
 import { Menu, X, Globe } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useTranslation } from '@/hooks/useTranslation';
 import {
   DropdownMenu,
   DropdownMenuContent,
@@ -19,6 +19,7 @@ const Header = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { language, setLanguage, isChangingLanguage } = useLanguage();
+  const { t } = useTranslation();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -30,38 +31,29 @@ const Header = () => {
   }, []);
 
   const changeLanguage = (newLanguage) => {
-    // Don't do anything if we're already on the selected language or changing language
     if (language === newLanguage || isChangingLanguage) {
       console.log(`Ignoring language change request - already ${language} or changing`);
       return;
     }
     
-    // Extract the current path - handle both /ar/ and /en/ routes
     const pathParts = location.pathname.split('/');
-    
-    // Find the part after the language segment
-    let variant = 'speed'; // Default
+    let variant = 'speed';
     for (let i = 1; i < pathParts.length; i++) {
       if (pathParts[i] === 'ar' || pathParts[i] === 'en') {
-        // Get the next path segment after the language code
         variant = pathParts[i + 1] || 'speed';
         break;
       }
     }
     
-    // Ensure we have a valid variant, default to "speed" if not
     const validVariants = ['speed', 'offer', 'budget'];
     const safeVariant = validVariants.includes(variant) ? variant : 'speed';
     
-    // Construct the new path with the new language
     const newPath = `/${newLanguage}/${safeVariant}`;
     
     console.log(`Language change: Navigating from ${location.pathname} to ${newPath}`);
     
-    // First update the context
     setLanguage(newLanguage);
     
-    // Then navigate to new URL
     setTimeout(() => {
       navigate(newPath);
     }, 50);
@@ -84,10 +76,18 @@ const Header = () => {
           </div>
 
           <nav className="hidden md:flex items-center space-x-8">
-            <a href="#features" className="text-white/80 hover:text-white transition-colors duration-200 text-sm tracking-wide">Features</a>
-            <a href="#specs" className="text-white/80 hover:text-white transition-colors duration-200 text-sm tracking-wide">Specifications</a>
-            <a href="#calculator" className="text-white/80 hover:text-white transition-colors duration-200 text-sm tracking-wide">Affordability</a>
-            <a href="#contact" className="text-white/80 hover:text-white transition-colors duration-200 text-sm tracking-wide">Contact</a>
+            <a href="#features" className="text-white/80 hover:text-white transition-colors duration-200 text-sm tracking-wide">
+              {isChangingLanguage ? '...' : t('nav.features')}
+            </a>
+            <a href="#specs" className="text-white/80 hover:text-white transition-colors duration-200 text-sm tracking-wide">
+              {isChangingLanguage ? '...' : t('nav.specifications')}
+            </a>
+            <a href="#calculator" className="text-white/80 hover:text-white transition-colors duration-200 text-sm tracking-wide">
+              {isChangingLanguage ? '...' : t('nav.affordability')}
+            </a>
+            <a href="#contact" className="text-white/80 hover:text-white transition-colors duration-200 text-sm tracking-wide">
+              {isChangingLanguage ? '...' : t('nav.contact')}
+            </a>
           </nav>
 
           <div className="flex items-center">
@@ -146,7 +146,6 @@ const Header = () => {
           </div>
         </div>
 
-        {/* Mobile menu */}
         {mobileMenuOpen && (
           <div className="md:hidden mt-4 p-4 bg-tarabut-dark/95 backdrop-blur-lg rounded-md animate-fade-in">
             <nav className="flex flex-col space-y-4">
@@ -155,28 +154,28 @@ const Header = () => {
                 className="text-white/80 hover:text-white transition-colors duration-200 py-3 px-4 rounded min-h-[44px] flex items-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Features
+                {isChangingLanguage ? '...' : t('nav.features')}
               </a>
               <a 
                 href="#specs" 
                 className="text-white/80 hover:text-white transition-colors duration-200 py-3 px-4 rounded min-h-[44px] flex items-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Specifications
+                {isChangingLanguage ? '...' : t('nav.specifications')}
               </a>
               <a 
                 href="#calculator" 
                 className="text-white/80 hover:text-white transition-colors duration-200 py-3 px-4 rounded min-h-[44px] flex items-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Affordability
+                {isChangingLanguage ? '...' : t('nav.affordability')}
               </a>
               <a 
                 href="#contact" 
                 className="text-white/80 hover:text-white transition-colors duration-200 py-3 px-4 rounded min-h-[44px] flex items-center"
                 onClick={() => setMobileMenuOpen(false)}
               >
-                Contact
+                {isChangingLanguage ? '...' : t('nav.contact')}
               </a>
               <div className="flex items-center justify-end pt-2 border-t border-white/10">
                 <DropdownMenu>

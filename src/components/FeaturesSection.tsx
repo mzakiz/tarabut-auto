@@ -1,42 +1,44 @@
 
 import React, { useEffect, useState } from 'react';
 import { Shield, Fuel, Wind, Zap, Sparkles, Gauge } from 'lucide-react';
-
-const features = [
-  {
-    icon: <Fuel className="h-5 w-5 md:h-6 md:w-6" />,
-    title: "Fuel Efficiency",
-    description: "Class-leading fuel economy of 18.3 km/l for fewer stops at the pump."
-  },
-  {
-    icon: <Shield className="h-5 w-5 md:h-6 md:w-6" />,
-    title: "Safety First",
-    description: "Advanced Toyota Safety Sense™ with pre-collision system and lane departure alert."
-  },
-  {
-    icon: <Wind className="h-5 w-5 md:h-6 md:w-6" />,
-    title: "Dynamic Performance",
-    description: "2.5L Dynamic Force Engine delivering 203 HP for responsive acceleration."
-  },
-  {
-    icon: <Zap className="h-5 w-5 md:h-6 md:w-6" />,
-    title: "Smart Technology",
-    description: "9-inch touchscreen with Apple CarPlay and Android Auto integration."
-  },
-  {
-    icon: <Sparkles className="h-5 w-5 md:h-6 md:w-6" />,
-    title: "Premium Interior",
-    description: "Leather seats with heating and ventilation for year-round comfort."
-  },
-  {
-    icon: <Gauge className="h-5 w-5 md:h-6 md:w-6" />,
-    title: "Smooth Transmission",
-    description: "8-speed automatic transmission for seamless driving experience."
-  }
-];
+import { useTranslation } from '@/hooks/useTranslation';
 
 const FeaturesSection = () => {
   const [visibleFeatures, setVisibleFeatures] = useState<number[]>([]);
+  const { t, isChangingLanguage } = useTranslation();
+
+  const features = [
+    {
+      icon: <Fuel className="h-5 w-5 md:h-6 md:w-6" />,
+      titleKey: "feature.fuel.title",
+      descriptionKey: "feature.fuel.description"
+    },
+    {
+      icon: <Shield className="h-5 w-5 md:h-6 md:w-6" />,
+      titleKey: "feature.safety.title",
+      descriptionKey: "feature.safety.description"
+    },
+    {
+      icon: <Wind className="h-5 w-5 md:h-6 md:w-6" />,
+      titleKey: "feature.performance.title",
+      descriptionKey: "feature.performance.description"
+    },
+    {
+      icon: <Zap className="h-5 w-5 md:h-6 md:w-6" />,
+      titleKey: "feature.tech.title",
+      descriptionKey: "feature.tech.description"
+    },
+    {
+      icon: <Sparkles className="h-5 w-5 md:h-6 md:w-6" />,
+      titleKey: "feature.interior.title",
+      descriptionKey: "feature.interior.description"
+    },
+    {
+      icon: <Gauge className="h-5 w-5 md:h-6 md:w-6" />,
+      titleKey: "feature.transmission.title",
+      descriptionKey: "feature.transmission.description"
+    }
+  ];
 
   useEffect(() => {
     const handleScroll = () => {
@@ -66,9 +68,11 @@ const FeaturesSection = () => {
     <section id="features" className="py-12 md:py-20 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10 md:mb-16">
-          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-ksa-dark mb-3 md:mb-4">Exceptional Features</h2>
+          <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-ksa-dark mb-3 md:mb-4">
+            {isChangingLanguage ? '...' : t('features.title')}
+          </h2>
           <p className="text-base md:text-lg text-gray-600 max-w-3xl mx-auto px-2">
-            The Toyota Camry combines luxury, performance, and efficiency in a package that's perfect for Saudi roads.
+            {isChangingLanguage ? '...' : t('features.subtitle')}
           </p>
         </div>
 
@@ -84,8 +88,12 @@ const FeaturesSection = () => {
               <div className="text-ksa-secondary mb-3 md:mb-4 p-2 md:p-3 bg-ksa-secondary/10 inline-block rounded-full">
                 {feature.icon}
               </div>
-              <h3 className="text-lg md:text-xl font-semibold mb-2 text-ksa-dark">{feature.title}</h3>
-              <p className="text-sm md:text-base text-gray-600">{feature.description}</p>
+              <h3 className="text-lg md:text-xl font-semibold mb-2 text-ksa-dark">
+                {isChangingLanguage ? '...' : t(feature.titleKey)}
+              </h3>
+              <p className="text-sm md:text-base text-gray-600">
+                {isChangingLanguage ? '...' : t(feature.descriptionKey)}
+              </p>
             </div>
           ))}
         </div>
