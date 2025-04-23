@@ -9,30 +9,66 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      user_entry: {
+      dealership_signups: {
         Row: {
-          created_at: string
-          email: string | null
-          id: number
-          Name: string | null
-          phone_number: number | null
-          position: number | null
+          created_at: string | null
+          dealership_name: string
+          email: string
+          id: string
+          name: string
+          phone: string
         }
         Insert: {
-          created_at?: string
-          email?: string | null
-          id?: number
-          Name?: string | null
-          phone_number?: number | null
-          position?: number | null
+          created_at?: string | null
+          dealership_name: string
+          email: string
+          id?: string
+          name: string
+          phone: string
         }
         Update: {
-          created_at?: string
-          email?: string | null
-          id?: number
-          Name?: string | null
-          phone_number?: number | null
-          position?: number | null
+          created_at?: string | null
+          dealership_name?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+        }
+        Relationships: []
+      }
+      waitlist_users: {
+        Row: {
+          created_at: string | null
+          email: string
+          id: string
+          name: string
+          phone: string
+          position: number
+          referral_code: string
+          referrer_code: string | null
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email: string
+          id?: string
+          name: string
+          phone: string
+          position: number
+          referral_code: string
+          referrer_code?: string | null
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          position?: number
+          referral_code?: string
+          referrer_code?: string | null
+          updated_at?: string | null
         }
         Relationships: []
       }
@@ -41,7 +77,14 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_referral_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      get_next_waitlist_position: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
     }
     Enums: {
       [_ in never]: never
