@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Twitter, Google } from 'lucide-react';
+import { ArrowLeft, Twitter, ChromeIcon } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -53,17 +53,14 @@ const WaitlistSignup: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      // First get next position in waitlist
       const { data: positionData, error: positionError } = await supabase.rpc('get_next_waitlist_position');
       
       if (positionError) throw positionError;
       
-      // Generate a referral code
       const { data: referralCodeData, error: referralCodeError } = await supabase.rpc('generate_referral_code');
       
       if (referralCodeError) throw referralCodeError;
       
-      // Insert into waitlist
       const { data, error } = await supabase
         .from('waitlist_users')
         .insert({
@@ -82,7 +79,6 @@ const WaitlistSignup: React.FC = () => {
         description: "You've been added to our waitlist!"
       });
       
-      // Redirect to confirmation page
       navigate('/confirmation');
     } catch (error: any) {
       console.error('Error joining waitlist:', error);
@@ -129,7 +125,7 @@ const WaitlistSignup: React.FC = () => {
                 className="w-full h-12"
                 onClick={() => handleSocialLogin('google')}
               >
-                <Google className="mr-2 h-4 w-4" />
+                <ChromeIcon className="mr-2 h-4 w-4" />
                 Continue with Google
               </Button>
 
