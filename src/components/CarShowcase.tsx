@@ -86,25 +86,25 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
           </div>
         </div>
 
-        {/* Car Metrics - Fixed at bottom */}
-        <div className="w-full bg-black/60 py-8">
+        {/* Car Metrics - Removed black background, reduced font sizes */}
+        <div className="w-full py-6 bg-transparent">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-4 gap-4 text-center text-white">
               <div className="flex flex-col items-center">
-                <div className="text-sm uppercase tracking-wider mb-2">ENGINE</div>
-                <div className="text-2xl md:text-3xl font-semibold">2.5L</div>
+                <div className="text-xs uppercase tracking-wider mb-1">ENGINE</div>
+                <div className="text-xl md:text-2xl font-semibold">2.5L</div>
               </div>
               <div className="flex flex-col items-center">
-                <div className="text-sm uppercase tracking-wider mb-2">MONTHLY</div>
-                <div className="text-2xl md:text-3xl font-semibold">SAR 1,299</div>
+                <div className="text-xs uppercase tracking-wider mb-1">MONTHLY</div>
+                <div className="text-xl md:text-2xl font-semibold">SAR 1,299</div>
               </div>
               <div className="flex flex-col items-center">
-                <div className="text-sm uppercase tracking-wider mb-2">POWER</div>
-                <div className="text-2xl md:text-3xl font-semibold">203 hp</div>
+                <div className="text-xs uppercase tracking-wider mb-1">POWER</div>
+                <div className="text-xl md:text-2xl font-semibold">203 hp</div>
               </div>
               <div className="flex flex-col items-center">
-                <div className="text-sm uppercase tracking-wider mb-2">FUEL</div>
-                <div className="text-2xl md:text-3xl font-semibold">7.2L/100km</div>
+                <div className="text-xs uppercase tracking-wider mb-1">FUEL</div>
+                <div className="text-xl md:text-2xl font-semibold">7.2L/100km</div>
               </div>
             </div>
           </div>
