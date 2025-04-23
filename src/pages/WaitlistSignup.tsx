@@ -32,12 +32,27 @@ const WaitlistSignup: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      const { data, error } = await supabase.rpc('join_waitlist', {
-        user_name: name,
-        user_email: email,
-        user_phone: phone,
-        user_referral_code: referralCode || null
-      });
+      // First get next position in waitlist
+      const { data: positionData, error: positionError } = await supabase.rpc('get_next_waitlist_position');
+      
+      if (positionError) throw positionError;
+      
+      // Generate a referral code
+      const { data: referralCodeData, error: referralCodeError } = await supabase.rpc('generate_referral_code');
+      
+      if (referralCodeError) throw referralCodeError;
+      
+      // Insert into waitlist
+      const { data, error } = await supabase
+        .from('waitlist_users')
+        .insert({
+          name,
+          email,
+          phone,
+          referral_code: referralCodeData,
+          referrer_code: referralCode || null,
+          position: positionData
+        });
       
       if (error) throw error;
       

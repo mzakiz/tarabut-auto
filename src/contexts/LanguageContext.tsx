@@ -1,6 +1,5 @@
 
 import React, { createContext, useContext, useState } from 'react';
-import { useLocation } from 'react-router-dom';
 
 type Language = 'en' | 'ar';
 
@@ -13,10 +12,8 @@ interface LanguageContextType {
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
-  const location = useLocation();
-  const [language, setLanguage] = useState<Language>(
-    location.pathname.startsWith('/ar') ? 'ar' : 'en'
-  );
+  // Initialize with English by default
+  const [language, setLanguage] = useState<Language>('en');
 
   const translations = {
     en: {
@@ -38,6 +35,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   };
 
   const t = (key: string): string => {
+    // @ts-ignore - We know the translations object has these keys
     return translations[language][key] || key;
   };
 
