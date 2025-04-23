@@ -13,10 +13,10 @@ const Navigation: React.FC<NavigationProps> = ({ isMobile = false, onMobileItemC
   const { language } = useLanguage();
   
   const navItems = [
-    { href: '#features', key: 'nav.features' },
-    { href: '#specs', key: 'nav.specifications' },
-    { href: '#calculator', key: 'nav.affordability' },
-    { href: '#contact', key: 'nav.contact' }
+    { href: '#features', label: t('nav.features') },
+    { href: '#specs', label: t('nav.specifications') },
+    { href: '#calculator', label: t('nav.affordability') },
+    { href: '#contact', label: t('nav.contact') }
   ];
 
   const baseClasses = "text-white/80 hover:text-white transition-colors duration-200 text-sm tracking-wide";
@@ -27,12 +27,12 @@ const Navigation: React.FC<NavigationProps> = ({ isMobile = false, onMobileItemC
     <nav className={isMobile ? "flex flex-col space-y-4" : `hidden md:flex items-center ${rtlSpacing}`}>
       {navItems.map((item) => (
         <a
-          key={item.key}
+          key={item.href}
           href={item.href}
           className={`${baseClasses} ${isMobile ? mobileClasses : ''}`}
           onClick={onMobileItemClick}
         >
-          {isChangingLanguage ? '...' : t(item.key)}
+          {isChangingLanguage ? '...' : item.label}
         </a>
       ))}
     </nav>
