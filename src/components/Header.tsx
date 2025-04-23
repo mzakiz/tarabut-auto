@@ -5,10 +5,17 @@ import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import {
+  DropdownMenu,
+  DropdownMenuContent,
+  DropdownMenuItem,
+  DropdownMenuTrigger,
+} from '@/components/ui/dropdown-menu';
 
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
+  const [isLoading, setIsLoading] = useState(false);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const location = useLocation();
@@ -23,12 +30,14 @@ const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  const toggleLanguage = () => {
-    const newLanguage = language === 'en' ? 'ar' : 'en';
-    const currentPath = location.pathname;
+  const changeLanguage = (newLanguage) => {
+    if (language === newLanguage) return;
+    
+    // Show loading state
+    setIsLoading(true);
     
     // Extract the variant (speed, offer, or budget) from the current path
-    const pathParts = currentPath.split('/');
+    const pathParts = location.pathname.split('/');
     const variant = pathParts[pathParts.length - 1];
     
     // Ensure we have a valid variant, default to "speed" if not
@@ -38,14 +47,18 @@ const Header = () => {
     // Construct the new path with the new language
     const newPath = `/${newLanguage}/${safeVariant}`;
     
-    // First update the language in context
+    console.log(`Language change: Navigating from ${location.pathname} to ${newPath}`);
+    
+    // Update language in context
     setLanguage(newLanguage);
     
-    // Then navigate to the new path to prevent flickering
-    if (newPath !== currentPath) {
-      console.log(`Language toggle: Navigating from ${currentPath} to ${newPath}`);
-      navigate(newPath);
-    }
+    // Navigate to new URL
+    navigate(newPath);
+    
+    // Reset loading state after navigation (with a small delay to ensure the loading indicator is visible)
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 500);
   };
 
   return (
@@ -72,16 +85,41 @@ const Header = () => {
           </nav>
 
           <div className="flex items-center">
-            <Button 
-              variant="ghost" 
-              size="icon"
-              className="text-white min-w-[44px] min-h-[44px]"
-              onClick={toggleLanguage}
-              aria-label={language === 'en' ? 'Switch to Arabic' : 'Switch to English'}
-            >
-              <Globe className="w-5 h-5" />
-              <span className="sr-only">{language === 'en' ? 'Switch to Arabic' : 'Switch to English'}</span>
-            </Button>
+            <DropdownMenu>
+              <DropdownMenuTrigger asChild>
+                <Button
+                  variant="ghost"
+                  size="icon"
+                  className="text-white min-w-[44px] min-h-[44px]"
+                  aria-label="Change language"
+                  disabled={isLoading}
+                >
+                  {isLoading ? (
+                    <div className="h-5 w-5 border-2 border-t-transparent border-white rounded-full animate-spin" />
+                  ) : (
+                    <Globe className="h-5 w-5" />
+                  )}
+                </Button>
+              </DropdownMenuTrigger>
+              <DropdownMenuContent align="end" className="bg-tarabut-dark/95 backdrop-blur-lg border-gray-700">
+                <DropdownMenuItem 
+                  className={`flex items-center gap-2 ${language === 'en' ? 'bg-gray-700/50' : 'hover:bg-gray-700/30'} text-white cursor-pointer`}
+                  onClick={() => changeLanguage('en')}
+                >
+                  <span className="text-lg">🇬🇧</span>
+                  <span>English</span>
+                  {language === 'en' && <span className="ml-2 h-2 w-2 rounded-full bg-green-500"></span>}
+                </DropdownMenuItem>
+                <DropdownMenuItem 
+                  className={`flex items-center gap-2 ${language === 'ar' ? 'bg-gray-700/50' : 'hover:bg-gray-700/30'} text-white cursor-pointer`}
+                  onClick={() => changeLanguage('ar')}
+                >
+                  <span className="text-lg">🇸🇦</span>
+                  <span>العربية</span>
+                  {language === 'ar' && <span className="ml-2 h-2 w-2 rounded-full bg-green-500"></span>}
+                </DropdownMenuItem>
+              </DropdownMenuContent>
+            </DropdownMenu>
           </div>
 
           <div className="md:hidden">
@@ -133,15 +171,40 @@ const Header = () => {
                 Contact
               </a>
               <div className="flex items-center justify-end pt-2 border-t border-white/10">
-                <Button 
-                  variant="ghost" 
-                  size="icon"
-                  className="text-white min-w-[44px] min-h-[44px]"
-                  onClick={toggleLanguage}
-                  aria-label={language === 'en' ? 'Switch to Arabic' : 'Switch to English'}
-                >
-                  <Globe className="w-5 h-5" />
-                </Button>
+                <DropdownMenu>
+                  <DropdownMenuTrigger asChild>
+                    <Button 
+                      variant="ghost" 
+                      size="icon"
+                      className="text-white min-w-[44px] min-h-[44px]"
+                      disabled={isLoading}
+                    >
+                      {isLoading ? (
+                        <div className="h-5 w-5 border-2 border-t-transparent border-white rounded-full animate-spin" />
+                      ) : (
+                        <Globe className="h-5 w-5" />
+                      )}
+                    </Button>
+                  </DropdownMenuTrigger>
+                  <DropdownMenuContent align="end" className="bg-tarabut-dark/95 backdrop-blur-lg border-gray-700">
+                    <DropdownMenuItem 
+                      className={`flex items-center gap-2 ${language === 'en' ? 'bg-gray-700/50' : 'hover:bg-gray-700/30'} text-white cursor-pointer`}
+                      onClick={() => changeLanguage('en')}
+                    >
+                      <span className="text-lg">🇬🇧</span>
+                      <span>English</span>
+                      {language === 'en' && <span className="ml-2 h-2 w-2 rounded-full bg-green-500"></span>}
+                    </DropdownMenuItem>
+                    <DropdownMenuItem 
+                      className={`flex items-center gap-2 ${language === 'ar' ? 'bg-gray-700/50' : 'hover:bg-gray-700/30'} text-white cursor-pointer`}
+                      onClick={() => changeLanguage('ar')}
+                    >
+                      <span className="text-lg">🇸🇦</span>
+                      <span>العربية</span>
+                      {language === 'ar' && <span className="ml-2 h-2 w-2 rounded-full bg-green-500"></span>}
+                    </DropdownMenuItem>
+                  </DropdownMenuContent>
+                </DropdownMenu>
               </div>
             </nav>
           </div>
