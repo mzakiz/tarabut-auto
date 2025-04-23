@@ -1,4 +1,3 @@
-
 import React, { createContext, useContext, useState } from 'react';
 
 type Language = 'en' | 'ar';
@@ -18,8 +17,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const translations = {
     en: {
       // Speed (Time Sensitivity) Hypothesis Messages
-      'speed.tagline': "Skip 3-week bank waits and Get priority access to 1-minute approvals",
-      'speed.subtitle': "Experience the Kingdom's best-selling sedan from SAR 1,299/month",
+      'speed.tagline': "Skip 3-week bank waits for financing",
+      'speed.subtitle': "Get exclusive access to 1-minute approvals",
       
       // Offer Optimization Hypothesis Messages
       'offer.tagline': "We negotiate with 12 banks so you don't have to",
@@ -35,8 +34,8 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     },
     ar: {
       // Speed (Time Sensitivity) Hypothesis Messages
-      'speed.tagline': "تخطى فترات انتظار البنوك التي تستغرق 3 أسابيع واحصل على وصول مميز للموافقات في دقيقة واحدة",
-      'speed.subtitle': "جرب أفضل سيدان مبيعاً في المملكة من 1,299 ريال/شهر",
+      'speed.tagline': "تخطى فترات انتظار البنوك لمدة 3 أسابيع للتمويل",
+      'speed.subtitle': "احصل على وصول حصري للموافقات في دقيقة واحدة",
       
       // Offer Optimization Hypothesis Messages
       'offer.tagline': "نحن نتفاوض مع 12 بنكًا حتى لا تضطر إلى ذلك",
