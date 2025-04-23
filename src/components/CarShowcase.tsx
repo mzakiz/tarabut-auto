@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
@@ -14,26 +14,53 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
   const navigate = useNavigate();
   const { t, language } = useLanguage();
   const isRtl = language === 'ar';
+  const [videoLoaded, setVideoLoaded] = useState(false);
   
   const handleSignupClick = () => {
     navigate('/waitlist-signup');
   };
 
+  // Preload the video
+  useEffect(() => {
+    const videoElement = document.createElement('link');
+    videoElement.rel = 'preload';
+    videoElement.href = '/Camry-2.mp4';
+    videoElement.as = 'video';
+    document.head.appendChild(videoElement);
+
+    return () => {
+      document.head.removeChild(videoElement);
+    };
+  }, []);
+
+  const handleVideoLoaded = () => {
+    setVideoLoaded(true);
+  };
+
   return (
     <section className="relative h-screen w-full overflow-hidden">
-      {/* Video Background */}
+      {/* Video Background with fade-in transition */}
       <div className="absolute inset-0 w-full h-full">
-        <video
-          autoPlay
-          loop
-          muted
-          playsInline
-          className="w-full h-full object-cover"
-          poster="/placeholder.svg"
+        <motion.div 
+          initial={{ opacity: 0 }}
+          animate={{ opacity: videoLoaded ? 1 : 0 }}
+          transition={{ duration: 0.5 }}
+          className="w-full h-full"
         >
-          <source src="/Camry-2.mp4" type="video/mp4" />
-        </video>
-        <div className="absolute inset-0 bg-black/40"></div>
+          <video
+            autoPlay
+            loop
+            muted
+            playsInline
+            preload="auto"
+            className="w-full h-full object-cover"
+            poster="/placeholder.svg"
+            onLoadedData={handleVideoLoaded}
+          >
+            <source src="/Camry-2.mp4" type="video/mp4" />
+          </video>
+          <div className="absolute inset-0 bg-black/40"></div>
+        </motion.div>
       </div>
       
       {/* Content Overlay */}
@@ -86,7 +113,7 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
           </div>
         </div>
 
-        {/* Car Metrics - Removed black background, reduced font sizes */}
+        {/* Car Metrics - transparent background, reduced font sizes */}
         <div className="w-full py-6 bg-transparent">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-4 gap-4 text-center text-white">
