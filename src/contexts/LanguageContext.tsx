@@ -1,3 +1,4 @@
+
 import React, { createContext, useContext, useState } from 'react';
 
 type Language = 'en' | 'ar';
@@ -22,7 +23,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       
       // Offer Optimization Hypothesis Messages
       'offer.tagline': "We negotiate with 12 banks so you don't have to",
-      'offer.subtitle': "Experience the Kingdom's best-selling sedan from SAR 1,299/month",
+      'offer.subtitle': "Get exclusive access to the best rate",
       
       // Affordability Positioning Hypothesis Messages
       'budget.tagline': "Drive your dream car without breaking your salary",
@@ -39,7 +40,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       
       // Offer Optimization Hypothesis Messages
       'offer.tagline': "نحن نتفاوض مع 12 بنكًا حتى لا تضطر إلى ذلك",
-      'offer.subtitle': "جرب أفضل سيدان مبيعاً في المملكة من 1,299 ريال/شهر",
+      'offer.subtitle': "احصل على أفضل معدل حصري",
       
       // Affordability Positioning Hypothesis Messages
       'budget.tagline': "قد سيارة أحلامك دون كسر ميزانية راتبك",
