@@ -1,10 +1,10 @@
 
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { useLanguage } from '@/contexts/LanguageContext';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
+import { useTranslation } from '@/hooks/useTranslation';
 
 interface CarShowcaseProps {
   variant?: 'speed' | 'personal' | 'budget';
@@ -12,7 +12,7 @@ interface CarShowcaseProps {
 
 const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
   const navigate = useNavigate();
-  const { t, language } = useLanguage();
+  const { t, language } = useTranslation();
   const isRtl = language === 'ar';
   const [videoLoaded, setVideoLoaded] = useState(false);
   
@@ -141,20 +141,20 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-4 gap-4 text-center text-white">
               <div className="flex flex-col items-center">
-                <div className="text-xs uppercase tracking-wider mb-1">ENGINE</div>
-                <div className="text-lg md:text-xl font-semibold">2.5L</div>
+                <div className="text-xs uppercase tracking-wider mb-1">{t('metrics.engine')}</div>
+                <div className="text-lg md:text-xl font-semibold">{t('metrics.engine.value')}</div>
               </div>
               <div className="flex flex-col items-center">
-                <div className="text-xs uppercase tracking-wider mb-1">MONTHLY</div>
-                <div className="text-lg md:text-xl font-semibold">SAR 1,299</div>
+                <div className="text-xs uppercase tracking-wider mb-1">{t('metrics.monthly')}</div>
+                <div className="text-lg md:text-xl font-semibold">{t('metrics.monthly.value')}</div>
               </div>
               <div className="flex flex-col items-center">
-                <div className="text-xs uppercase tracking-wider mb-1">POWER</div>
-                <div className="text-lg md:text-xl font-semibold">203 hp</div>
+                <div className="text-xs uppercase tracking-wider mb-1">{t('metrics.power')}</div>
+                <div className="text-lg md:text-xl font-semibold">{t('metrics.power.value')}</div>
               </div>
               <div className="flex flex-col items-center">
-                <div className="text-xs uppercase tracking-wider mb-1">FUEL</div>
-                <div className="text-lg md:text-xl font-semibold">7.2L/100km</div>
+                <div className="text-xs uppercase tracking-wider mb-1">{t('metrics.fuel')}</div>
+                <div className="text-lg md:text-xl font-semibold">{t('metrics.fuel.value')}</div>
               </div>
             </div>
           </div>
