@@ -31,11 +31,21 @@ const Header = () => {
     const pathParts = currentPath.split('/');
     const variant = pathParts[pathParts.length - 1];
     
-    // Construct the new path with the new language
-    const newPath = `/${newLanguage}/${variant}`;
+    // Ensure we have a valid variant, default to "speed" if not
+    const validVariants = ['speed', 'offer', 'budget'];
+    const safeVariant = validVariants.includes(variant) ? variant : 'speed';
     
+    // Construct the new path with the new language
+    const newPath = `/${newLanguage}/${safeVariant}`;
+    
+    // First update the language in context
     setLanguage(newLanguage);
-    navigate(newPath);
+    
+    // Then navigate to the new path to prevent flickering
+    if (newPath !== currentPath) {
+      console.log(`Language toggle: Navigating from ${currentPath} to ${newPath}`);
+      navigate(newPath);
+    }
   };
 
   return (
@@ -67,8 +77,10 @@ const Header = () => {
               size="icon"
               className="text-white min-w-[44px] min-h-[44px]"
               onClick={toggleLanguage}
+              aria-label={language === 'en' ? 'Switch to Arabic' : 'Switch to English'}
             >
               <Globe className="w-5 h-5" />
+              <span className="sr-only">{language === 'en' ? 'Switch to Arabic' : 'Switch to English'}</span>
             </Button>
           </div>
 
@@ -126,6 +138,7 @@ const Header = () => {
                   size="icon"
                   className="text-white min-w-[44px] min-h-[44px]"
                   onClick={toggleLanguage}
+                  aria-label={language === 'en' ? 'Switch to Arabic' : 'Switch to English'}
                 >
                   <Globe className="w-5 h-5" />
                 </Button>
