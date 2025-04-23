@@ -15,11 +15,10 @@ import {
 const Header = () => {
   const [scrolled, setScrolled] = useState(false);
   const [mobileMenuOpen, setMobileMenuOpen] = useState(false);
-  const [isLoading, setIsLoading] = useState(false);
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const location = useLocation();
-  const { language } = useLanguage();
+  const { language, setLanguage, isChangingLanguage } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,15 +30,24 @@ const Header = () => {
   }, []);
 
   const changeLanguage = (newLanguage) => {
-    // Don't do anything if we're already on the selected language
-    if (language === newLanguage || isLoading) return;
+    // Don't do anything if we're already on the selected language or changing language
+    if (language === newLanguage || isChangingLanguage) {
+      console.log(`Ignoring language change request - already ${language} or changing`);
+      return;
+    }
     
-    // Show loading state
-    setIsLoading(true);
-    
-    // Extract the variant (speed, offer, or budget) from the current path
+    // Extract the current path - handle both /ar/ and /en/ routes
     const pathParts = location.pathname.split('/');
-    const variant = pathParts[pathParts.length - 1];
+    
+    // Find the part after the language segment
+    let variant = 'speed'; // Default
+    for (let i = 1; i < pathParts.length; i++) {
+      if (pathParts[i] === 'ar' || pathParts[i] === 'en') {
+        // Get the next path segment after the language code
+        variant = pathParts[i + 1] || 'speed';
+        break;
+      }
+    }
     
     // Ensure we have a valid variant, default to "speed" if not
     const validVariants = ['speed', 'offer', 'budget'];
@@ -50,13 +58,13 @@ const Header = () => {
     
     console.log(`Language change: Navigating from ${location.pathname} to ${newPath}`);
     
-    // Navigate to new URL
-    navigate(newPath);
+    // First update the context
+    setLanguage(newLanguage);
     
-    // Reset loading state after navigation (with a small delay to ensure the loading indicator is visible)
+    // Then navigate to new URL
     setTimeout(() => {
-      setIsLoading(false);
-    }, 800);
+      navigate(newPath);
+    }, 50);
   };
 
   return (
@@ -90,19 +98,20 @@ const Header = () => {
                   size="icon"
                   className="text-white min-w-[44px] min-h-[44px]"
                   aria-label="Change language"
-                  disabled={isLoading}
+                  disabled={isChangingLanguage}
                 >
-                  {isLoading ? (
+                  {isChangingLanguage ? (
                     <div className="h-5 w-5 border-2 border-t-transparent border-white rounded-full animate-spin" />
                   ) : (
                     <Globe className="h-5 w-5" />
                   )}
                 </Button>
               </DropdownMenuTrigger>
-              <DropdownMenuContent align="end" className="bg-tarabut-dark/95 backdrop-blur-lg border-gray-700">
+              <DropdownMenuContent align="end" className="bg-tarabut-dark/95 backdrop-blur-lg border-gray-700 z-50 min-w-[150px]">
                 <DropdownMenuItem 
                   className={`flex items-center gap-2 ${language === 'en' ? 'bg-gray-700/50' : 'hover:bg-gray-700/30'} text-white cursor-pointer`}
                   onClick={() => changeLanguage('en')}
+                  disabled={isChangingLanguage || language === 'en'}
                 >
                   <span className="text-lg">🇬🇧</span>
                   <span>English</span>
@@ -111,6 +120,7 @@ const Header = () => {
                 <DropdownMenuItem 
                   className={`flex items-center gap-2 ${language === 'ar' ? 'bg-gray-700/50' : 'hover:bg-gray-700/30'} text-white cursor-pointer`}
                   onClick={() => changeLanguage('ar')}
+                  disabled={isChangingLanguage || language === 'ar'}
                 >
                   <span className="text-lg">🇸🇦</span>
                   <span>العربية</span>
@@ -175,19 +185,20 @@ const Header = () => {
                       variant="ghost" 
                       size="icon"
                       className="text-white min-w-[44px] min-h-[44px]"
-                      disabled={isLoading}
+                      disabled={isChangingLanguage}
                     >
-                      {isLoading ? (
+                      {isChangingLanguage ? (
                         <div className="h-5 w-5 border-2 border-t-transparent border-white rounded-full animate-spin" />
                       ) : (
                         <Globe className="h-5 w-5" />
                       )}
                     </Button>
                   </DropdownMenuTrigger>
-                  <DropdownMenuContent align="end" className="bg-tarabut-dark/95 backdrop-blur-lg border-gray-700">
+                  <DropdownMenuContent align="end" className="bg-tarabut-dark/95 backdrop-blur-lg border-gray-700 z-50 min-w-[150px]">
                     <DropdownMenuItem 
                       className={`flex items-center gap-2 ${language === 'en' ? 'bg-gray-700/50' : 'hover:bg-gray-700/30'} text-white cursor-pointer`}
                       onClick={() => changeLanguage('en')}
+                      disabled={isChangingLanguage || language === 'en'}
                     >
                       <span className="text-lg">🇬🇧</span>
                       <span>English</span>
@@ -196,6 +207,7 @@ const Header = () => {
                     <DropdownMenuItem 
                       className={`flex items-center gap-2 ${language === 'ar' ? 'bg-gray-700/50' : 'hover:bg-gray-700/30'} text-white cursor-pointer`}
                       onClick={() => changeLanguage('ar')}
+                      disabled={isChangingLanguage || language === 'ar'}
                     >
                       <span className="text-lg">🇸🇦</span>
                       <span>العربية</span>

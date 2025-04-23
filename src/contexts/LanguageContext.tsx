@@ -7,28 +7,35 @@ interface LanguageContextType {
   language: Language;
   setLanguage: (lang: Language) => void;
   refreshTranslations: () => void;
+  isChangingLanguage: boolean;
 }
 
 const LanguageContext = createContext<LanguageContextType | undefined>(undefined);
 
 export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   // Initialize with English by default, or use URL path to determine language
-  const [language, setLanguage] = useState<Language>(() => {
+  const [language, setLanguageState] = useState<Language>(() => {
     // Check URL path for language indicator
     const path = window.location.pathname;
     if (path.includes('/ar/')) return 'ar';
     return 'en';
   });
   
-  // Add a ref to track if we're handling a language change to prevent loops
-  const isChangingLanguage = useRef(false);
+  // Track if we're currently handling a language change to prevent loops
+  const [isChangingLanguage, setIsChangingLanguage] = useState(false);
+  
+  // Add a ref to track the last requested language to prevent redundant changes
+  const lastRequestedLanguage = useRef<Language | null>(null);
   
   // Function to force refresh translations
   const refreshTranslations = () => {
+    // Only refresh if we're not already changing language
+    if (isChangingLanguage) return;
+    
     // Create a small state change to force re-renders
     const currentLang = language;
-    setLanguage('en' as Language);
-    setTimeout(() => setLanguage(currentLang), 10);
+    setLanguageState('en' as Language);
+    setTimeout(() => setLanguageState(currentLang), 10);
     
     console.log('[LanguageContext] Refreshing translations');
   };
@@ -37,41 +44,53 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   useEffect(() => {
     const handleUrlChange = () => {
       // Skip if we're in the middle of a language change operation
-      if (isChangingLanguage.current) return;
+      if (isChangingLanguage) return;
       
       const path = window.location.pathname;
       if (path.includes('/ar/') && language !== 'ar') {
-        setLanguage('ar');
+        setLanguageState('ar');
+        console.log('[LanguageContext] URL changed, setting language to ar');
       } else if (!path.includes('/ar/') && language !== 'en') {
-        setLanguage('en');
+        setLanguageState('en');
+        console.log('[LanguageContext] URL changed, setting language to en');
       }
     };
     
     window.addEventListener('popstate', handleUrlChange);
     return () => window.removeEventListener('popstate', handleUrlChange);
-  }, [language]);
+  }, [language, isChangingLanguage]);
   
   // Update language context when setLanguage is called
-  const handleSetLanguage = (newLanguage: Language) => {
-    if (language === newLanguage) return; // Don't do anything if language is the same
+  const setLanguage = (newLanguage: Language) => {
+    // Don't do anything if language is the same or already changing
+    if (language === newLanguage || isChangingLanguage) {
+      console.log(`[LanguageContext] Ignoring language change request to ${newLanguage} - already ${language} or changing`);
+      return;
+    }
+    
+    // Save the requested language to prevent redundant changes
+    lastRequestedLanguage.current = newLanguage;
     
     // Set the flag to indicate we're handling a language change
-    isChangingLanguage.current = true;
+    setIsChangingLanguage(true);
+    console.log(`[LanguageContext] Starting language change to ${newLanguage}`);
     
     // Update the language state
-    setLanguage(newLanguage);
+    setLanguageState(newLanguage);
     
     // Reset the flag after a delay to allow for navigation to complete
     setTimeout(() => {
-      isChangingLanguage.current = false;
-    }, 1000);
+      setIsChangingLanguage(false);
+      console.log('[LanguageContext] Language change completed');
+    }, 1200);
   };
 
   return (
     <LanguageContext.Provider value={{ 
       language, 
-      setLanguage: handleSetLanguage, 
-      refreshTranslations 
+      setLanguage, 
+      refreshTranslations,
+      isChangingLanguage 
     }}>
       {children}
     </LanguageContext.Provider>

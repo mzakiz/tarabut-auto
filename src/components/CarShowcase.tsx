@@ -13,8 +13,7 @@ interface CarShowcaseProps {
 
 const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
   const navigate = useNavigate();
-  const { t, language } = useTranslation();
-  const { refreshTranslations } = useLanguage();
+  const { t, language, isChangingLanguage } = useTranslation();
   const isRtl = language === 'ar';
   const [videoLoaded, setVideoLoaded] = useState(false);
   
@@ -63,21 +62,6 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
     };
   }, []);
 
-  // Force refresh translations on mount
-  useEffect(() => {
-    // Short timeout to ensure component is fully mounted
-    const timer = setTimeout(() => {
-      refreshTranslations();
-    }, 100);
-    return () => clearTimeout(timer);
-  }, [refreshTranslations]);
-
-  // For debugging translation issues
-  console.log('Current variant:', variant);
-  console.log('Translation key being used:', getTaglineKey());
-  console.log('Translation value:', t(getTaglineKey()));
-  console.log('Current language:', language);
-
   return (
     <section className="relative h-screen w-full overflow-hidden bg-black">
       {/* Video Background with fade-in transition */}
@@ -114,7 +98,7 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
               transition={{ duration: 0.8 }}
             >
               <h1 className="text-3xl md:text-4xl lg:text-5xl font-founder font-medium tracking-wide leading-tight mb-4 text-white">
-                {t(getTaglineKey())}
+                {isChangingLanguage ? '...' : t(getTaglineKey())}
               </h1>
               
               <motion.div
@@ -123,7 +107,7 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
                 transition={{ delay: 0.6, duration: 0.8 }}
               >
                 <h3 className="text-lg md:text-xl lg:text-2xl font-founder tracking-wide text-tarabut-teal leading-tight mb-12">
-                  {t(getSubtitleKey())}
+                  {isChangingLanguage ? '...' : t(getSubtitleKey())}
                 </h3>
               </motion.div>
               
@@ -137,15 +121,17 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
                   <Button 
                     className="bg-tarabut-teal hover:bg-tarabut-teal/90 text-black font-semibold px-6 py-4 rounded-lg text-base"
                     onClick={handleSignupClick}
+                    disabled={isChangingLanguage}
                   >
-                    {t('waitlist.join')}
+                    {isChangingLanguage ? '...' : t('waitlist.join')}
                   </Button>
                   
                   <Link 
                     to="/dealership-signup" 
                     className="inline-flex items-center justify-center text-white hover:text-tarabut-teal transition-colors px-4 py-2 text-base"
+                    tabIndex={isChangingLanguage ? -1 : 0}
                   >
-                    {t('dealership.cta')}
+                    {isChangingLanguage ? '...' : t('dealership.cta')}
                   </Link>
                 </div>
               </motion.div>
@@ -158,20 +144,20 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-4 gap-4 text-center text-white">
               <div className="flex flex-col items-center">
-                <div className="text-xs uppercase tracking-wider mb-1">{t('metrics.engine')}</div>
-                <div className="text-lg md:text-xl font-semibold">{t('metrics.engine.value')}</div>
+                <div className="text-xs uppercase tracking-wider mb-1">{isChangingLanguage ? '...' : t('metrics.engine')}</div>
+                <div className="text-lg md:text-xl font-semibold">{isChangingLanguage ? '...' : t('metrics.engine.value')}</div>
               </div>
               <div className="flex flex-col items-center">
-                <div className="text-xs uppercase tracking-wider mb-1">{t('metrics.monthly')}</div>
-                <div className="text-lg md:text-xl font-semibold">{t('metrics.monthly.value')}</div>
+                <div className="text-xs uppercase tracking-wider mb-1">{isChangingLanguage ? '...' : t('metrics.monthly')}</div>
+                <div className="text-lg md:text-xl font-semibold">{isChangingLanguage ? '...' : t('metrics.monthly.value')}</div>
               </div>
               <div className="flex flex-col items-center">
-                <div className="text-xs uppercase tracking-wider mb-1">{t('metrics.power')}</div>
-                <div className="text-lg md:text-xl font-semibold">{t('metrics.power.value')}</div>
+                <div className="text-xs uppercase tracking-wider mb-1">{isChangingLanguage ? '...' : t('metrics.power')}</div>
+                <div className="text-lg md:text-xl font-semibold">{isChangingLanguage ? '...' : t('metrics.power.value')}</div>
               </div>
               <div className="flex flex-col items-center">
-                <div className="text-xs uppercase tracking-wider mb-1">{t('metrics.fuel')}</div>
-                <div className="text-lg md:text-xl font-semibold">{t('metrics.fuel.value')}</div>
+                <div className="text-xs uppercase tracking-wider mb-1">{isChangingLanguage ? '...' : t('metrics.fuel')}</div>
+                <div className="text-lg md:text-xl font-semibold">{isChangingLanguage ? '...' : t('metrics.fuel.value')}</div>
               </div>
             </div>
           </div>
