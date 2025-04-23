@@ -20,6 +20,19 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
     navigate('/waitlist-signup');
   };
 
+  // Use the correct translation keys based on variant
+  const getTaglineKey = () => {
+    if (variant === 'personal') return 'offer.tagline';
+    if (variant === 'budget') return 'budget.tagline';
+    return 'speed.tagline'; // default to speed
+  };
+  
+  const getSubtitleKey = () => {
+    if (variant === 'personal') return 'offer.subtitle';
+    if (variant === 'budget') return 'budget.subtitle';
+    return 'speed.subtitle'; // default to speed
+  };
+
   // Preload the video as early as possible
   useEffect(() => {
     // Create a video element to start loading the video in the background
@@ -84,7 +97,7 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
               transition={{ duration: 0.8 }}
             >
               <h1 className="text-4xl md:text-5xl lg:text-7xl font-founder font-medium tracking-wide leading-tight mb-4 text-white">
-                {t('speed.tagline')}
+                {t(getTaglineKey())}
               </h1>
               
               <motion.div
@@ -93,7 +106,7 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
                 transition={{ delay: 0.6, duration: 0.8 }}
               >
                 <h3 className="text-xl md:text-2xl lg:text-3xl font-founder tracking-wide text-tarabut-teal leading-tight mb-12">
-                  {t('speed.subtitle')}
+                  {t(getSubtitleKey())}
                 </h3>
               </motion.div>
               
