@@ -23,13 +23,13 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
   const getPrimaryTagline = () => {
     switch(variant) {
       case 'speed':
-        return "Skip 3-week bank waits - Get priority access to 1-minute approvals";
+        return t('speed.tagline');
       case 'personal':
-        return "We negotiate with 12 banks so you don't have to";
+        return t('offer.tagline');
       case 'budget':
-        return "Drive your dream car without breaking your salary";
+        return t('budget.tagline');
       default:
-        return "Skip 3-week bank waits - Get priority access to 1-minute approvals";
+        return t('speed.tagline');
     }
   };
   
@@ -56,28 +56,18 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h1 className="text-4xl md:text-6xl lg:text-7xl font-founder tracking-wide leading-tight mb-4">
-              Advanced. Reliable.
-            </h1>
-            
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.3, duration: 0.8 }}
-            >
-              <h1 className="text-4xl md:text-6xl lg:text-7xl font-founder tracking-wide leading-tight mb-4">
-                Japanese.
-              </h1>
-            </motion.div>
+            <h2 className="text-4xl md:text-6xl lg:text-7xl font-founder tracking-wide leading-tight mb-6 text-white">
+              {t('speed.tagline')}
+            </h2>
             
             <motion.div
               initial={{ opacity: 0 }}
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6, duration: 0.8 }}
             >
-              <h2 className="text-4xl md:text-6xl lg:text-7xl font-founder tracking-wide text-tarabut-teal leading-tight mb-6">
-                Toyota Camry.
-              </h2>
+              <h3 className="text-2xl md:text-3xl lg:text-4xl font-founder tracking-wide text-tarabut-teal leading-tight mb-6">
+                {t('speed.subtitle')}
+              </h3>
             </motion.div>
             
             <motion.div
@@ -86,27 +76,19 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
               transition={{ delay: 0.8, duration: 0.8 }}
               className="space-y-4"
             >
-              <h3 className="text-xl md:text-3xl font-medium mb-4">
-                {getPrimaryTagline()}
-              </h3>
-              
-              <p className="text-lg md:text-xl mb-8">
-                Experience the Kingdom's best-selling sedan from SAR 1,299/month
-              </p>
-              
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button 
                   className="bg-tarabut-teal hover:bg-tarabut-teal/90 text-black font-semibold px-8 py-6 rounded-lg text-lg"
                   onClick={handleSignupClick}
                 >
-                  Get on the waitlist
+                  {t('waitlist.join')}
                 </Button>
                 
                 <Link 
                   to="/dealership-signup" 
                   className="inline-flex items-center justify-center text-white hover:text-tarabut-teal transition-colors mt-4 sm:mt-0"
                 >
-                  Are you a dealership?
+                  {t('dealership.cta')}
                 </Link>
               </div>
             </motion.div>

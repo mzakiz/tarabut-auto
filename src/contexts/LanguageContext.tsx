@@ -18,7 +18,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
   const translations = {
     en: {
       // Speed (Time Sensitivity) Hypothesis Messages
-      'speed.tagline': "Skip 3-week bank waits - Get priority access to 1-minute approvals",
+      'speed.tagline': "Skip 3-week bank waits and Get priority access to 1-minute approvals",
       'speed.subtitle': "Experience the Kingdom's best-selling sedan from SAR 1,299/month",
       
       // Offer Optimization Hypothesis Messages
@@ -35,7 +35,7 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     },
     ar: {
       // Speed (Time Sensitivity) Hypothesis Messages
-      'speed.tagline': "تخطى فترات انتظار البنوك التي تستغرق 3 أسابيع - احصل على وصول مميز للموافقات في دقيقة واحدة",
+      'speed.tagline': "تخطى فترات انتظار البنوك التي تستغرق 3 أسابيع واحصل على وصول مميز للموافقات في دقيقة واحدة",
       'speed.subtitle': "جرب أفضل سيدان مبيعاً في المملكة من 1,299 ريال/شهر",
       
       // Offer Optimization Hypothesis Messages
