@@ -4,7 +4,7 @@ import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Head } from '@/components/Head';
-import { Footer } from '@/components/Footer';
+import Footer from '@/components/Footer';  // Changed from named to default import
 import { Card, CardContent } from '@/components/ui/card';
 
 const LegacyJourney: React.FC = () => {
