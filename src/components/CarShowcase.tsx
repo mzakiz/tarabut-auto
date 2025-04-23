@@ -96,7 +96,7 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <h1 className="text-4xl md:text-5xl lg:text-7xl font-founder font-medium tracking-wide leading-tight mb-4 text-white">
+              <h1 className="text-3xl md:text-4xl lg:text-5xl font-founder font-medium tracking-wide leading-tight mb-4 text-white">
                 {t(getTaglineKey())}
               </h1>
               
@@ -105,7 +105,7 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
                 animate={{ opacity: 1 }}
                 transition={{ delay: 0.6, duration: 0.8 }}
               >
-                <h3 className="text-xl md:text-2xl lg:text-3xl font-founder tracking-wide text-tarabut-teal leading-tight mb-12">
+                <h3 className="text-lg md:text-xl lg:text-2xl font-founder tracking-wide text-tarabut-teal leading-tight mb-12">
                   {t(getSubtitleKey())}
                 </h3>
               </motion.div>
@@ -118,7 +118,7 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
               >
                 <div className="flex flex-col sm:flex-row gap-6 justify-center">
                   <Button 
-                    className="bg-tarabut-teal hover:bg-tarabut-teal/90 text-black font-semibold px-8 py-6 rounded-lg text-lg"
+                    className="bg-tarabut-teal hover:bg-tarabut-teal/90 text-black font-semibold px-6 py-4 rounded-lg text-base"
                     onClick={handleSignupClick}
                   >
                     {t('waitlist.join')}
@@ -126,7 +126,7 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
                   
                   <Link 
                     to="/dealership-signup" 
-                    className="inline-flex items-center justify-center text-white hover:text-tarabut-teal transition-colors px-6 py-3 text-lg"
+                    className="inline-flex items-center justify-center text-white hover:text-tarabut-teal transition-colors px-4 py-2 text-base"
                   >
                     {t('dealership.cta')}
                   </Link>
@@ -136,25 +136,25 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
           </div>
         </div>
 
-        {/* Car Metrics - transparent background, reduced font sizes */}
+        {/* Car Metrics - reduced font sizes */}
         <div className="w-full py-6 bg-transparent">
           <div className="container mx-auto px-4">
             <div className="grid grid-cols-4 gap-4 text-center text-white">
               <div className="flex flex-col items-center">
                 <div className="text-xs uppercase tracking-wider mb-1">ENGINE</div>
-                <div className="text-xl md:text-2xl font-semibold">2.5L</div>
+                <div className="text-lg md:text-xl font-semibold">2.5L</div>
               </div>
               <div className="flex flex-col items-center">
                 <div className="text-xs uppercase tracking-wider mb-1">MONTHLY</div>
-                <div className="text-xl md:text-2xl font-semibold">SAR 1,299</div>
+                <div className="text-lg md:text-xl font-semibold">SAR 1,299</div>
               </div>
               <div className="flex flex-col items-center">
                 <div className="text-xs uppercase tracking-wider mb-1">POWER</div>
-                <div className="text-xl md:text-2xl font-semibold">203 hp</div>
+                <div className="text-lg md:text-xl font-semibold">203 hp</div>
               </div>
               <div className="flex flex-col items-center">
                 <div className="text-xs uppercase tracking-wider mb-1">FUEL</div>
-                <div className="text-xl md:text-2xl font-semibold">7.2L/100km</div>
+                <div className="text-lg md:text-xl font-semibold">7.2L/100km</div>
               </div>
             </div>
           </div>
