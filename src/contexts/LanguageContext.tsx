@@ -1,5 +1,5 @@
 
-import React, { createContext, useContext, useState, useEffect } from 'react';
+import React, { createContext, useContext, useState, useEffect, useRef } from 'react';
 
 type Language = 'en' | 'ar';
 
@@ -20,6 +20,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     return 'en';
   });
   
+  // Add a ref to track if we're handling a language change to prevent loops
+  const isChangingLanguage = useRef(false);
+  
   // Function to force refresh translations
   const refreshTranslations = () => {
     // Create a small state change to force re-renders
@@ -30,9 +33,12 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     console.log('[LanguageContext] Refreshing translations');
   };
   
-  // Listen for URL changes to update language automatically
+  // Listen for URL changes to update language automatically, but only if not actively changing language
   useEffect(() => {
     const handleUrlChange = () => {
+      // Skip if we're in the middle of a language change operation
+      if (isChangingLanguage.current) return;
+      
       const path = window.location.pathname;
       if (path.includes('/ar/') && language !== 'ar') {
         setLanguage('ar');
@@ -44,9 +50,29 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     window.addEventListener('popstate', handleUrlChange);
     return () => window.removeEventListener('popstate', handleUrlChange);
   }, [language]);
+  
+  // Update language context when setLanguage is called
+  const handleSetLanguage = (newLanguage: Language) => {
+    if (language === newLanguage) return; // Don't do anything if language is the same
+    
+    // Set the flag to indicate we're handling a language change
+    isChangingLanguage.current = true;
+    
+    // Update the language state
+    setLanguage(newLanguage);
+    
+    // Reset the flag after a delay to allow for navigation to complete
+    setTimeout(() => {
+      isChangingLanguage.current = false;
+    }, 1000);
+  };
 
   return (
-    <LanguageContext.Provider value={{ language, setLanguage, refreshTranslations }}>
+    <LanguageContext.Provider value={{ 
+      language, 
+      setLanguage: handleSetLanguage, 
+      refreshTranslations 
+    }}>
       {children}
     </LanguageContext.Provider>
   );

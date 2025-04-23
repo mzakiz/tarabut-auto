@@ -19,7 +19,7 @@ const Header = () => {
   const isMobile = useIsMobile();
   const navigate = useNavigate();
   const location = useLocation();
-  const { language, setLanguage } = useLanguage();
+  const { language } = useLanguage();
 
   useEffect(() => {
     const handleScroll = () => {
@@ -31,7 +31,8 @@ const Header = () => {
   }, []);
 
   const changeLanguage = (newLanguage) => {
-    if (language === newLanguage) return;
+    // Don't do anything if we're already on the selected language
+    if (language === newLanguage || isLoading) return;
     
     // Show loading state
     setIsLoading(true);
@@ -49,16 +50,13 @@ const Header = () => {
     
     console.log(`Language change: Navigating from ${location.pathname} to ${newPath}`);
     
-    // Update language in context
-    setLanguage(newLanguage);
-    
     // Navigate to new URL
     navigate(newPath);
     
     // Reset loading state after navigation (with a small delay to ensure the loading indicator is visible)
     setTimeout(() => {
       setIsLoading(false);
-    }, 500);
+    }, 800);
   };
 
   return (
