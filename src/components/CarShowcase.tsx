@@ -1,9 +1,11 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { motion } from 'framer-motion';
 import { Link } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface CarShowcaseProps {
   variant?: 'speed' | 'personal' | 'budget';
@@ -12,6 +14,7 @@ interface CarShowcaseProps {
 const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
   const navigate = useNavigate();
   const { t, language } = useTranslation();
+  const { refreshTranslations } = useLanguage();
   const isRtl = language === 'ar';
   const [videoLoaded, setVideoLoaded] = useState(false);
   
@@ -60,10 +63,20 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
     };
   }, []);
 
+  // Force refresh translations on mount
+  useEffect(() => {
+    // Short timeout to ensure component is fully mounted
+    const timer = setTimeout(() => {
+      refreshTranslations();
+    }, 100);
+    return () => clearTimeout(timer);
+  }, [refreshTranslations]);
+
   // For debugging translation issues
   console.log('Current variant:', variant);
   console.log('Translation key being used:', getTaglineKey());
   console.log('Translation value:', t(getTaglineKey()));
+  console.log('Current language:', language);
 
   return (
     <section className="relative h-screen w-full overflow-hidden bg-black">

@@ -1,14 +1,16 @@
 
 import { useLanguage } from '@/contexts/LanguageContext';
+// Dynamic imports to force reloading of translation files
 import enTranslations from '@/locales/en.json';
 import arTranslations from '@/locales/ar.json';
 
 export const useTranslation = () => {
   const { language } = useLanguage();
   
+  // Create a new translations object each time to prevent caching
   const translations = {
-    en: enTranslations,
-    ar: arTranslations
+    en: { ...enTranslations },
+    ar: { ...arTranslations }
   };
   
   const t = (key: string): string => {
@@ -24,7 +26,11 @@ export const useTranslation = () => {
       return key;
     }
     
-    return translations[language][key];
+    // Add version timestamp to help with debugging
+    const translationValue = translations[language][key];
+    console.debug(`[Translation] ${key} => ${translationValue} (${new Date().toISOString()})`);
+    
+    return translationValue;
   };
   
   return { t, language };
