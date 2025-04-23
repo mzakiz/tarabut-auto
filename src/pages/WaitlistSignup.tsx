@@ -1,6 +1,7 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Twitter, ChromeIcon } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
@@ -16,27 +17,6 @@ const WaitlistSignup: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  const handleSocialLogin = async (provider: 'twitter' | 'google') => {
-    try {
-      const { data, error } = await supabase.auth.signInWithOAuth({
-        provider,
-        options: {
-          redirectTo: `${window.location.origin}/waitlist-signup`
-        }
-      });
-
-      if (error) throw error;
-      
-    } catch (error: any) {
-      console.error('Error with social login:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to sign in. Please try again.",
-        variant: "destructive"
-      });
-    }
-  };
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,35 +98,6 @@ const WaitlistSignup: React.FC = () => {
             <p className="text-center text-gray-600 mb-8">
               Be the first to access our Shariah-compliant auto financing
             </p>
-
-            <div className="space-y-4 mb-8">
-              <Button
-                variant="outline"
-                className="w-full h-12"
-                onClick={() => handleSocialLogin('google')}
-              >
-                <ChromeIcon className="mr-2 h-4 w-4" />
-                Continue with Google
-              </Button>
-
-              <Button
-                variant="outline"
-                className="w-full h-12"
-                onClick={() => handleSocialLogin('twitter')}
-              >
-                <Twitter className="mr-2 h-4 w-4" />
-                Continue with Twitter
-              </Button>
-            </div>
-
-            <div className="relative mb-8">
-              <div className="absolute inset-0 flex items-center">
-                <Separator />
-              </div>
-              <div className="relative flex justify-center text-sm">
-                <span className="px-2 bg-white text-gray-500">Or continue with email</span>
-              </div>
-            </div>
 
             <form onSubmit={handleSubmit}>
               <div className="space-y-4">
