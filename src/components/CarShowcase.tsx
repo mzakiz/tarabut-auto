@@ -20,31 +20,42 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
     navigate('/waitlist-signup');
   };
 
-  // Preload the video
+  // Preload the video as early as possible
   useEffect(() => {
-    const videoElement = document.createElement('link');
-    videoElement.rel = 'preload';
-    videoElement.href = '/Camry-2.mp4';
-    videoElement.as = 'video';
-    document.head.appendChild(videoElement);
-
+    // Create a video element to start loading the video in the background
+    const videoPreload = document.createElement('video');
+    videoPreload.src = '/Camry-2.mp4';
+    videoPreload.preload = 'auto';
+    videoPreload.muted = true;
+    videoPreload.style.display = 'none';
+    document.body.appendChild(videoPreload);
+    
+    // Start loading the video
+    videoPreload.load();
+    
+    // Remove the element after it's loaded
+    videoPreload.onloadeddata = () => {
+      setVideoLoaded(true);
+      setTimeout(() => {
+        document.body.removeChild(videoPreload);
+      }, 1000);
+    };
+    
     return () => {
-      document.head.removeChild(videoElement);
+      if (document.body.contains(videoPreload)) {
+        document.body.removeChild(videoPreload);
+      }
     };
   }, []);
 
-  const handleVideoLoaded = () => {
-    setVideoLoaded(true);
-  };
-
   return (
-    <section className="relative h-screen w-full overflow-hidden">
+    <section className="relative h-screen w-full overflow-hidden bg-black">
       {/* Video Background with fade-in transition */}
-      <div className="absolute inset-0 w-full h-full">
+      <div className="absolute inset-0 w-full h-full bg-black">
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: videoLoaded ? 1 : 0 }}
-          transition={{ duration: 0.5 }}
+          transition={{ duration: 0.8 }}
           className="w-full h-full"
         >
           <video
@@ -54,8 +65,7 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
             playsInline
             preload="auto"
             className="w-full h-full object-cover"
-            poster="/placeholder.svg"
-            onLoadedData={handleVideoLoaded}
+            style={{ opacity: videoLoaded ? 1 : 0 }}
           >
             <source src="/Camry-2.mp4" type="video/mp4" />
           </video>
