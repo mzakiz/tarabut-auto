@@ -46,7 +46,7 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
               animate={{ opacity: 1, y: 0 }}
               transition={{ duration: 0.8 }}
             >
-              <h1 className="text-4xl md:text-5xl lg:text-7xl font-founder font-bold tracking-wide leading-tight mb-4 text-white">
+              <h1 className="text-4xl md:text-5xl lg:text-7xl font-founder font-medium tracking-wide leading-tight mb-4 text-white">
                 {t('speed.tagline')}
               </h1>
               
