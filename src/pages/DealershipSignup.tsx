@@ -7,38 +7,44 @@ import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
+import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
+import { zodResolver } from '@hookform/resolvers/zod';
+import { useForm } from 'react-hook-form';
+import * as z from 'zod';
+
+const formSchema = z.object({
+  name: z.string().min(2, { message: "Name must be at least 2 characters" }),
+  email: z.string().email({ message: "Please enter a valid email address" }),
+  phone: z.string().min(9, { message: "Please enter a valid phone number" }),
+  dealershipName: z.string().min(2, { message: "Dealership name must be at least 2 characters" })
+});
 
 const DealershipSignup: React.FC = () => {
-  const [name, setName] = useState('');
-  const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
-  const [dealershipName, setDealershipName] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const { toast } = useToast();
-
-  const handleSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    if (!name || !email || !phone || !dealershipName) {
-      toast({
-        title: "Error",
-        description: "Please fill in all required fields",
-        variant: "destructive"
-      });
-      return;
+  
+  const form = useForm<z.infer<typeof formSchema>>({
+    resolver: zodResolver(formSchema),
+    defaultValues: {
+      name: '',
+      email: '',
+      phone: '',
+      dealershipName: ''
     }
-    
+  });
+
+  const onSubmit = async (values: z.infer<typeof formSchema>) => {
     setIsSubmitting(true);
     
     try {
       const { error } = await supabase
         .from('dealership_signups')
         .insert({
-          name,
-          email,
-          phone,
-          dealership_name: dealershipName
+          name: values.name,
+          email: values.email,
+          phone: values.phone,
+          dealership_name: values.dealershipName
         });
       
       if (error) throw error;
@@ -89,64 +95,80 @@ const DealershipSignup: React.FC = () => {
               Register your dealership with Tarabut Auto
             </p>
 
-            <form onSubmit={handleSubmit}>
-              <div className="space-y-4">
-                <div>
-                  <Label htmlFor="name" className="text-sm font-medium">
-                    Contact Person <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    className="w-full h-12 mt-1"
-                    placeholder="Your full name"
-                    required
-                  />
-                </div>
+            <Form {...form}>
+              <form onSubmit={form.handleSubmit(onSubmit)} className="space-y-4">
+                <FormField
+                  control={form.control}
+                  name="name"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Contact Person <span className="text-red-500">*</span></FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Your full name" 
+                          className="h-12" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 
-                <div>
-                  <Label htmlFor="dealershipName" className="text-sm font-medium">
-                    Dealership Name <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="dealershipName"
-                    value={dealershipName}
-                    onChange={(e) => setDealershipName(e.target.value)}
-                    className="w-full h-12 mt-1"
-                    placeholder="Your dealership name"
-                    required
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="dealershipName"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Dealership Name <span className="text-red-500">*</span></FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Your dealership name" 
+                          className="h-12" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 
-                <div>
-                  <Label htmlFor="email" className="text-sm font-medium">
-                    Email <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    className="w-full h-12 mt-1"
-                    placeholder="Business email address"
-                    required
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="email"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Email <span className="text-red-500">*</span></FormLabel>
+                      <FormControl>
+                        <Input 
+                          type="email" 
+                          placeholder="Business email address" 
+                          className="h-12" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 
-                <div>
-                  <Label htmlFor="phone" className="text-sm font-medium">
-                    Phone Number <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="phone"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    className="w-full h-12 mt-1"
-                    placeholder="Business phone number"
-                    required
-                  />
-                </div>
+                <FormField
+                  control={form.control}
+                  name="phone"
+                  render={({ field }) => (
+                    <FormItem>
+                      <FormLabel>Phone Number <span className="text-red-500">*</span></FormLabel>
+                      <FormControl>
+                        <Input 
+                          placeholder="Business phone number" 
+                          className="h-12" 
+                          {...field} 
+                        />
+                      </FormControl>
+                      <FormMessage />
+                    </FormItem>
+                  )}
+                />
                 
                 <Button 
                   type="submit" 
@@ -155,8 +177,8 @@ const DealershipSignup: React.FC = () => {
                 >
                   {isSubmitting ? "Submitting..." : "Register Dealership"}
                 </Button>
-              </div>
-            </form>
+              </form>
+            </Form>
           </div>
         </div>
       </div>

@@ -19,8 +19,8 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
     navigate('/waitlist-signup');
   };
 
-  // Taglines based on the variant/hypothesis
-  const getTagline = () => {
+  // Get the primary tagline based on the variant/hypothesis
+  const getPrimaryTagline = () => {
     switch(variant) {
       case 'speed':
         return "Skip 3-week bank waits - Get priority access to 1-minute approvals";
@@ -86,11 +86,11 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
               transition={{ delay: 0.8, duration: 0.8 }}
               className="space-y-4"
             >
-              <p className="text-xl md:text-2xl mb-8">
-                {getTagline()}
-              </p>
+              <h3 className="text-xl md:text-3xl font-medium mb-4">
+                {getPrimaryTagline()}
+              </h3>
               
-              <p className="text-xl md:text-2xl mb-8">
+              <p className="text-lg md:text-xl mb-8">
                 Experience the Kingdom's best-selling sedan from SAR 1,299/month
               </p>
               
@@ -104,7 +104,7 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
                 
                 <Link 
                   to="/dealership-signup" 
-                  className="text-sm text-white hover:text-tarabut-teal transition-colors mt-4 sm:mt-0"
+                  className="inline-flex items-center justify-center text-white hover:text-tarabut-teal transition-colors mt-4 sm:mt-0"
                 >
                   Are you a dealership?
                 </Link>

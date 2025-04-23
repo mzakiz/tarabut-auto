@@ -1,6 +1,6 @@
 
 import React from 'react';
-import { FacebookIcon, InstagramIcon, TwitterIcon } from 'lucide-react';
+import { Facebook, Instagram, Twitter } from 'lucide-react';
 import { Link } from 'react-router-dom';
 
 const Footer = () => {
@@ -17,23 +17,23 @@ const Footer = () => {
           
           <div className="flex flex-col items-center md:items-end">
             <div className="flex space-x-4 mb-4">
-              <a href="#" className="text-gray-400 hover:text-ksa-secondary transition-colors">
-                <FacebookIcon className="h-5 w-5" />
+              <a href="#" className="text-gray-400 hover:text-tarabut-teal transition-colors">
+                <Facebook className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-ksa-secondary transition-colors">
-                <InstagramIcon className="h-5 w-5" />
+              <a href="#" className="text-gray-400 hover:text-tarabut-teal transition-colors">
+                <Instagram className="h-5 w-5" />
               </a>
-              <a href="#" className="text-gray-400 hover:text-ksa-secondary transition-colors">
-                <TwitterIcon className="h-5 w-5" />
+              <a href="#" className="text-gray-400 hover:text-tarabut-teal transition-colors">
+                <Twitter className="h-5 w-5" />
               </a>
             </div>
             
             <ul className="flex space-x-6 text-sm">
               <li>
-                <Link to="/" className="text-gray-400 hover:text-ksa-secondary transition-colors">Home</Link>
+                <Link to="/" className="text-gray-400 hover:text-tarabut-teal transition-colors">Home</Link>
               </li>
               <li>
-                <a href="https://tarabut.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-ksa-secondary transition-colors">About Tarabut</a>
+                <a href="https://tarabut.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-tarabut-teal transition-colors">About Tarabut</a>
               </li>
             </ul>
           </div>
