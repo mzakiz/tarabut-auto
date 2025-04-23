@@ -1,4 +1,3 @@
-
 import type { Config } from "tailwindcss";
 
 export default {
@@ -72,7 +71,7 @@ export default {
 			fontFamily: {
 				sans: ['Inter', 'sans-serif'],
 				serif: ['Georgia', 'serif'],
-				founder: ['Space Grotesk', 'system-ui', 'sans-serif'],
+				founder: ['Founders Grotesk', 'system-ui', 'sans-serif'],
 			},
 			letterSpacing: {
 				wider: '0.05em',
