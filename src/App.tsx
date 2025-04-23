@@ -28,14 +28,14 @@ const App = () => (
             <Sonner />
             <Routes>
               {/* A/B Test Routes - English */}
-              <Route path="/en/speed/affordability_checks" element={<Index variant="speed" />} />
-              <Route path="/en/personal/affordability_checks" element={<Index variant="personal" />} />
-              <Route path="/en/budget/affordability_checks" element={<Index variant="budget" />} />
+              <Route path="/en/speed" element={<Index variant="speed" />} />
+              <Route path="/en/offer" element={<Index variant="personal" />} />
+              <Route path="/en/budget" element={<Index variant="budget" />} />
               
               {/* A/B Test Routes - Arabic */}
-              <Route path="/ar/speed/affordability_checks" element={<Index variant="speed" lang="ar" />} />
-              <Route path="/ar/personal/affordability_checks" element={<Index variant="personal" lang="ar" />} />
-              <Route path="/ar/budget/affordability_checks" element={<Index variant="budget" lang="ar" />} />
+              <Route path="/ar/speed" element={<Index variant="speed" lang="ar" />} />
+              <Route path="/ar/offer" element={<Index variant="personal" lang="ar" />} />
+              <Route path="/ar/budget" element={<Index variant="budget" lang="ar" />} />
               
               {/* Legacy Journey */}
               <Route path="/en/legacy-journey-x7k9p2" element={<LegacyJourney />} />
@@ -44,12 +44,10 @@ const App = () => (
               <Route path="/waitlist-signup" element={<WaitlistSignup />} />
               <Route path="/dealership-signup" element={<DealershipSignup />} />
               <Route path="/" element={<Index variant="speed" />} />
-              <Route path="/affordability-check" element={<AffordabilityCheck />} />
               <Route path="/nafath-verification" element={<NafathVerification />} />
               <Route path="/financing-offers" element={<FinancingOffers />} />
               <Route path="/bank-connection" element={<BankConnection />} />
               <Route path="/confirmation" element={<Confirmation />} />
-              {/* ADD ALL CUSTOM ROUTES ABOVE THE CATCH-ALL "*" ROUTE */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </TooltipProvider>

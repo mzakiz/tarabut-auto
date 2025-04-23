@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Calculator, DollarSign, Calendar, ArrowRight, Shield, Clock } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -64,10 +63,6 @@ const AffordabilityCalculator = () => {
     });
   };
 
-  const handleAffordabilityCheck = () => {
-    navigate('/affordability-check');
-  };
-  
   const formatCurrency = (value: number) => {
     return `SAR ${value.toLocaleString()}`;
   };
@@ -192,23 +187,14 @@ const AffordabilityCalculator = () => {
                     />
                   </div>
                   
-                  <Button type="submit" className="w-full bg-ksa-secondary hover:bg-ksa-secondary/90 text-white mb-4">
-                    Calculate Payment
-                    <ArrowRight className="ml-2 h-4 w-4" />
-                  </Button>
-
                   <Button 
                     type="button" 
-                    onClick={handleAffordabilityCheck}
+                    onClick={() => navigate('/waitlist-signup')}
                     className="w-full bg-ksa-primary hover:bg-ksa-primary/90 text-white"
                   >
-                    Check My Affordability
+                    Get on the waitlist
                     <ArrowRight className="ml-2 h-4 w-4" />
                   </Button>
-
-                  <p className="text-xs text-center text-gray-500 mt-2">
-                    Securely check your actual financing options based on your financial profile
-                  </p>
                 </form>
               </div>
             </div>
