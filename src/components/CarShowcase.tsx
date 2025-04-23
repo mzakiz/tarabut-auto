@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -19,20 +18,6 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
     navigate('/waitlist-signup');
   };
 
-  // Get the primary tagline based on the variant/hypothesis
-  const getPrimaryTagline = () => {
-    switch(variant) {
-      case 'speed':
-        return t('speed.tagline');
-      case 'personal':
-        return t('offer.tagline');
-      case 'budget':
-        return t('budget.tagline');
-      default:
-        return t('speed.tagline');
-    }
-  };
-  
   return (
     <section className="relative min-h-[85vh] w-full overflow-hidden">
       <div className="absolute inset-0 w-full h-full">
@@ -56,7 +41,7 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8 }}
           >
-            <h2 className="text-4xl md:text-6xl lg:text-7xl font-founder tracking-wide leading-tight mb-6 text-white">
+            <h2 className="text-3xl md:text-5xl lg:text-6xl font-founder tracking-wide leading-tight mb-4 text-white">
               {t('speed.tagline')}
             </h2>
             
@@ -65,7 +50,7 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
               animate={{ opacity: 1 }}
               transition={{ delay: 0.6, duration: 0.8 }}
             >
-              <h3 className="text-2xl md:text-3xl lg:text-4xl font-founder tracking-wide text-tarabut-teal leading-tight mb-6">
+              <h3 className="text-xl md:text-2xl lg:text-3xl font-founder tracking-wide text-tarabut-teal leading-tight mb-6">
                 {t('speed.subtitle')}
               </h3>
             </motion.div>
@@ -78,7 +63,7 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
             >
               <div className="flex flex-col sm:flex-row gap-4 justify-center">
                 <Button 
-                  className="bg-tarabut-teal hover:bg-tarabut-teal/90 text-black font-semibold px-8 py-6 rounded-lg text-lg"
+                  className="bg-tarabut-teal hover:bg-tarabut-teal/90 text-black font-semibold px-6 py-4 rounded-lg text-base"
                   onClick={handleSignupClick}
                 >
                   {t('waitlist.join')}
