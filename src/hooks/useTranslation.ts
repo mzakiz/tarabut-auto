@@ -12,8 +12,19 @@ export const useTranslation = () => {
   };
   
   const t = (key: string): string => {
-    // @ts-ignore - We know the translations object has these keys
-    return translations[language][key] || key;
+    // Make sure we have translations for this language
+    if (!translations[language]) {
+      console.warn(`No translations found for language: ${language}`);
+      return key;
+    }
+    
+    // Check if the key exists in the translations
+    if (!translations[language][key]) {
+      console.warn(`Translation key not found: ${key} in language: ${language}`);
+      return key;
+    }
+    
+    return translations[language][key];
   };
   
   return { t, language };

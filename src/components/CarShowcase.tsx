@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -60,6 +59,11 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
       }
     };
   }, []);
+
+  // For debugging translation issues
+  console.log('Current variant:', variant);
+  console.log('Translation key being used:', getTaglineKey());
+  console.log('Translation value:', t(getTaglineKey()));
 
   return (
     <section className="relative h-screen w-full overflow-hidden bg-black">
