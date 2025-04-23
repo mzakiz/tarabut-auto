@@ -2,8 +2,11 @@
 import React from 'react';
 import { Facebook, Instagram, Twitter } from 'lucide-react';
 import { Link } from 'react-router-dom';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const Footer = () => {
+  const { t } = useTranslation();
+
   return (
     <footer className="bg-ksa-dark text-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
@@ -11,7 +14,7 @@ const Footer = () => {
           <div className="mb-8 md:mb-0">
             <h3 className="text-xl font-bold mb-4">Tarabut Auto</h3>
             <p className="text-gray-400 mb-4 max-w-md">
-              Experience Shariah-compliant auto financing in Saudi Arabia with options tailored to your needs.
+              {t('footer.experience')}
             </p>
           </div>
           
@@ -30,17 +33,17 @@ const Footer = () => {
             
             <ul className="flex space-x-6 text-sm">
               <li>
-                <Link to="/" className="text-gray-400 hover:text-tarabut-teal transition-colors">Home</Link>
+                <Link to="/" className="text-gray-400 hover:text-tarabut-teal transition-colors">{t('footer.home')}</Link>
               </li>
               <li>
-                <a href="https://tarabut.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-tarabut-teal transition-colors">About Tarabut</a>
+                <a href="https://tarabut.com" target="_blank" rel="noopener noreferrer" className="text-gray-400 hover:text-tarabut-teal transition-colors">{t('footer.about')}</a>
               </li>
             </ul>
           </div>
         </div>
         
         <div className="mt-12 pt-8 border-t border-gray-800 text-center text-gray-500">
-          <p>&copy; {new Date().getFullYear()} Tarabut Auto. All rights reserved.</p>
+          <p>&copy; {new Date().getFullYear()} Tarabut Auto. {t('footer.copyright')}</p>
         </div>
       </div>
     </footer>
