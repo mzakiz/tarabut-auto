@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Check, Copy, ArrowRight, Rocket, Zap, Car, Timer } from 'lucide-react';
@@ -150,7 +151,7 @@ const Confirmation = () => {
             <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
               <div className="flex items-center justify-between mb-2">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-800">Your Current Tier: {currentTier}</h3>
+                  <h3 className="text-lg font-semibold text-gray-800">{t('confirmation.your.tier')} {currentTier}</h3>
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold text-blue-600">{points}</p>
@@ -161,7 +162,7 @@ const Confirmation = () => {
 
             <div className="border border-gray-200 rounded-lg p-4 mb-6">
               <p className="text-sm font-medium text-gray-800 mb-2">
-                {t('confirmation.share.code')}:
+                {t('confirmation.share.code')}
               </p>
               <div className="flex items-center">
                 <div className="flex-1 bg-gray-50 border border-gray-200 rounded-l-md px-4 py-2 text-gray-800 font-mono">
