@@ -38,11 +38,11 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed', onWaitlist
       
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="container mx-auto px-4 sm:px-6 lg:px-10">
-          <div className="max-w-6xl mx-auto text-center">
-            <h1 className="text-5xl sm:text-6xl md:text-7xl lg:text-8xl font-bold leading-tight font-founder mb-8 text-white">
+          <div className="max-w-5xl mx-auto text-center space-y-6">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight font-founder mb-4 text-white tracking-tight">
               {currentTagline.tagline}
             </h1>
-            <p className="text-2xl md:text-3xl lg:text-4xl text-tarabut-teal mb-16">
+            <p className="text-lg sm:text-xl md:text-2xl text-tarabut-teal mb-12 max-w-3xl mx-auto leading-relaxed">
               {currentTagline.subtitle}
             </p>
             
