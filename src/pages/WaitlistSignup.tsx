@@ -1,11 +1,11 @@
-import React, { useState, useEffect } from 'react';
+
+import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
-import { useToast } from '@/hooks/use-toast';
-import { supabase } from '@/integrations/supabase/client';
+import { FormField } from '@/components/waitlist/FormField';
+import { useWaitlistValidation } from '@/hooks/useWaitlistValidation';
+import { useWaitlistSubmission } from '@/hooks/useWaitlistSubmission';
 import { useAnalyticsPage, Analytics } from '@/services/analytics';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -15,38 +15,15 @@ const WaitlistSignup: React.FC = () => {
   const [email, setEmail] = useState('');
   const [phoneNumber, setPhoneNumber] = useState('');
   const [referralCode, setReferralCode] = useState('');
-  const [isSubmitting, setIsSubmitting] = useState(false);
   const [formTouched, setFormTouched] = useState<Record<string, boolean>>({});
-  const [validationErrors, setValidationErrors] = useState<Record<string, string>>({});
+  
   const navigate = useNavigate();
-  const { toast } = useToast();
   const { language } = useLanguage();
   const { t } = useTranslation();
+  const { validationErrors, validateField } = useWaitlistValidation();
+  const { isSubmitting, handleSubmit } = useWaitlistSubmission();
 
-  useAnalyticsPage('Waitlist Form', {
-    language
-  });
-
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const validatePhone = (phone: string) => {
-    const phoneRegex = /^\+966[0-9]{9}$/;
-    return phoneRegex.test(phone);
-  };
-
-  const validateReferralCode = async (code: string) => {
-    if (!code) return true;
-    const { data } = await supabase
-      .from('waitlist_users')
-      .select('referral_code')
-      .eq('referral_code', code)
-      .maybeSingle();
-    
-    return !!data;
-  };
+  useAnalyticsPage('Waitlist Form', { language });
 
   const handleFieldFocus = (fieldName: string) => {
     Analytics.trackFormFieldEntered({
@@ -67,144 +44,12 @@ const WaitlistSignup: React.FC = () => {
       });
     }
 
-    let error = '';
-    if (fieldName === 'email' && value && !validateEmail(value)) {
-      error = 'Please enter a valid email address';
-    } else if (fieldName === 'phone') {
-      const fullPhone = `+966${value}`;
-      if (value && !validatePhone(fullPhone)) {
-        error = 'Phone number must be 9 digits after +966';
-      }
-    } else if (fieldName === 'referralCode' && value && !(await validateReferralCode(value))) {
-      error = 'Invalid referral code';
-    }
-
-    setValidationErrors(prev => ({
-      ...prev,
-      [fieldName]: error
-    }));
+    await validateField(fieldName, value);
   };
-
-  const getFullPhoneNumber = () => {
-    return `+966${phoneNumber}`;
-  };
-
-  const handleSubmit = async (e: React.FormEvent) => {
+  
+  const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    
-    const errors: Record<string, string> = {};
-    
-    if (!name) errors.name = 'Name is required';
-    if (!email) errors.email = 'Email is required';
-    else if (!validateEmail(email)) errors.email = 'Please enter a valid email address';
-    
-    if (!phoneNumber) errors.phone = 'Phone number is required';
-    else {
-      const fullPhone = getFullPhoneNumber();
-      if (!validatePhone(fullPhone)) {
-        errors.phone = 'Phone number must be 9 digits after +966';
-      }
-    }
-    
-    if (referralCode && !(await validateReferralCode(referralCode))) {
-      errors.referralCode = 'Invalid referral code';
-    }
-
-    if (Object.keys(errors).length > 0) {
-      setValidationErrors(errors);
-      toast({
-        title: "Error",
-        description: t('form.required'),
-        variant: "destructive"
-      });
-      
-      Analytics.trackFormSubmissionFailed({
-        reason: 'validation_error',
-        field: Object.keys(errors)[0],
-        screen: 'waitlist_form',
-        language
-      });
-      
-      return;
-    }
-    
-    setIsSubmitting(true);
-    
-    try {
-      const { data: positionData, error: positionError } = await supabase.rpc('get_next_waitlist_position');
-      
-      if (positionError) throw positionError;
-      
-      const { data: referralCodeData, error: referralCodeError } = await supabase.rpc('generate_referral_code');
-      
-      if (referralCodeError) throw referralCodeError;
-      
-      const { data, error } = await supabase
-        .from('waitlist_users')
-        .insert({
-          name,
-          email,
-          phone: getFullPhoneNumber(),
-          referral_code: referralCodeData,
-          referrer_code: referralCode || null,
-          position: positionData
-        });
-      
-      if (error) {
-        if (error.code === '23505' && error.message.includes('waitlist_users_email_key')) {
-          const { data: existingUser, error: existingUserError } = await supabase
-            .from('waitlist_users')
-            .select('position')
-            .eq('email', email)
-            .maybeSingle();
-
-          if (existingUser) {
-            toast({
-              title: "You're Already on the Waitlist!",
-              description: `Your current position is ${existingUser.position}. We'll reach out to you soon!`,
-              variant: "default"
-            });
-          } else {
-            throw error;
-          }
-        } else {
-          throw error;
-        }
-      } else {
-        toast({
-          title: t('form.success'),
-          description: t('form.added')
-        });
-        
-        Analytics.trackWaitlistFormSubmitted({
-          success: true,
-          language,
-          screen: 'waitlist_form'
-        });
-        
-        navigate('/confirmation', { 
-          state: { 
-            referralCode: referralCodeData,
-            position: positionData
-          }
-        });
-      }
-    } catch (error: any) {
-      console.error('Error joining waitlist:', error);
-      toast({
-        title: "Error",
-        description: error.message || "Failed to join waitlist. Please try again.",
-        variant: "destructive"
-      });
-      
-      Analytics.trackFormSubmissionFailed({
-        reason: 'server_error',
-        screen: 'waitlist_form',
-        language
-      });
-    } finally {
-      setIsSubmitting(false);
-    }
+    await handleSubmit({ name, email, phoneNumber, referralCode });
   };
   
   const handleBack = () => {
@@ -238,96 +83,65 @@ const WaitlistSignup: React.FC = () => {
               />
             </div>
 
-            <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">{t('waitlist.title')}</h1>
+            <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
+              {t('waitlist.title')}
+            </h1>
             <p className="text-center text-gray-600 mb-8">
               {t('waitlist.description')}
             </p>
 
-            <form onSubmit={handleSubmit}>
+            <form onSubmit={handleFormSubmit}>
               <div className="space-y-4">
-                <div>
-                  <Label htmlFor="name" className="text-sm font-medium">
-                    {t('form.name')} <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="name"
-                    value={name}
-                    onChange={(e) => setName(e.target.value)}
-                    onFocus={() => handleFieldFocus('full_name')}
-                    onBlur={() => handleFieldBlur('full_name', name)}
-                    className={`w-full h-12 mt-1 ${formTouched['full_name'] && (!name || validationErrors.name) ? 'border-red-500' : ''}`}
-                    placeholder="Your full name"
-                    required
-                  />
-                  {validationErrors.name && <p className="text-sm text-red-500 mt-1">{validationErrors.name}</p>}
-                </div>
+                <FormField
+                  id="name"
+                  label={t('form.name')}
+                  value={name}
+                  onChange={setName}
+                  onFocus={() => handleFieldFocus('full_name')}
+                  onBlur={() => handleFieldBlur('full_name', name)}
+                  error={formTouched['full_name'] ? validationErrors.name : ''}
+                  required
+                  placeholder="Your full name"
+                />
                 
-                <div>
-                  <Label htmlFor="email" className="text-sm font-medium">
-                    {t('form.email')} <span className="text-red-500">*</span>
-                  </Label>
-                  <Input
-                    id="email"
-                    type="email"
-                    value={email}
-                    onChange={(e) => setEmail(e.target.value)}
-                    onFocus={() => handleFieldFocus('email')}
-                    onBlur={() => handleFieldBlur('email', email)}
-                    className={`w-full h-12 mt-1 ${formTouched['email'] && (!email || validationErrors.email) ? 'border-red-500' : ''}`}
-                    placeholder="Your email address"
-                    required
-                  />
-                  {validationErrors.email && <p className="text-sm text-red-500 mt-1">{validationErrors.email}</p>}
-                </div>
+                <FormField
+                  id="email"
+                  label={t('form.email')}
+                  value={email}
+                  onChange={setEmail}
+                  onFocus={() => handleFieldFocus('email')}
+                  onBlur={() => handleFieldBlur('email', email)}
+                  error={formTouched['email'] ? validationErrors.email : ''}
+                  required
+                  type="email"
+                  placeholder="Your email address"
+                />
                 
-                <div>
-                  <Label htmlFor="phone" className="text-sm font-medium">
-                    {t('form.phone')} <span className="text-red-500">*</span>
-                  </Label>
-                  <div className="relative">
-                    <Input
-                      id="phone"
-                      value={phoneNumber}
-                      onChange={(e) => {
-                        const value = e.target.value.replace(/\D/g, '');
-                        setPhoneNumber(value);
-                      }}
-                      onFocus={() => handleFieldFocus('phone')}
-                      onBlur={() => handleFieldBlur('phone', phoneNumber)}
-                      className={`w-full h-12 mt-1 pl-14 ${
-                        formTouched['phone'] && (!phoneNumber || validationErrors.phone)
-                          ? 'border-red-500'
-                          : ''
-                      }`}
-                      placeholder="5XXXXXXXX"
-                      inputMode="numeric"
-                      maxLength={9}
-                      required
-                    />
-                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
-                      +966
-                    </span>
-                  </div>
-                  {validationErrors.phone && (
-                    <p className="text-sm text-red-500 mt-1">{validationErrors.phone}</p>
-                  )}
-                </div>
+                <FormField
+                  id="phone"
+                  label={t('form.phone')}
+                  value={phoneNumber}
+                  onChange={(value) => setPhoneNumber(value.replace(/\D/g, ''))}
+                  onFocus={() => handleFieldFocus('phone')}
+                  onBlur={() => handleFieldBlur('phone', phoneNumber)}
+                  error={formTouched['phone'] ? validationErrors.phone : ''}
+                  required
+                  placeholder="5XXXXXXXX"
+                  maxLength={9}
+                  inputMode="numeric"
+                  prefix="+966"
+                />
                 
-                <div>
-                  <Label htmlFor="referralCode" className="text-sm font-medium">
-                    {t('form.referral')}
-                  </Label>
-                  <Input
-                    id="referralCode"
-                    value={referralCode}
-                    onChange={(e) => setReferralCode(e.target.value)}
-                    onFocus={() => handleFieldFocus('referral_code')}
-                    onBlur={() => handleFieldBlur('referral_code', referralCode)}
-                    className={`w-full h-12 mt-1 ${formTouched['referral_code'] && validationErrors.referralCode ? 'border-red-500' : ''}`}
-                    placeholder="Enter referral code"
-                  />
-                  {validationErrors.referralCode && <p className="text-sm text-red-500 mt-1">{validationErrors.referralCode}</p>}
-                </div>
+                <FormField
+                  id="referralCode"
+                  label={t('form.referral')}
+                  value={referralCode}
+                  onChange={setReferralCode}
+                  onFocus={() => handleFieldFocus('referral_code')}
+                  onBlur={() => handleFieldBlur('referral_code', referralCode)}
+                  error={formTouched['referral_code'] ? validationErrors.referralCode : ''}
+                  placeholder="Enter referral code"
+                />
                 
                 <Button 
                   type="submit" 
