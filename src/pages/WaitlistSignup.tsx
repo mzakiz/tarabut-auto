@@ -157,9 +157,9 @@ const WaitlistSignup: React.FC = () => {
           <div className="p-6 md:p-8">
             <div className="flex items-center justify-center mb-6">
               <img 
-                src="/Logos/tarabut_logo_no_text.png" 
+                src="/Logos/Tarabut_Auto-2.png" 
                 alt="Tarabut Auto Logo" 
-                className="h-12 w-auto"
+                className="h-[60px] w-auto object-contain max-w-full"
               />
             </div>
 
