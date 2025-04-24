@@ -42,6 +42,8 @@ const Confirmation = () => {
   const referralCode = location.state?.referralCode || 'TOYOTA25';
   const waitlistPosition = location.state?.position || 42;
   const statusId = location.state?.statusId;
+  const userTier = location.state?.tier || 'Standard';
+  const points = location.state?.points || 100;
   
   useAnalyticsPage('Thank You Page', {
     language,
@@ -103,7 +105,8 @@ const Confirmation = () => {
     navigate('/');
   };
 
-  const tier = tierDescriptions[location.state?.tier || 'Standard'];
+  // Get tier description based on user's tier or default to Standard
+  const tier = tierDescriptions[userTier] || tierDescriptions['Standard'];
 
   return (
     <div className="min-h-screen bg-white" dir={language === 'ar' ? 'rtl' : 'ltr'}>
@@ -133,12 +136,29 @@ const Confirmation = () => {
             <div className="bg-gray-50 border border-gray-100 rounded-lg p-6 mb-6">
               <div className="text-center mb-4">
                 <div className="text-4xl mb-2">{tier.emoji}</div>
-                <h3 className="text-xl font-semibold text-gray-800">{t(`tier.${location.state?.tier?.toLowerCase().replace(' ', '_')}.title`) || tier.title}</h3>
-                <p className="text-gray-600 mt-2">{t(`tier.${location.state?.tier?.toLowerCase().replace(' ', '_')}.description`) || tier.description}</p>
+                <h3 className="text-xl font-semibold text-gray-800">{t(`tier.${userTier?.toLowerCase().replace(' ', '_')}.title`) || tier.title}</h3>
+                <p className="text-gray-600 mt-2">{t(`tier.${userTier?.toLowerCase().replace(' ', '_')}.description`) || tier.description}</p>
               </div>
               <div className="text-right">
-                <p className="text-2xl font-bold text-blue-600">{location.state?.points || 100}</p>
+                <p className="text-2xl font-bold text-blue-600">{points}</p>
                 <p className="text-sm text-gray-500">{t('confirmation.points')}</p>
+              </div>
+            </div>
+
+            <div className="border border-gray-200 rounded-lg p-4 mb-6">
+              <p className="text-sm font-medium text-gray-800 mb-2">
+                {t('confirmation.share.code')}
+              </p>
+              <div className="flex items-center">
+                <div className="flex-1 bg-gray-50 border border-gray-200 rounded-l-md px-4 py-2 text-gray-800 font-mono">
+                  {referralCode}
+                </div>
+                <button 
+                  onClick={copyToClipboard}
+                  className="bg-gray-100 border border-gray-200 border-l-0 rounded-r-md px-3 py-2 text-gray-600 hover:bg-gray-200 transition-colors"
+                >
+                  {copied ? <Check className="h-5 w-5 text-green-600" /> : <Copy className="h-5 w-5" />}
+                </button>
               </div>
             </div>
 
