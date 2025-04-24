@@ -1,4 +1,3 @@
-
 {
     "speed.tagline": "تخطى فترات انتظار البنوك لمدة 3 أسابيع للتمويل",
     "speed.subtitle": "احصل على وصول حصري للموافقات في دقيقة واحدة",
@@ -153,5 +152,17 @@
     "form.placeholder.business.email": "البريد الإلكتروني للعمل",
     "form.placeholder.phone": "5XXXXXXXX",
     "form.validation.work.email": "يرجى استخدام البريد الإلكتروني للعمل",
-    "form.validation.phone": "يجب أن يتكون رقم الهاتف من 9 أرقام"
+    "form.validation.phone": "يجب أن يتكون رقم الهاتف من 9 أرقام",
+    "leaderboard.title": "لوحة صدارة الإحالات",
+    "leaderboard.rank": "المرتبة",
+    "leaderboard.player": "اللاعب",
+    "leaderboard.points": "النقاط",
+    "leaderboard.tier": "المستوى",
+    "tier.vip_access": "وصول VIP",
+    "tier.early_access": "وصول مبكر",
+    "tier.fast_track": "المسار السريع",
+    "tier.standard": "قياسي",
+    "confirmation.your.tier": "مستواك الحالي",
+    "confirmation.points": "النقاط",
+    "confirmation.points.description": "اكسب المزيد من النقاط عن طريق دعوة الأصدقاء"
 }

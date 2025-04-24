@@ -23,13 +23,17 @@ export const useWaitlistSubmission = () => {
     setIsSubmitting(true);
     
     try {
+      // Get initial alias for the user
+      const { data: displayAlias, error: aliasError } = await supabase.rpc('generate_display_alias');
+      if (aliasError) throw aliasError;
+      
       const { data: positionData, error: positionError } = await supabase.rpc('get_next_waitlist_position');
       if (positionError) throw positionError;
       
       const { data: referralCodeData, error: referralCodeError } = await supabase.rpc('generate_referral_code');
       if (referralCodeError) throw referralCodeError;
       
-      const { error } = await supabase
+      const { data: user, error } = await supabase
         .from('waitlist_users')
         .insert({
           name: formData.name,
@@ -37,8 +41,12 @@ export const useWaitlistSubmission = () => {
           phone: `+966${formData.phoneNumber}`,
           referral_code: referralCodeData,
           referrer_code: formData.referralCode || null,
-          position: positionData
-        });
+          position: positionData,
+          display_alias: displayAlias,
+          points: 100 // Initial points
+        })
+        .select('position, points, referral_code')
+        .single();
       
       if (error) {
         if (error.code === '23505' && error.message.includes('waitlist_users_email_key')) {
@@ -74,7 +82,8 @@ export const useWaitlistSubmission = () => {
       navigate('/confirmation', { 
         state: { 
           referralCode: referralCodeData,
-          position: positionData
+          position: positionData,
+          points: 100 // Pass initial points to confirmation page
         }
       });
     } catch (error: any) {

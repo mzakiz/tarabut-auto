@@ -39,10 +39,12 @@ export type Database = {
       waitlist_users: {
         Row: {
           created_at: string | null
+          display_alias: string | null
           email: string
           id: string
           name: string
           phone: string
+          points: number
           position: number
           referral_code: string
           referrer_code: string | null
@@ -50,10 +52,12 @@ export type Database = {
         }
         Insert: {
           created_at?: string | null
+          display_alias?: string | null
           email: string
           id?: string
           name: string
           phone: string
+          points?: number
           position: number
           referral_code: string
           referrer_code?: string | null
@@ -61,10 +65,12 @@ export type Database = {
         }
         Update: {
           created_at?: string | null
+          display_alias?: string | null
           email?: string
           id?: string
           name?: string
           phone?: string
+          points?: number
           position?: number
           referral_code?: string
           referrer_code?: string | null
@@ -77,6 +83,10 @@ export type Database = {
       [_ in never]: never
     }
     Functions: {
+      generate_display_alias: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
       generate_referral_code: {
         Args: Record<PropertyKey, never>
         Returns: string
@@ -84,6 +94,10 @@ export type Database = {
       get_next_waitlist_position: {
         Args: Record<PropertyKey, never>
         Returns: number
+      }
+      get_user_tier: {
+        Args: { user_points: number }
+        Returns: string
       }
     }
     Enums: {
