@@ -1,3 +1,4 @@
+
 {
     "speed.tagline": "Skip 3-week bank waits for Auto Lending",
     "speed.subtitle": "Get exclusive access to 1-minute approvals",
@@ -133,5 +134,23 @@
     "confirmation.share.bonus": "Share with friends to move up the waitlist and earn exclusive bonuses",
     "confirmation.code.copied": "Referral code copied!",
     "confirmation.code.share": "Share with friends to move up the waitlist",
-    "confirmation.back.home": "Back to Home"
+    "confirmation.back.home": "Back to Home",
+    "dealership.registration": "Dealership Registration",
+    "dealership.registration.subtitle": "Register your dealership with Tarabut Auto",
+    "dealership.contact.name": "Contact Person",
+    "dealership.name": "Dealership Name",
+    "dealership.email": "Business Email",
+    "dealership.phone": "Phone Number",
+    "dealership.submit": "Register Dealership",
+    "dealership.submitting": "Registering...",
+    "dealership.success": "Registration Successful!",
+    "dealership.success.description": "The Tarabut team will contact you shortly",
+    "dealership.back": "Back to Homepage",
+    "dealership.error": "Registration Error",
+    "dealership.error.description": "Failed to register dealership. Please try again.",
+    "form.placeholder.dealership": "Name of your dealership",
+    "form.placeholder.contact": "Your full name",
+    "form.placeholder.business.email": "Your business email",
+    "form.validation.work.email": "Please use your work email address",
+    "form.validation.phone": "Phone number must be 9 digits"
 }

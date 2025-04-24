@@ -59,6 +59,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     };
     
+    // Execute the handler immediately
+    handleUrlChange();
+    
     window.addEventListener('popstate', handleUrlChange);
     return () => window.removeEventListener('popstate', handleUrlChange);
   }, [language, isChangingLanguage]);

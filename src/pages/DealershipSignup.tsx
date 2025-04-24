@@ -201,7 +201,7 @@ const DealershipSignup: React.FC = () => {
                         {t('dealership.phone')} <span className="text-red-500">*</span>
                       </FormLabel>
                       <div className="relative">
-                        <span className={`absolute ${language === 'ar' ? 'left-3' : 'left-3'} top-1/2 -translate-y-1/2 text-gray-500`}>
+                        <span className={`absolute left-3 top-1/2 -translate-y-1/2 text-gray-500`}>
                           +966
                         </span>
                         <FormControl>
