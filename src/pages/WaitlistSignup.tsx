@@ -91,10 +91,10 @@ const WaitlistSignup: React.FC = () => {
               />
             </div>
 
-            <h1 className={`text-2xl font-bold text-center text-gray-800 mb-2 ${language === 'ar' ? 'text-right' : 'text-left'}`}>
+            <h1 className={`text-2xl font-bold text-center text-gray-800 mb-2`}>
               {t('waitlist.title')}
             </h1>
-            <p className={`text-center text-gray-600 mb-8 ${language === 'ar' ? 'text-right' : 'text-left'}`}>
+            <p className={`text-center text-gray-600 mb-8`}>
               {t('waitlist.description')}
             </p>
 
