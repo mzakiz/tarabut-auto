@@ -1,13 +1,28 @@
-
 import React from 'react';
-import { Facebook, Instagram, Twitter } from 'lucide-react';
+import { Linkedin, Instagram, X } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 
 const Footer = () => {
   const { t, isChangingLanguage } = useTranslation();
   
-  console.log("Footer brand translation:", t('footer.brand'));
+  const socialLinks = [
+    {
+      icon: Linkedin,
+      url: 'https://www.linkedin.com/company/tarabutgateway/',
+      ariaLabel: 'LinkedIn'
+    },
+    {
+      icon: Instagram,
+      url: 'https://www.instagram.com/tarabutgateway/',
+      ariaLabel: 'Instagram'
+    },
+    {
+      icon: X,
+      url: 'https://x.com/tarabutgateway',
+      ariaLabel: 'X (Twitter)'
+    }
+  ];
 
   return (
     <footer className="bg-ksa-dark text-white">
@@ -24,15 +39,18 @@ const Footer = () => {
           
           <div className="flex flex-col items-center md:items-end">
             <div className="flex space-x-4 mb-4">
-              <a href="#" className="text-gray-400 hover:text-tarabut-teal transition-colors">
-                <Facebook className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-tarabut-teal transition-colors">
-                <Instagram className="h-5 w-5" />
-              </a>
-              <a href="#" className="text-gray-400 hover:text-tarabut-teal transition-colors">
-                <Twitter className="h-5 w-5" />
-              </a>
+              {socialLinks.map(({ icon: Icon, url, ariaLabel }) => (
+                <a 
+                  key={url} 
+                  href={url} 
+                  target="_blank" 
+                  rel="noopener noreferrer" 
+                  aria-label={ariaLabel}
+                  className="text-gray-400 hover:text-tarabut-teal transition-colors"
+                >
+                  <Icon className="h-5 w-5" />
+                </a>
+              ))}
             </div>
             
             <ul className="flex space-x-6 text-sm">
