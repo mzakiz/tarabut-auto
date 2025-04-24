@@ -22,7 +22,7 @@ const Footer = () => {
       icon: 'X',
       url: 'https://x.com/tarabutgateway',
       ariaLabel: 'X (Twitter)',
-      customIcon: '/Logos/tarabut-x-logo.png'  // Updated path to a more standard location
+      customIcon: '/Logos/x_logo_grey.png'
     }
   ];
 
