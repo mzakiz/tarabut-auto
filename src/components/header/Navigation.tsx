@@ -13,7 +13,6 @@ const Navigation: React.FC<NavigationProps> = ({ isMobile = false, onMobileItemC
   const { t, isChangingLanguage } = useTranslation();
   const { language } = useLanguage();
   
-  // Define navigation items without fallbacks to preserve original content
   const navItems = [
     { href: '#features', label: t('nav.features') },
     { href: '#specs', label: t('nav.specifications') },

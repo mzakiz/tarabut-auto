@@ -28,26 +28,13 @@ export const useTranslation = () => {
     }
     
     // Check if the key exists in the translations
-    const parts = key.split('.');
-    let current: any = translations[language];
-    
-    for (const part of parts) {
-      if (!current || current[part] === undefined) {
-        // Instead of changing content, just return the original key
-        // This ensures we don't see the error in the UI but can see it in the console
-        console.warn(`Translation key not found: ${key} in language: ${language}`);
-        return key;
-      }
-      current = current[part];
+    if (!translations[language][key]) {
+      console.warn(`Translation key not found: ${key} in language: ${language}`);
+      return key;
     }
     
-    // Return the translation value if it's a string
-    if (typeof current === 'string') {
-      return current;
-    }
-    
-    console.warn(`Translation value is not a string for key: ${key} in language: ${language}`);
-    return key;
+    // Return the translation value
+    return translations[language][key];
   };
   
   return { t, language, isChangingLanguage };
