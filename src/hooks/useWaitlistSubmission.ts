@@ -53,16 +53,13 @@ export const useWaitlistSubmission = () => {
         if (error.code === '23505' && error.message.includes('waitlist_users_email_key')) {
           const { data: existingUser } = await supabase
             .from('waitlist_users')
-            .select('position')
+            .select('position, status_id')
             .eq('email', formData.email)
             .maybeSingle();
 
           if (existingUser) {
-            toast({
-              title: "You're Already on the Waitlist!",
-              description: `Your current position is ${existingUser.position}. We'll reach out to you soon!`,
-              variant: "default"
-            });
+            // Redirect to waitlist status page instead of showing a toast
+            navigate(`/waitlist-status/${existingUser.status_id}`);
             return;
           }
         }
