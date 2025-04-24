@@ -73,11 +73,15 @@
 @layer base {
   * {
     @apply border-border;
+    margin: 0;
+    padding: 0;
+    box-sizing: border-box;
   }
 
   html, body {
     @apply overflow-x-hidden;
     max-width: 100%;
+    min-height: 100vh;
   }
 
   body {

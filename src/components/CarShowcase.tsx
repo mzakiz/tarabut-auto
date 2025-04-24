@@ -45,7 +45,7 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed', onWaitlist
   const currentTagline = taglines[variant];
   
   return (
-    <section className="relative w-full h-screen overflow-hidden bg-tarabut-dark">
+    <section className="relative w-full h-screen flex flex-col overflow-hidden bg-tarabut-dark" style={{ minHeight: '100vh' }}>
       {/* Video Background */}
       <video
         className="absolute inset-0 w-full h-full object-cover opacity-50"
