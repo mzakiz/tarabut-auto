@@ -1,7 +1,6 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Check, Copy, ArrowRight, Trophy } from 'lucide-react';
+import { Check, Copy, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import confetti from 'canvas-confetti';
@@ -16,11 +15,9 @@ const Confirmation = () => {
   const { language } = useLanguage();
   const { t } = useTranslation();
   
-  // Get data from location state or use defaults
   const referralCode = location.state?.referralCode || 'TOYOTA25';
   const waitlistPosition = location.state?.position || 42;
   
-  // Track page view
   useAnalyticsPage('Thank You Page', {
     language,
     waitlist_position: waitlistPosition,
@@ -28,7 +25,6 @@ const Confirmation = () => {
   });
   
   React.useEffect(() => {
-    // Launch confetti when component mounts
     confetti({
       particleCount: 100,
       spread: 70,
@@ -42,8 +38,8 @@ const Confirmation = () => {
     setTimeout(() => setCopied(false), 2000);
     
     toast({
-      title: "Referral code copied!",
-      description: "Share with friends to move up the waitlist.",
+      title: t('confirmation.code.copied'),
+      description: t('confirmation.code.share'),
     });
     
     Analytics.trackCTAClicked({
@@ -63,7 +59,7 @@ const Confirmation = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="max-w-md mx-auto">
           <div className="bg-white rounded-xl shadow-md overflow-hidden md:shadow-xl">
@@ -75,52 +71,50 @@ const Confirmation = () => {
               </div>
               
               <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
-                Congratulations!
+                {t('confirmation.title')}
               </h1>
               <p className="text-center text-gray-600 mb-4">
-                You've been added to our exclusive waitlist
+                {t('confirmation.subtitle')}
               </p>
               
-              {/* Waitlist Position */}
               <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6 text-center">
                 <div className="flex items-center justify-center mb-2">
-                  <Trophy className="h-5 w-5 text-blue-500 mr-2" />
-                  <span className="text-sm font-medium text-gray-700">Your position in waitlist</span>
+                  <span className="text-sm font-medium text-gray-700">{t('confirmation.position.title')}</span>
                 </div>
                 <p className="text-3xl font-bold text-blue-600 mb-2">#{waitlistPosition}</p>
                 <p className="text-xs text-gray-500">
-                  Refer friends to move up in the waitlist
+                  {t('confirmation.position.subtitle')}
                 </p>
               </div>
               
               <div className="bg-blue-50 rounded-lg p-5 mb-8">
                 <h3 className="font-semibold text-gray-800 mb-3">
-                  What happens next?
+                  {t('confirmation.whats.next')}
                 </h3>
                 <ul className="space-y-2">
                   <li className="flex items-start space-x-2 text-sm">
                     <div className="h-5 w-5 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center mt-0.5">
                       <span className="text-xs font-medium text-blue-700">1</span>
                     </div>
-                    <span className="text-gray-700">We will keep you posted of our updates as soon as possible via email or WhatsApp</span>
+                    <span className="text-gray-700">{t('confirmation.next.1')}</span>
                   </li>
                   <li className="flex items-start space-x-2 text-sm">
                     <div className="h-5 w-5 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center mt-0.5">
                       <span className="text-xs font-medium text-blue-700">2</span>
                     </div>
-                    <span className="text-gray-700">You'll receive personalized auto financing options based on your profile</span>
+                    <span className="text-gray-700">{t('confirmation.next.2')}</span>
                   </li>
                   <li className="flex items-start space-x-2 text-sm">
                     <div className="h-5 w-5 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center mt-0.5">
                       <span className="text-xs font-medium text-blue-700">3</span>
                     </div>
-                    <span className="text-gray-700">Schedule a test drive at your convenience</span>
+                    <span className="text-gray-700">{t('confirmation.next.3')}</span>
                   </li>
                 </ul>
               </div>
               
               <div className="border border-gray-200 rounded-lg p-4 mb-6">
-                <p className="text-sm font-medium text-gray-800 mb-2">Share your referral code:</p>
+                <p className="text-sm font-medium text-gray-800 mb-2">{t('confirmation.share.code')}:</p>
                 <div className="flex items-center">
                   <div className="flex-1 bg-gray-50 border border-gray-200 rounded-l-md px-4 py-2 text-gray-800 font-mono">
                     {referralCode}
@@ -133,7 +127,7 @@ const Confirmation = () => {
                   </button>
                 </div>
                 <p className="text-xs text-gray-500 mt-2">
-                  Share with friends to move up the waitlist and earn exclusive bonuses
+                  {t('confirmation.share.bonus')}
                 </p>
               </div>
               
@@ -141,8 +135,8 @@ const Confirmation = () => {
                 onClick={handleBackToHome}
                 className="w-full bg-ksa-primary hover:bg-ksa-primary/90 text-white"
               >
-                Back to Home
-                <ArrowRight className="ml-2 h-4 w-4" />
+                {t('confirmation.back.home')}
+                <ArrowRight className={`${language === 'ar' ? 'mr-2 rotate-180' : 'ml-2'} h-4 w-4`} />
               </Button>
             </div>
           </div>

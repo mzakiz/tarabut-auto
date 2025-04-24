@@ -110,7 +110,7 @@
     "features.title": "مميزات استثنائية",
     "features.subtitle": "تويوتا يارس تجمع بين الفخامة والأداء والكفاءة في حزمة مثالية للطرق السعودية",
     "feature.fuel.title": "كفاءة الوقود",
-    "feature.fuel.description": "اقتصاد رائد في فئته في استهلاك الوقود يبلغ 18.3 كم/لتر لتوقفات أقل عند المضخة",
+    "feature.fuel.description": "اقتصاد رائد في فئته في استهلاك الوقود ي��لغ 18.3 كم/لتر لتوقفات أقل عند المضخة",
     "feature.safety.title": "السلامة أولاً",
     "feature.safety.description": "نظام تويوتا للسلامة المتقدم مع نظام ما قبل الاصطدام وتنبيه مغادرة المسار",
     "feature.performance.title": "أداء ديناميكي",
@@ -120,5 +120,18 @@
     "feature.interior.title": "مقصورة فاخرة",
     "feature.interior.description": "مقاعد جلدية مع تدفئة وتهوية للراحة على مدار العام",
     "feature.transmission.title": "ناقل حركة سلس",
-    "feature.transmission.description": "ناقل حركة أوتوماتيكي CVT لتجربة قيادة سلسة"
+    "feature.transmission.description": "ناقل حركة أوتوماتيكي CVT لتجربة قيادة سلسة",
+    "confirmation.title": "تهانينا!",
+    "confirmation.subtitle": "تمت إضافتك إلى قائمة الانتظار الحصرية",
+    "confirmation.position.title": "موقعك في قائمة الانتظار",
+    "confirmation.position.subtitle": "قم بدعوة أصدقائك للتقدم في قائمة الانتظار",
+    "confirmation.whats.next": "ماذا يحدث بعد ذلك؟",
+    "confirmation.next.1": "سنبقيك على اطلاع بآخر التحديثات في أقرب وقت ممكن عبر البريد الإلكتروني أو واتساب",
+    "confirmation.next.2": "ستتلقى خيارات تمويل سيارات مخصصة بناءً على ملفك الشخصي",
+    "confirmation.next.3": "حدد موعد تجربة القيادة في الوقت المناسب لك",
+    "confirmation.share.code": "شارك رمز الإحالة الخاص بك:",
+    "confirmation.share.bonus": "شارك مع الأصدقاء للتقدم في قائمة الانتظار والحصول على مكافآت حصرية",
+    "confirmation.code.copied": "تم نسخ رمز الإحالة!",
+    "confirmation.code.share": "شارك مع الأصدقاء للتقدم في قائمة الانتظار",
+    "confirmation.back.home": "العودة إلى الصفحة الرئيسية"
 }

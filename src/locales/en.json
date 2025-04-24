@@ -120,5 +120,18 @@
     "feature.interior.title": "Luxurious Interior",
     "feature.interior.description": "Leather seating with heating and ventilation for year-round comfort",
     "feature.transmission.title": "Smooth Transmission",
-    "feature.transmission.description": "CVT automatic transmission for a seamless driving experience"
+    "feature.transmission.description": "CVT automatic transmission for a seamless driving experience",
+    "confirmation.title": "Congratulations!",
+    "confirmation.subtitle": "You've been added to our exclusive waitlist",
+    "confirmation.position.title": "Your position in waitlist",
+    "confirmation.position.subtitle": "Refer friends to move up in the waitlist",
+    "confirmation.whats.next": "What happens next?",
+    "confirmation.next.1": "We will keep you posted of our updates as soon as possible via email or WhatsApp",
+    "confirmation.next.2": "You'll receive personalized auto financing options based on your profile",
+    "confirmation.next.3": "Schedule a test drive at your convenience",
+    "confirmation.share.code": "Share your referral code:",
+    "confirmation.share.bonus": "Share with friends to move up the waitlist and earn exclusive bonuses",
+    "confirmation.code.copied": "Referral code copied!",
+    "confirmation.code.share": "Share with friends to move up the waitlist",
+    "confirmation.back.home": "Back to Home"
 }
