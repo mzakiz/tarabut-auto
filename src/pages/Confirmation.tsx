@@ -1,11 +1,9 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Check, Copy, Share2, ArrowRight, Trophy } from 'lucide-react';
+import { Check, Copy, ArrowRight, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
-import { Progress } from '@/components/ui/progress';
-import { useIsMobile } from '@/hooks/use-mobile';
 import confetti from 'canvas-confetti';
 import { useAnalyticsPage, Analytics } from '@/services/analytics';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -15,14 +13,12 @@ const Confirmation = () => {
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
-  const isMobile = useIsMobile();
   const { language } = useLanguage();
   const { t } = useTranslation();
   
   // Get data from location state or use defaults
   const referralCode = location.state?.referralCode || 'TOYOTA25';
   const waitlistPosition = location.state?.position || 42;
-  const affordabilityAmount = 320000;
   
   // Track page view
   useAnalyticsPage('Thank You Page', {
@@ -50,7 +46,6 @@ const Confirmation = () => {
       description: "Share with friends to move up the waitlist.",
     });
     
-    // Track the copy action
     Analytics.trackCTAClicked({
       element: 'copy_referral_code',
       screen: 'thank_you_page',
@@ -59,53 +54,12 @@ const Confirmation = () => {
   };
   
   const handleBackToHome = () => {
-    // Track the navigation action
     Analytics.trackCTAClicked({
       element: 'return_home',
       screen: 'thank_you_page',
       language
     });
     navigate('/');
-  };
-  
-  const handleShare = (method: string) => {
-    // Track the share action
-    Analytics.trackReferralShared({
-      method,
-      screen: 'thank_you_page',
-      language
-    });
-    
-    // Share functionality would vary by method
-    // For now we just show a toast
-    toast({
-      title: "Sharing via " + method,
-      description: "Share your referral code with friends",
-    });
-    
-    // In a real implementation, we would handle different share methods
-    switch (method) {
-      case 'whatsapp':
-        window.open(`https://wa.me/?text=Join%20Tarabut%20Auto%20waitlist%20with%20my%20code:%20${referralCode}`, '_blank');
-        break;
-        
-      case 'twitter':
-        window.open(`https://twitter.com/intent/tweet?text=Join%20Tarabut%20Auto%20waitlist%20with%20my%20code:%20${referralCode}`, '_blank');
-        break;
-        
-      case 'email':
-        window.location.href = `mailto:?subject=Join%20Tarabut%20Auto%20Waitlist&body=Use%20my%20referral%20code:%20${referralCode}`;
-        break;
-        
-      default:
-        if (navigator.share) {
-          navigator.share({
-            title: 'Join Tarabut Auto Waitlist',
-            text: `Use my referral code: ${referralCode}`,
-            url: window.location.origin,
-          });
-        }
-    }
   };
 
   return (
@@ -139,24 +93,6 @@ const Confirmation = () => {
                 </p>
               </div>
               
-              <div className="bg-gray-50 rounded-lg p-5 mb-6">
-                <p className="text-sm text-gray-600 mb-2">Based on your financial profile:</p>
-                <p className="text-2xl font-bold text-ksa-primary mb-1">
-                  SAR {affordabilityAmount.toLocaleString()}
-                </p>
-                <p className="text-sm text-gray-700 mb-4">
-                  Maximum auto financing amount you can afford
-                </p>
-                
-                <div className="space-y-1">
-                  <div className="flex justify-between text-xs">
-                    <span className="text-gray-600">Affordability Range</span>
-                    <span className="font-medium">Excellent</span>
-                  </div>
-                  <Progress value={85} className="h-2" />
-                </div>
-              </div>
-              
               <div className="bg-blue-50 rounded-lg p-5 mb-8">
                 <h3 className="font-semibold text-gray-800 mb-3">
                   What happens next?
@@ -166,13 +102,13 @@ const Confirmation = () => {
                     <div className="h-5 w-5 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center mt-0.5">
                       <span className="text-xs font-medium text-blue-700">1</span>
                     </div>
-                    <span className="text-gray-700">Our representative will contact you within 48 hours</span>
+                    <span className="text-gray-700">We will keep you posted of our updates as soon as possible via email or WhatsApp</span>
                   </li>
                   <li className="flex items-start space-x-2 text-sm">
                     <div className="h-5 w-5 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center mt-0.5">
                       <span className="text-xs font-medium text-blue-700">2</span>
                     </div>
-                    <span className="text-gray-700">You'll receive personalized auto financing options</span>
+                    <span className="text-gray-700">You'll receive personalized auto financing options based on your profile</span>
                   </li>
                   <li className="flex items-start space-x-2 text-sm">
                     <div className="h-5 w-5 rounded-full bg-blue-100 flex-shrink-0 flex items-center justify-center mt-0.5">
@@ -201,45 +137,13 @@ const Confirmation = () => {
                 </p>
               </div>
               
-              <div className="space-y-4">
-                <Button 
-                  onClick={handleBackToHome}
-                  className="w-full bg-ksa-primary hover:bg-ksa-primary/90 text-white"
-                >
-                  Back to Home
-                  <ArrowRight className="ml-2 h-4 w-4" />
-                </Button>
-                
-                <div className="grid grid-cols-3 gap-3">
-                  <Button 
-                    variant="outline"
-                    onClick={() => handleShare('whatsapp')}
-                    className="flex flex-col items-center justify-center py-2 px-1"
-                    size="sm"
-                  >
-                    <span className="text-lg mb-1">📱</span>
-                    <span className="text-xs">WhatsApp</span>
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    onClick={() => handleShare('twitter')}
-                    className="flex flex-col items-center justify-center py-2 px-1"
-                    size="sm"
-                  >
-                    <span className="text-lg mb-1">🐦</span>
-                    <span className="text-xs">Twitter</span>
-                  </Button>
-                  <Button 
-                    variant="outline"
-                    onClick={() => handleShare('email')}
-                    className="flex flex-col items-center justify-center py-2 px-1"
-                    size="sm"
-                  >
-                    <span className="text-lg mb-1">✉️</span>
-                    <span className="text-xs">Email</span>
-                  </Button>
-                </div>
-              </div>
+              <Button 
+                onClick={handleBackToHome}
+                className="w-full bg-ksa-primary hover:bg-ksa-primary/90 text-white"
+              >
+                Back to Home
+                <ArrowRight className="ml-2 h-4 w-4" />
+              </Button>
             </div>
           </div>
         </div>
