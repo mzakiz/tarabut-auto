@@ -1,4 +1,3 @@
-
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -30,26 +29,64 @@ const App = () => (
               {/* Main domain routes - We redirect to /en/speed as default */}
               <Route path="/" element={<Navigate to="/en/speed" replace />} />
               
-              {/* Updated A/B Test Routes with new URLs - English */}
-              <Route path="/en/speed" element={<Index variant="speed" />} />
-              <Route path="/en/offer" element={<Index variant="personal" />} />
-              <Route path="/en/budget" element={<Index variant="budget" />} />
+              {/* English Routes */}
+              <Route path="/en/speed">
+                <Route index element={<Index variant="speed" />} />
+                <Route path="waitlist-signup">
+                  <Route index element={<WaitlistSignup />} />
+                  <Route path="confirmation" element={<Confirmation />} />
+                </Route>
+              </Route>
               
-              {/* Updated A/B Test Routes - Arabic */}
-              <Route path="/ar/speed" element={<Index variant="speed" lang="ar" />} />
-              <Route path="/ar/offer" element={<Index variant="personal" lang="ar" />} />
-              <Route path="/ar/budget" element={<Index variant="budget" lang="ar" />} />
+              <Route path="/en/offer">
+                <Route index element={<Index variant="personal" />} />
+                <Route path="waitlist-signup">
+                  <Route index element={<WaitlistSignup />} />
+                  <Route path="confirmation" element={<Confirmation />} />
+                </Route>
+              </Route>
+              
+              <Route path="/en/budget">
+                <Route index element={<Index variant="budget" />} />
+                <Route path="waitlist-signup">
+                  <Route index element={<WaitlistSignup />} />
+                  <Route path="confirmation" element={<Confirmation />} />
+                </Route>
+              </Route>
+              
+              {/* Arabic Routes */}
+              <Route path="/ar/speed">
+                <Route index element={<Index variant="speed" lang="ar" />} />
+                <Route path="waitlist-signup">
+                  <Route index element={<WaitlistSignup />} />
+                  <Route path="confirmation" element={<Confirmation />} />
+                </Route>
+              </Route>
+              
+              <Route path="/ar/offer">
+                <Route index element={<Index variant="personal" lang="ar" />} />
+                <Route path="waitlist-signup">
+                  <Route index element={<WaitlistSignup />} />
+                  <Route path="confirmation" element={<Confirmation />} />
+                </Route>
+              </Route>
+              
+              <Route path="/ar/budget">
+                <Route index element={<Index variant="budget" lang="ar" />} />
+                <Route path="waitlist-signup">
+                  <Route index element={<WaitlistSignup />} />
+                  <Route path="confirmation" element={<Confirmation />} />
+                </Route>
+              </Route>
               
               {/* Legacy Journey */}
               <Route path="/en/legacy-journey-x7k9p2" element={<LegacyJourney />} />
               
               {/* Other Routes */}
-              <Route path="/waitlist-signup" element={<WaitlistSignup />} />
               <Route path="/dealership-signup" element={<DealershipSignup />} />
               <Route path="/nafath-verification" element={<NafathVerification />} />
               <Route path="/financing-offers" element={<FinancingOffers />} />
               <Route path="/bank-connection" element={<BankConnection />} />
-              <Route path="/confirmation" element={<Confirmation />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </TooltipProvider>
