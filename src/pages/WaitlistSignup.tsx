@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -14,7 +13,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 const WaitlistSignup: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('+966');
+  const [phone, setPhone] = useState('');
   const [referralCode, setReferralCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formTouched, setFormTouched] = useState<Record<string, boolean>>({});
@@ -24,7 +23,6 @@ const WaitlistSignup: React.FC = () => {
   const { language } = useLanguage();
   const { t } = useTranslation();
 
-  // Track page view
   useAnalyticsPage('Waitlist Form', {
     language
   });
@@ -50,7 +48,6 @@ const WaitlistSignup: React.FC = () => {
     return !!data;
   };
 
-  // Track field focus
   const handleFieldFocus = (fieldName: string) => {
     Analytics.trackFormFieldEntered({
       field_name: fieldName,
@@ -59,7 +56,6 @@ const WaitlistSignup: React.FC = () => {
     });
   };
   
-  // Track when a field is blurred (left) without a value
   const handleFieldBlur = async (fieldName: string, value: string) => {
     setFormTouched(prev => ({ ...prev, [fieldName]: true }));
     
@@ -71,7 +67,6 @@ const WaitlistSignup: React.FC = () => {
       });
     }
 
-    // Validate fields on blur
     let error = '';
     if (fieldName === 'email' && value && !validateEmail(value)) {
       error = 'Please enter a valid email address';
@@ -87,10 +82,24 @@ const WaitlistSignup: React.FC = () => {
     }));
   };
 
+  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    const cleanedValue = value.replace(/[^\d+]/g, '');
+    
+    if (cleanedValue.startsWith('+966')) {
+      setPhone(cleanedValue);
+    } else if (cleanedValue.startsWith('966')) {
+      setPhone(`+${cleanedValue}`);
+    } else if (cleanedValue.startsWith('+')) {
+      setPhone(`+966${cleanedValue.slice(1)}`);
+    } else {
+      setPhone(`+966${cleanedValue}`);
+    }
+  };
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate all fields before submission
     const errors: Record<string, string> = {};
     
     if (!name) errors.name = 'Name is required';
@@ -151,7 +160,6 @@ const WaitlistSignup: React.FC = () => {
         description: t('form.added')
       });
       
-      // Track successful form submission
       Analytics.trackWaitlistFormSubmitted({
         success: true,
         language,
@@ -172,7 +180,6 @@ const WaitlistSignup: React.FC = () => {
         variant: "destructive"
       });
       
-      // Track failed form submission
       Analytics.trackFormSubmissionFailed({
         reason: 'server_error',
         screen: 'waitlist_form',
@@ -260,17 +267,30 @@ const WaitlistSignup: React.FC = () => {
                   <Label htmlFor="phone" className="text-sm font-medium">
                     {t('form.phone')} <span className="text-red-500">*</span>
                   </Label>
-                  <Input
-                    id="phone"
-                    value={phone}
-                    onChange={(e) => setPhone(e.target.value)}
-                    onFocus={() => handleFieldFocus('phone')}
-                    onBlur={() => handleFieldBlur('phone', phone)}
-                    className={`w-full h-12 mt-1 ${formTouched['phone'] && (!phone || validationErrors.phone) ? 'border-red-500' : ''}`}
-                    placeholder="+966XXXXXXXXX"
-                    required
-                  />
-                  {validationErrors.phone && <p className="text-sm text-red-500 mt-1">{validationErrors.phone}</p>}
+                  <div className="relative">
+                    <Input
+                      id="phone"
+                      value={phone}
+                      onChange={handlePhoneChange}
+                      onFocus={() => handleFieldFocus('phone')}
+                      onBlur={() => handleFieldBlur('phone', phone)}
+                      className={`w-full h-12 mt-1 pl-14 ${
+                        formTouched['phone'] && (!phone || validationErrors.phone)
+                          ? 'border-red-500'
+                          : ''
+                      }`}
+                      placeholder="5XXXXXXXX"
+                      inputMode="numeric"
+                      pattern="[+]9669[0-9]{8}"
+                      required
+                    />
+                    <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
+                      +966
+                    </span>
+                  </div>
+                  {validationErrors.phone && (
+                    <p className="text-sm text-red-500 mt-1">{validationErrors.phone}</p>
+                  )}
                 </div>
                 
                 <div>
