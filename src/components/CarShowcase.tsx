@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -15,6 +16,12 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed', onWaitlist
   const navigate = useNavigate();
   const isRTL = language === 'ar';
 
+  // Helper function to get translation or fallback
+  const getTranslation = (key: string, fallback: string): string => {
+    const translation = t(key);
+    return translation === key ? fallback : translation;
+  };
+
   const handleWaitlistClick = () => {
     if (onWaitlistCTAClick) {
       onWaitlistCTAClick();
@@ -28,16 +35,16 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed', onWaitlist
 
   const taglines = {
     speed: {
-      tagline: t('speed.tagline'),
-      subtitle: t('speed.subtitle')
+      tagline: getTranslation('speed.tagline', 'Experience Speed Like Never Before'),
+      subtitle: getTranslation('speed.subtitle', 'Get your dream car with lightning-fast financing')
     },
     personal: {
-      tagline: t('offer.tagline'),
-      subtitle: t('offer.subtitle')
+      tagline: getTranslation('offer.tagline', 'Personalized Car Financing'),
+      subtitle: getTranslation('offer.subtitle', 'Tailored to your unique needs')
     },
     budget: {
-      tagline: t('budget.tagline'),
-      subtitle: t('budget.subtitle')
+      tagline: getTranslation('budget.tagline', 'Budget-Friendly Options'),
+      subtitle: getTranslation('budget.subtitle', 'Find the perfect car within your budget')
     }
   };
 
@@ -73,14 +80,14 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed', onWaitlist
                 onClick={handleWaitlistClick}
                 className="bg-tarabut-teal hover:bg-tarabut-teal/90 text-tarabut-dark min-h-[44px] font-medium text-lg px-8 py-6"
               >
-                {t('waitlist.join')}
+                {getTranslation('waitlist.join', 'Join Waitlist')}
               </Button>
               <Button
                 variant="outline"
                 onClick={handleDealershipClick}
                 className="bg-transparent border-white text-white hover:bg-white/10 min-h-[44px] text-lg px-8 py-6"
               >
-                {t('dealership.cta')}
+                {getTranslation('dealership.cta', 'For Dealerships')}
               </Button>
             </div>
           </div>
