@@ -1,5 +1,7 @@
-
 {
     "speed.tagline": "Skip 3-week bank waits for Auto Lending",
+    "confirmation.title": "Congratulations!",
+    "confirmation.subtitle": "You've been added to our exclusive waitlist",
+    "confirmation.position.title": "Your Position in Line",
     "waitlist.tiers.title": "Waitlist Tier Benefits"
 }

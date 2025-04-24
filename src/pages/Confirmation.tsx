@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Check, Copy, ArrowRight, Rocket, Zap, Car, Timer } from 'lucide-react';
@@ -16,10 +15,10 @@ import {
 } from "@/components/ui/table";
 
 const getTierForPoints = (points: number): string => {
-  if (points >= 1000) return "🌟 VIP Access";
-  if (points >= 500) return "⭐ Early Access";
-  if (points >= 200) return "⚡ Fast Track";
-  return "🕓 Standard";
+  if (points >= 1000) return "VIP Access";
+  if (points >= 500) return "Early Access";
+  if (points >= 200) return "Fast Track";
+  return "Standard";
 };
 
 const Confirmation = () => {
@@ -98,27 +97,27 @@ const Confirmation = () => {
   const tiers = [
     {
       icon: <Rocket className="h-5 w-5 text-purple-600" />,
-      name: "🌟 VIP Access",
+      name: "VIP Access",
       title: "First in line. First to get approved.",
-      description: "🔓 Exclusive perks, early approvals, top priority.",
+      description: "Exclusive perks, early approvals, top priority.",
     },
     {
       icon: <Zap className="h-5 w-5 text-yellow-500" />,
-      name: "⭐ Early Access",
+      name: "Early Access",
       title: "Beat the crowd. Get offers before anyone else.",
-      description: "⚡ Fast-track your financing and get notified first.",
+      description: "Fast-track your financing and get notified first.",
     },
     {
       icon: <Car className="h-5 w-5 text-blue-500" />,
-      name: "⚡ Fast Track",
+      name: "Fast Track",
       title: "You're ahead of the pack.",
-      description: "🚗 Closer to early access. Just a few referrals away from the top.",
+      description: "Closer to early access. Just a few referrals away from the top.",
     },
     {
       icon: <Timer className="h-5 w-5 text-gray-500" />,
-      name: "🕓 Standard",
+      name: "Standard",
       title: "You've joined the waitlist!",
-      description: "📬 Want to move up? Refer friends and unlock priority access.",
+      description: "Want to move up? Refer friends and unlock priority access.",
     },
   ];
 
@@ -145,6 +144,7 @@ const Confirmation = () => {
                 <span className="text-sm font-medium text-gray-700">{t('confirmation.position.title')}</span>
               </div>
               <p className="text-3xl font-bold text-blue-600 mb-2">#{waitlistPosition}</p>
+              <p className="text-sm text-gray-600">Refer your friends to earn more points</p>
             </div>
             
             <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
@@ -213,7 +213,7 @@ const Confirmation = () => {
           <div className="mt-8 bg-white rounded-xl shadow-md overflow-hidden">
             <div className="p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                Waitlist Tier Benefits
+                {t('waitlist.tiers.title')}
               </h3>
               <Table>
                 <TableBody>
