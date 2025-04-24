@@ -14,7 +14,6 @@ const DealershipConfirmation = () => {
   const { t } = useTranslation();
   
   const handleBackToHome = () => {
-    // Extract current language and variant from URL
     const pathParts = location.pathname.split('/');
     const lang = pathParts[1] || 'en';
     const variant = pathParts[2] || 'speed';
@@ -35,29 +34,20 @@ const DealershipConfirmation = () => {
               </div>
               
               <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
-                {language === 'ar' ? 'تهانينا!' : 'Congratulations!'}
+                {t('dealership.success')}
               </h1>
               
               <div className="text-center mb-8">
                 <p className="text-gray-600">
-                  {language === 'ar' ? 'سيتواصل معك أحد من فريق ترابط قريباً. في هذه الأثناء، ' : 'Someone from Tarabut will be in touch. In the meantime, '}
-                  <a 
-                    href="https://tarabut.com" 
-                    target="_blank" 
-                    rel="noopener noreferrer"
-                    className="text-blue-600 hover:underline"
-                  >
-                    {language === 'ar' ? 'تعرف على المزيد عن ترابط' : 'learn more about Tarabut'}
-                  </a>
-                  .
+                  {t('dealership.success.description')}
                 </p>
               </div>
               
               <Button 
                 onClick={handleBackToHome}
-                className="w-full bg-ksa-primary hover:bg-ksa-primary/90 text-white"
+                className={`w-full bg-ksa-primary hover:bg-ksa-primary/90 text-white ${language === 'ar' ? 'flex-row-reverse' : ''}`}
               >
-                {language === 'ar' ? 'العودة إلى الصفحة الرئيسية' : 'Return to Homepage'}
+                {t('dealership.back')}
                 <ArrowRight className={`${language === 'ar' ? 'mr-2 rotate-180' : 'ml-2'} h-4 w-4`} />
               </Button>
             </div>

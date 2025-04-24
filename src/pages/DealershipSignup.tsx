@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -9,6 +10,8 @@ import { supabase } from '@/integrations/supabase/client';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
 import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTranslation } from '@/hooks/useTranslation';
 import * as z from 'zod';
 
 const PERSONAL_EMAIL_DOMAINS = [
@@ -35,6 +38,8 @@ const DealershipSignup: React.FC = () => {
   const navigate = useNavigate();
   const location = useLocation();
   const { toast } = useToast();
+  const { language } = useLanguage();
+  const { t } = useTranslation();
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -91,15 +96,15 @@ const DealershipSignup: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white">
+    <div className="min-h-screen bg-white" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <Button 
           variant="ghost" 
-          onClick={() => navigate('/')}
-          className="mb-6"
+          onClick={handleBackClick}
+          className={`mb-6 ${language === 'ar' ? 'flex-row-reverse' : ''}`}
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          Back to Home
+          <ArrowLeft className={`${language === 'ar' ? 'ml-2 rotate-180' : 'mr-2'} h-4 w-4`} />
+          {t('back')}
         </Button>
         
         <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:shadow-xl">
@@ -112,9 +117,11 @@ const DealershipSignup: React.FC = () => {
               />
             </div>
 
-            <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">Dealership Registration</h1>
+            <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
+              {t('dealership.registration')}
+            </h1>
             <p className="text-center text-gray-600 mb-8">
-              Register your dealership with Tarabut Auto
+              {t('dealership.registration.subtitle')}
             </p>
 
             <Form {...form}>
@@ -124,12 +131,13 @@ const DealershipSignup: React.FC = () => {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Contact Person <span className="text-red-500">*</span></FormLabel>
+                      <FormLabel>{t('dealership.contact.name')} <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="Your full name" 
+                          placeholder={t('form.placeholder.contact')}
                           className="h-12" 
                           {...field} 
+                          dir={language === 'ar' ? 'rtl' : 'ltr'}
                         />
                       </FormControl>
                       <FormMessage />
@@ -142,12 +150,13 @@ const DealershipSignup: React.FC = () => {
                   name="dealershipName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Dealership Name <span className="text-red-500">*</span></FormLabel>
+                      <FormLabel>{t('dealership.name')} <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
                         <Input 
-                          placeholder="Your dealership name" 
+                          placeholder={t('form.placeholder.dealership')}
                           className="h-12" 
                           {...field} 
+                          dir={language === 'ar' ? 'rtl' : 'ltr'}
                         />
                       </FormControl>
                       <FormMessage />
@@ -160,13 +169,14 @@ const DealershipSignup: React.FC = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Email <span className="text-red-500">*</span></FormLabel>
+                      <FormLabel>{t('dealership.email')} <span className="text-red-500">*</span></FormLabel>
                       <FormControl>
                         <Input 
                           type="email" 
-                          placeholder="Business email address" 
+                          placeholder={t('form.placeholder.business.email')}
                           className="h-12" 
                           {...field} 
+                          dir="ltr"
                         />
                       </FormControl>
                       <FormMessage />
@@ -179,22 +189,25 @@ const DealershipSignup: React.FC = () => {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>Phone Number <span className="text-red-500">*</span></FormLabel>
+                      <FormLabel>{t('dealership.phone')} <span className="text-red-500">*</span></FormLabel>
                       <div className="relative">
-                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                        <span className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 text-gray-500`}>
                           +966
                         </span>
                         <FormControl>
                           <Input 
-                            placeholder="5XXXXXXXX" 
-                            className="h-12 pl-16"
+                            placeholder={t('form.placeholder.phone')}
+                            className={`h-12 ${language === 'ar' ? 'pr-16' : 'pl-16'}`}
                             maxLength={9}
                             {...field} 
+                            dir="ltr"
                           />
                         </FormControl>
                       </div>
                       <FormMessage />
-                      <p className="text-sm text-gray-500 mt-1">Enter 9 digits after +966</p>
+                      <p className={`text-sm text-gray-500 mt-1 ${language === 'ar' ? 'text-right' : 'text-left'}`}>
+                        {t('form.validation.phone')}
+                      </p>
                     </FormItem>
                   )}
                 />
@@ -204,7 +217,7 @@ const DealershipSignup: React.FC = () => {
                   className="w-full bg-ksa-primary hover:bg-ksa-primary/90 text-white h-12 mt-4"
                   disabled={isSubmitting}
                 >
-                  {isSubmitting ? "Submitting..." : "Register Dealership"}
+                  {isSubmitting ? t('dealership.submitting') : t('dealership.submit')}
                 </Button>
               </form>
             </Form>
