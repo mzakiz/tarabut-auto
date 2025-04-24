@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -100,7 +101,7 @@ const WaitlistSignup: React.FC = () => {
                   onBlur={() => handleFieldBlur('full_name', name)}
                   error={formTouched['full_name'] ? validationErrors.name : ''}
                   required
-                  placeholder="Your full name"
+                  placeholder={t('form.placeholder.name')}
                 />
                 
                 <FormField
@@ -113,7 +114,7 @@ const WaitlistSignup: React.FC = () => {
                   error={formTouched['email'] ? validationErrors.email : ''}
                   required
                   type="email"
-                  placeholder="Your email address"
+                  placeholder={t('form.placeholder.email')}
                 />
                 
                 <FormField
@@ -125,7 +126,7 @@ const WaitlistSignup: React.FC = () => {
                   onBlur={() => handleFieldBlur('phone', phoneNumber)}
                   error={formTouched['phone'] ? validationErrors.phone : ''}
                   required
-                  placeholder="5XXXXXXXX"
+                  placeholder={t('form.placeholder.phone')}
                   maxLength={9}
                   inputMode="numeric"
                   prefix="+966"
@@ -139,7 +140,7 @@ const WaitlistSignup: React.FC = () => {
                   onFocus={() => handleFieldFocus('referral_code')}
                   onBlur={() => handleFieldBlur('referral_code', referralCode)}
                   error={formTouched['referral_code'] ? validationErrors.referralCode : ''}
-                  placeholder="Enter referral code"
+                  placeholder={t('form.placeholder.referral')}
                 />
                 
                 <Button 

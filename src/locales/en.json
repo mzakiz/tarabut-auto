@@ -1,4 +1,3 @@
-
 {
     "speed.tagline": "Skip 3-week bank waits for Auto Lending",
     "speed.subtitle": "Get exclusive access to 1-minute approvals",
@@ -41,6 +40,10 @@
     "form.submitting": "Submitting...",
     "form.success": "Success!",
     "form.added": "You've been added to our waitlist!",
+    "form.placeholder.name": "Your full name",
+    "form.placeholder.email": "Your email address",
+    "form.placeholder.phone": "5XXXXXXXX",
+    "form.placeholder.referral": "Enter referral code",
     "metrics.engine": "ENGINE",
     "metrics.monthly": "MONTHLY",
     "metrics.power": "POWER",
