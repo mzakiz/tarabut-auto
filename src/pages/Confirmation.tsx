@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Check, Copy, ArrowRight, Rocket, Zap, Car, Timer } from 'lucide-react';
@@ -101,24 +100,28 @@ const Confirmation = () => {
       name: "VIP Access",
       title: "First in line. First to get approved.",
       description: "Exclusive perks, early approvals, top priority.",
+      points: "600+ points"
     },
     {
       icon: <Zap className="h-5 w-5 text-yellow-500" />,
       name: "Early Access",
       title: "Beat the crowd. Get offers before anyone else.",
       description: "Fast-track your financing and get notified first.",
+      points: "400–599 points"
     },
     {
       icon: <Car className="h-5 w-5 text-blue-500" />,
       name: "Fast Track",
       title: "You're ahead of the pack.",
       description: "Closer to early access. Just a few referrals away from the top.",
+      points: "250–399 points"
     },
     {
       icon: <Timer className="h-5 w-5 text-gray-500" />,
       name: "Standard",
       title: "You've joined the waitlist!",
       description: "Want to move up? Refer friends and unlock priority access.",
+      points: "100–249 points"
     },
   ];
 
@@ -237,6 +240,9 @@ const Confirmation = () => {
                             </div>
                             <div className="text-sm text-gray-500">
                               {tier.description}
+                            </div>
+                            <div className="text-sm text-blue-600 mt-1 font-medium">
+                              {tier.points}
                             </div>
                           </div>
                         </div>
