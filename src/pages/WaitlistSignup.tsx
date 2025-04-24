@@ -1,3 +1,4 @@
+
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -13,7 +14,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 const WaitlistSignup: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [phone, setPhone] = useState('');
+  const [phoneNumber, setPhoneNumber] = useState(''); // Changed from phone to phoneNumber
   const [referralCode, setReferralCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formTouched, setFormTouched] = useState<Record<string, boolean>>({});
@@ -70,8 +71,11 @@ const WaitlistSignup: React.FC = () => {
     let error = '';
     if (fieldName === 'email' && value && !validateEmail(value)) {
       error = 'Please enter a valid email address';
-    } else if (fieldName === 'phone' && value && !validatePhone(value)) {
-      error = 'Phone number must start with +966 followed by 9 digits';
+    } else if (fieldName === 'phone') {
+      const fullPhone = `+966${value}`;
+      if (value && !validatePhone(fullPhone)) {
+        error = 'Phone number must be 9 digits after +966';
+      }
     } else if (fieldName === 'referralCode' && value && !(await validateReferralCode(value))) {
       error = 'Invalid referral code';
     }
@@ -82,19 +86,9 @@ const WaitlistSignup: React.FC = () => {
     }));
   };
 
-  const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const value = e.target.value;
-    const cleanedValue = value.replace(/[^\d+]/g, '');
-    
-    if (cleanedValue.startsWith('+966')) {
-      setPhone(cleanedValue);
-    } else if (cleanedValue.startsWith('966')) {
-      setPhone(`+${cleanedValue}`);
-    } else if (cleanedValue.startsWith('+')) {
-      setPhone(`+966${cleanedValue.slice(1)}`);
-    } else {
-      setPhone(`+966${cleanedValue}`);
-    }
+  // Get full phone number with prefix for submission
+  const getFullPhoneNumber = () => {
+    return `+966${phoneNumber}`;
   };
 
   const handleSubmit = async (e: React.FormEvent) => {
@@ -106,8 +100,13 @@ const WaitlistSignup: React.FC = () => {
     if (!email) errors.email = 'Email is required';
     else if (!validateEmail(email)) errors.email = 'Please enter a valid email address';
     
-    if (!phone) errors.phone = 'Phone number is required';
-    else if (!validatePhone(phone)) errors.phone = 'Phone number must start with +966 followed by 9 digits';
+    if (!phoneNumber) errors.phone = 'Phone number is required';
+    else {
+      const fullPhone = getFullPhoneNumber();
+      if (!validatePhone(fullPhone)) {
+        errors.phone = 'Phone number must be 9 digits after +966';
+      }
+    }
     
     if (referralCode && !(await validateReferralCode(referralCode))) {
       errors.referralCode = 'Invalid referral code';
@@ -147,7 +146,7 @@ const WaitlistSignup: React.FC = () => {
         .insert({
           name,
           email,
-          phone,
+          phone: getFullPhoneNumber(),
           referral_code: referralCodeData,
           referrer_code: referralCode || null,
           position: positionData
@@ -270,18 +269,22 @@ const WaitlistSignup: React.FC = () => {
                   <div className="relative">
                     <Input
                       id="phone"
-                      value={phone}
-                      onChange={handlePhoneChange}
+                      value={phoneNumber}
+                      onChange={(e) => {
+                        // Only allow digits
+                        const value = e.target.value.replace(/\D/g, '');
+                        setPhoneNumber(value);
+                      }}
                       onFocus={() => handleFieldFocus('phone')}
-                      onBlur={() => handleFieldBlur('phone', phone)}
+                      onBlur={() => handleFieldBlur('phone', phoneNumber)}
                       className={`w-full h-12 mt-1 pl-14 ${
-                        formTouched['phone'] && (!phone || validationErrors.phone)
+                        formTouched['phone'] && (!phoneNumber || validationErrors.phone)
                           ? 'border-red-500'
                           : ''
                       }`}
                       placeholder="5XXXXXXXX"
                       inputMode="numeric"
-                      pattern="[+]9669[0-9]{8}"
+                      maxLength={9}
                       required
                     />
                     <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500 pointer-events-none">
