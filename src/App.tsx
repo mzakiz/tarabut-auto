@@ -29,10 +29,10 @@ const App = () => (
             <Toaster />
             <Sonner />
             <Routes>
-              {/* Main domain routes - We redirect to /en/speed as default */}
+              {/* Root domain now explicitly redirects to /en/speed */}
               <Route path="/" element={<Navigate to="/en/speed" replace />} />
               
-              {/* English Routes */}
+              {/* Existing routes remain the same */}
               <Route path="/en/speed">
                 <Route index element={<Index variant="speed" />} />
                 <Route path="waitlist-signup" element={<WaitlistSignup />} />
@@ -57,7 +57,6 @@ const App = () => (
                 <Route path="dealership/confirmation" element={<DealershipConfirmation />} />
               </Route>
               
-              {/* Arabic Routes */}
               <Route path="/ar/speed">
                 <Route index element={<Index variant="speed" lang="ar" />} />
                 <Route path="waitlist-signup" element={<WaitlistSignup />} />
@@ -82,16 +81,13 @@ const App = () => (
                 <Route path="dealership/confirmation" element={<DealershipConfirmation />} />
               </Route>
               
-              {/* Legacy Journey */}
               <Route path="/en/legacy-journey-x7k9p2" element={<LegacyJourney />} />
               
-              {/* Other Routes */}
               <Route path="/nafath-verification" element={<NafathVerification />} />
               <Route path="/financing-offers" element={<FinancingOffers />} />
               <Route path="/bank-connection" element={<BankConnection />} />
               <Route path="/waitlist-status/:statusId" element={<WaitlistStatus />} />
 
-              {/* Legacy Confirmation route for backwards compatibility */}
               <Route path="/confirmation" element={<Confirmation />} />
               
               <Route path="*" element={<NotFound />} />
