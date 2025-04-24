@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -59,12 +58,9 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed', onWaitlist
       </video>
       
       {/* Content */}
-      <div className="absolute inset-0 flex items-center">
-        <div className={`container mx-auto px-4 sm:px-6 lg:px-10 flex ${isRTL ? 'justify-end text-right' : 'justify-start text-left'}`}>
-          <div className={`max-w-xl ${isRTL ? 'mr-0 ml-auto' : 'ml-0'}`}>
-            <div className="mb-3 font-mono">
-              <span className="text-ksa-primary px-2 py-1 rounded-sm text-xs font-medium bg-black bg-opacity-30">2024 YARIS</span>
-            </div>
+      <div className="absolute inset-0 flex items-center justify-center">
+        <div className="container mx-auto px-4 sm:px-6 lg:px-10">
+          <div className="max-w-xl mx-auto text-center">
             <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight font-founder mb-4 text-white">
               {currentTagline.tagline}
             </h1>
@@ -72,7 +68,7 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed', onWaitlist
               {currentTagline.subtitle}
             </p>
             
-            <div className={`flex flex-col sm:flex-row gap-4 ${isRTL ? 'items-end' : 'items-start'}`}>
+            <div className="flex flex-col sm:flex-row gap-4 justify-center">
               <Button
                 onClick={handleWaitlistClick}
                 className="bg-ksa-primary hover:bg-ksa-primary/90 text-white min-h-[44px] font-medium text-lg px-6"
