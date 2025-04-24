@@ -13,11 +13,12 @@ export const useWaitlistLeaderboard = () => {
         .limit(10);
 
       if (error) throw error;
-
-      return data.map(user => ({
+      
+      // Use Promise.all to handle async operations in map
+      return Promise.all(data.map(async (user) => ({
         ...user,
         tier: await getTierForPoints(user.points)
-      }));
+      })));
     }
   });
 };
