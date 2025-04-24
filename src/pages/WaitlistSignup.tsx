@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -79,7 +78,7 @@ const WaitlistSignup: React.FC = () => {
               <img 
                 src="/Logos/Tarabut_Auto-2.png" 
                 alt="Tarabut Auto Logo" 
-                className="max-h-[60px] w-auto object-contain" 
+                className="max-h-[120px] w-auto object-contain" 
               />
             </div>
 
@@ -160,4 +159,3 @@ const WaitlistSignup: React.FC = () => {
 };
 
 export default WaitlistSignup;
-
