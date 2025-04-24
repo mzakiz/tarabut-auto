@@ -14,6 +14,7 @@ import LegacyJourney from "./pages/LegacyJourney";
 import { LanguageProvider } from "./contexts/LanguageContext";
 import WaitlistSignup from "./pages/WaitlistSignup";
 import DealershipSignup from "./pages/DealershipSignup";
+import DealershipConfirmation from "./pages/DealershipConfirmation";
 
 const queryClient = new QueryClient();
 
@@ -36,6 +37,10 @@ const App = () => (
                   <Route index element={<WaitlistSignup />} />
                   <Route path="confirmation" element={<Confirmation />} />
                 </Route>
+                <Route path="dealership">
+                  <Route index element={<DealershipSignup />} />
+                  <Route path="confirmation" element={<DealershipConfirmation />} />
+                </Route>
               </Route>
               
               <Route path="/en/offer">
@@ -44,6 +49,10 @@ const App = () => (
                   <Route index element={<WaitlistSignup />} />
                   <Route path="confirmation" element={<Confirmation />} />
                 </Route>
+                <Route path="dealership">
+                  <Route index element={<DealershipSignup />} />
+                  <Route path="confirmation" element={<DealershipConfirmation />} />
+                </Route>
               </Route>
               
               <Route path="/en/budget">
@@ -51,6 +60,10 @@ const App = () => (
                 <Route path="waitlist-signup">
                   <Route index element={<WaitlistSignup />} />
                   <Route path="confirmation" element={<Confirmation />} />
+                </Route>
+                <Route path="dealership">
+                  <Route index element={<DealershipSignup />} />
+                  <Route path="confirmation" element={<DealershipConfirmation />} />
                 </Route>
               </Route>
               
@@ -61,6 +74,10 @@ const App = () => (
                   <Route index element={<WaitlistSignup />} />
                   <Route path="confirmation" element={<Confirmation />} />
                 </Route>
+                <Route path="dealership">
+                  <Route index element={<DealershipSignup />} />
+                  <Route path="confirmation" element={<DealershipConfirmation />} />
+                </Route>
               </Route>
               
               <Route path="/ar/offer">
@@ -68,6 +85,10 @@ const App = () => (
                 <Route path="waitlist-signup">
                   <Route index element={<WaitlistSignup />} />
                   <Route path="confirmation" element={<Confirmation />} />
+                </Route>
+                <Route path="dealership">
+                  <Route index element={<DealershipSignup />} />
+                  <Route path="confirmation" element={<DealershipConfirmation />} />
                 </Route>
               </Route>
               
@@ -77,13 +98,16 @@ const App = () => (
                   <Route index element={<WaitlistSignup />} />
                   <Route path="confirmation" element={<Confirmation />} />
                 </Route>
+                <Route path="dealership">
+                  <Route index element={<DealershipSignup />} />
+                  <Route path="confirmation" element={<DealershipConfirmation />} />
+                </Route>
               </Route>
               
               {/* Legacy Journey */}
               <Route path="/en/legacy-journey-x7k9p2" element={<LegacyJourney />} />
               
               {/* Other Routes */}
-              <Route path="/dealership-signup" element={<DealershipSignup />} />
               <Route path="/nafath-verification" element={<NafathVerification />} />
               <Route path="/financing-offers" element={<FinancingOffers />} />
               <Route path="/bank-connection" element={<BankConnection />} />

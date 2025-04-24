@@ -22,6 +22,7 @@ const formSchema = z.object({
 const DealershipSignup: React.FC = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   
   const form = useForm<z.infer<typeof formSchema>>({
@@ -54,8 +55,13 @@ const DealershipSignup: React.FC = () => {
         description: "Your dealership has been registered successfully!"
       });
       
-      // Redirect to confirmation page
-      navigate('/confirmation');
+      // Extract path parts for the new routing structure
+      const pathParts = location.pathname.split('/');
+      const lang = pathParts[1] || 'en';
+      const variant = pathParts[2] || 'speed';
+      
+      // Navigate to confirmation page with the correct path
+      navigate(`/${lang}/${variant}/dealership/confirmation`);
     } catch (error: any) {
       console.error('Error registering dealership:', error);
       toast({
@@ -66,6 +72,13 @@ const DealershipSignup: React.FC = () => {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleBackClick = () => {
+    const pathParts = location.pathname.split('/');
+    const lang = pathParts[1] || 'en';
+    const variant = pathParts[2] || 'speed';
+    navigate(`/${lang}/${variant}`);
   };
 
   return (

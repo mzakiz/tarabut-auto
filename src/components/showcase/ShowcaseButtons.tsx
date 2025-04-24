@@ -24,17 +24,19 @@ const ShowcaseButtons: React.FC<ShowcaseButtonsProps> = ({ onWaitlistCTAClick })
     let variant = 'speed';
     
     if (pathParts.length >= 3) {
-      // URL format is /{lang}/{variant}/...
       lang = pathParts[1] || 'en';
       variant = pathParts[2] || 'speed';
     }
     
-    // Navigate to the waitlist signup with the correct path structure
     navigate(`/${lang}/${variant}/waitlist-signup`);
   };
 
   const handleDealershipClick = () => {
-    navigate('/dealership-signup');
+    const pathParts = location.pathname.split('/');
+    const lang = pathParts[1] || 'en';
+    const variant = pathParts[2] || 'speed';
+    
+    navigate(`/${lang}/${variant}/dealership`);
   };
 
   return (
