@@ -35,75 +35,51 @@ const App = () => (
               {/* English Routes */}
               <Route path="/en/speed">
                 <Route index element={<Index variant="speed" />} />
-                <Route path="waitlist-signup">
-                  <Route index element={<WaitlistSignup />} />
-                  <Route path="confirmation" element={<Confirmation />} />
-                </Route>
-                <Route path="dealership">
-                  <Route index element={<DealershipSignup />} />
-                  <Route path="confirmation" element={<DealershipConfirmation />} />
-                </Route>
+                <Route path="waitlist-signup" element={<WaitlistSignup />} />
+                <Route path="waitlist-signup/confirmation" element={<Confirmation />} />
+                <Route path="dealership" element={<DealershipSignup />} />
+                <Route path="dealership/confirmation" element={<DealershipConfirmation />} />
               </Route>
               
               <Route path="/en/offer">
                 <Route index element={<Index variant="personal" />} />
-                <Route path="waitlist-signup">
-                  <Route index element={<WaitlistSignup />} />
-                  <Route path="confirmation" element={<Confirmation />} />
-                </Route>
-                <Route path="dealership">
-                  <Route index element={<DealershipSignup />} />
-                  <Route path="confirmation" element={<DealershipConfirmation />} />
-                </Route>
+                <Route path="waitlist-signup" element={<WaitlistSignup />} />
+                <Route path="waitlist-signup/confirmation" element={<Confirmation />} />
+                <Route path="dealership" element={<DealershipSignup />} />
+                <Route path="dealership/confirmation" element={<DealershipConfirmation />} />
               </Route>
               
               <Route path="/en/budget">
                 <Route index element={<Index variant="budget" />} />
-                <Route path="waitlist-signup">
-                  <Route index element={<WaitlistSignup />} />
-                  <Route path="confirmation" element={<Confirmation />} />
-                </Route>
-                <Route path="dealership">
-                  <Route index element={<DealershipSignup />} />
-                  <Route path="confirmation" element={<DealershipConfirmation />} />
-                </Route>
+                <Route path="waitlist-signup" element={<WaitlistSignup />} />
+                <Route path="waitlist-signup/confirmation" element={<Confirmation />} />
+                <Route path="dealership" element={<DealershipSignup />} />
+                <Route path="dealership/confirmation" element={<DealershipConfirmation />} />
               </Route>
               
               {/* Arabic Routes */}
               <Route path="/ar/speed">
                 <Route index element={<Index variant="speed" lang="ar" />} />
-                <Route path="waitlist-signup">
-                  <Route index element={<WaitlistSignup />} />
-                  <Route path="confirmation" element={<Confirmation />} />
-                </Route>
-                <Route path="dealership">
-                  <Route index element={<DealershipSignup />} />
-                  <Route path="confirmation" element={<DealershipConfirmation />} />
-                </Route>
+                <Route path="waitlist-signup" element={<WaitlistSignup />} />
+                <Route path="waitlist-signup/confirmation" element={<Confirmation />} />
+                <Route path="dealership" element={<DealershipSignup />} />
+                <Route path="dealership/confirmation" element={<DealershipConfirmation />} />
               </Route>
               
               <Route path="/ar/offer">
                 <Route index element={<Index variant="personal" lang="ar" />} />
-                <Route path="waitlist-signup">
-                  <Route index element={<WaitlistSignup />} />
-                  <Route path="confirmation" element={<Confirmation />} />
-                </Route>
-                <Route path="dealership">
-                  <Route index element={<DealershipSignup />} />
-                  <Route path="confirmation" element={<DealershipConfirmation />} />
-                </Route>
+                <Route path="waitlist-signup" element={<WaitlistSignup />} />
+                <Route path="waitlist-signup/confirmation" element={<Confirmation />} />
+                <Route path="dealership" element={<DealershipSignup />} />
+                <Route path="dealership/confirmation" element={<DealershipConfirmation />} />
               </Route>
               
               <Route path="/ar/budget">
                 <Route index element={<Index variant="budget" lang="ar" />} />
-                <Route path="waitlist-signup">
-                  <Route index element={<WaitlistSignup />} />
-                  <Route path="confirmation" element={<Confirmation />} />
-                </Route>
-                <Route path="dealership">
-                  <Route index element={<DealershipSignup />} />
-                  <Route path="confirmation" element={<DealershipConfirmation />} />
-                </Route>
+                <Route path="waitlist-signup" element={<WaitlistSignup />} />
+                <Route path="waitlist-signup/confirmation" element={<Confirmation />} />
+                <Route path="dealership" element={<DealershipSignup />} />
+                <Route path="dealership/confirmation" element={<DealershipConfirmation />} />
               </Route>
               
               {/* Legacy Journey */}
@@ -114,6 +90,10 @@ const App = () => (
               <Route path="/financing-offers" element={<FinancingOffers />} />
               <Route path="/bank-connection" element={<BankConnection />} />
               <Route path="/waitlist-status/:statusId" element={<WaitlistStatus />} />
+
+              {/* Legacy Confirmation route for backwards compatibility */}
+              <Route path="/confirmation" element={<Confirmation />} />
+              
               <Route path="*" element={<NotFound />} />
             </Routes>
           </TooltipProvider>

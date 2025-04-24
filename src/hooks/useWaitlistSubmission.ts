@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Analytics } from '@/services/analytics';
@@ -16,6 +16,7 @@ interface FormData {
 export const useWaitlistSubmission = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const { toast } = useToast();
   const { t, language } = useTranslation();
 
@@ -79,12 +80,16 @@ export const useWaitlistSubmission = () => {
         screen: 'waitlist_form'
       });
       
-      navigate('/confirmation', { 
+      // Get the current path and append /confirmation to it
+      const currentPath = location.pathname;
+      const confirmationPath = `${currentPath}/confirmation`;
+      
+      navigate(confirmationPath, { 
         state: { 
           referralCode: referralCodeData,
           position: positionData,
           points: 100, // Pass initial points to confirmation page
-          statusId: user.status_id // Pass the status ID
+          statusId: user?.status_id // Pass the status ID
         }
       });
     } catch (error: any) {
