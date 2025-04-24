@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Linkedin, Instagram } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -21,7 +22,7 @@ const Footer = () => {
       icon: 'X',
       url: 'https://x.com/tarabutgateway',
       ariaLabel: 'X (Twitter)',
-      customIcon: '/public/lovable-uploads/28ee78a9-4729-4dc4-adbd-35f39e1683eb.png'
+      customIcon: '/Logos/tarabut-x-logo.png'  // Updated path to a more standard location
     }
   ];
 
