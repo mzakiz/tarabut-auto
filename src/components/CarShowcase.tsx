@@ -45,10 +45,10 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed', onWaitlist
   const currentTagline = taglines[variant];
   
   return (
-    <section className="relative h-screen max-h-[800px] min-h-[550px] overflow-hidden bg-tarabut-dark text-white">
+    <section className="relative w-full h-screen overflow-hidden bg-tarabut-dark">
       {/* Video Background */}
       <video
-        className="absolute top-0 left-0 w-full h-full object-cover opacity-50"
+        className="absolute inset-0 w-full h-full object-cover opacity-50"
         autoPlay
         muted
         loop
@@ -65,7 +65,7 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed', onWaitlist
             <div className="mb-3 font-mono">
               <span className="text-ksa-primary px-2 py-1 rounded-sm text-xs font-medium bg-black bg-opacity-30">2024 YARIS</span>
             </div>
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight font-founder mb-4">
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight font-founder mb-4 text-white">
               {currentTagline.tagline}
             </h1>
             <p className="text-xl md:text-2xl text-gray-300 mb-8">
