@@ -99,7 +99,7 @@ const DealershipSignup: React.FC = () => {
               <img 
                 src="/Logos/Tarabut_Auto-2.png" 
                 alt="Tarabut Auto Logo" 
-                className="h-12 w-auto"
+                className="h-24 w-auto" // Increased from h-12 to h-24
               />
             </div>
 
