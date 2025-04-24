@@ -60,25 +60,25 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed', onWaitlist
       {/* Content */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="container mx-auto px-4 sm:px-6 lg:px-10">
-          <div className="max-w-xl mx-auto text-center">
-            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight font-founder mb-4 text-white">
+          <div className="max-w-4xl mx-auto text-center">
+            <h1 className="text-4xl sm:text-5xl md:text-6xl lg:text-7xl font-bold leading-tight font-founder mb-6 text-white">
               {currentTagline.tagline}
             </h1>
-            <p className="text-xl md:text-2xl text-gray-300 mb-8">
+            <p className="text-xl md:text-2xl lg:text-3xl text-tarabut-teal mb-12">
               {currentTagline.subtitle}
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-4 justify-center">
+            <div className="flex flex-col sm:flex-row gap-6 justify-center">
               <Button
                 onClick={handleWaitlistClick}
-                className="bg-ksa-primary hover:bg-ksa-primary/90 text-white min-h-[44px] font-medium text-lg px-6"
+                className="bg-tarabut-teal hover:bg-tarabut-teal/90 text-tarabut-dark min-h-[44px] font-medium text-lg px-8 py-6"
               >
                 {t('waitlist.join')}
               </Button>
               <Button
                 variant="outline"
                 onClick={handleDealershipClick}
-                className="bg-transparent border-white text-white hover:bg-white/10 min-h-[44px]"
+                className="bg-transparent border-white text-white hover:bg-white/10 min-h-[44px] text-lg px-8 py-6"
               >
                 {t('dealership.cta')}
               </Button>
