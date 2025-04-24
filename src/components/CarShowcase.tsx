@@ -1,9 +1,9 @@
 
 import React from 'react';
-import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useNavigate } from 'react-router-dom';
+import VideoBackground from './showcase/VideoBackground';
+import ShowcaseButtons from './showcase/ShowcaseButtons';
 
 interface CarShowcaseProps {
   variant?: 'speed' | 'personal' | 'budget';
@@ -13,19 +13,7 @@ interface CarShowcaseProps {
 const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed', onWaitlistCTAClick }) => {
   const { t } = useTranslation();
   const { language } = useLanguage();
-  const navigate = useNavigate();
   const isRTL = language === 'ar';
-
-  const handleWaitlistClick = () => {
-    if (onWaitlistCTAClick) {
-      onWaitlistCTAClick();
-    }
-    navigate('/waitlist-signup');
-  };
-
-  const handleDealershipClick = () => {
-    navigate('/dealership-signup');
-  };
 
   const taglines = {
     speed: {
@@ -46,19 +34,8 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed', onWaitlist
   
   return (
     <section className="relative w-full h-screen flex flex-col overflow-hidden bg-tarabut-dark" style={{ minHeight: '100vh' }}>
-      {/* Video Background */}
-      <video
-        className="absolute inset-0 w-full h-full object-cover opacity-50"
-        autoPlay
-        muted
-        loop
-        playsInline
-        preload="auto"
-      >
-        <source src="/Camry-2.mp4" type="video/mp4" />
-      </video>
+      <VideoBackground />
       
-      {/* Content */}
       <div className="absolute inset-0 flex items-center justify-center">
         <div className="container mx-auto px-4 sm:px-6 lg:px-10">
           <div className="max-w-6xl mx-auto text-center">
@@ -69,21 +46,7 @@ const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed', onWaitlist
               {currentTagline.subtitle}
             </p>
             
-            <div className="flex flex-col sm:flex-row gap-6 justify-center items-center">
-              <Button
-                onClick={handleWaitlistClick}
-                className="bg-tarabut-teal hover:bg-tarabut-teal/90 text-tarabut-dark min-h-[56px] font-medium text-xl px-10 py-7 w-full sm:w-auto"
-              >
-                {t('waitlist.join')}
-              </Button>
-              <Button
-                variant="outline"
-                onClick={handleDealershipClick}
-                className="bg-transparent border-2 border-white text-white hover:bg-white/10 min-h-[56px] text-xl px-10 py-7 w-full sm:w-auto"
-              >
-                {t('dealership.cta')}
-              </Button>
-            </div>
+            <ShowcaseButtons onWaitlistCTAClick={onWaitlistCTAClick} />
           </div>
         </div>
       </div>
