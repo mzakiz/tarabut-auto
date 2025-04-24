@@ -48,6 +48,7 @@ export type Database = {
           position: number
           referral_code: string
           referrer_code: string | null
+          status_id: string
           updated_at: string | null
         }
         Insert: {
@@ -61,6 +62,7 @@ export type Database = {
           position: number
           referral_code: string
           referrer_code?: string | null
+          status_id?: string
           updated_at?: string | null
         }
         Update: {
@@ -74,6 +76,7 @@ export type Database = {
           position?: number
           referral_code?: string
           referrer_code?: string | null
+          status_id?: string
           updated_at?: string | null
         }
         Relationships: []

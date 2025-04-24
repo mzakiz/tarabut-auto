@@ -19,6 +19,7 @@ const Confirmation = () => {
   
   const referralCode = location.state?.referralCode || 'TOYOTA25';
   const waitlistPosition = location.state?.position || 42;
+  const statusId = location.state?.statusId; // New status ID from form submission
   
   useAnalyticsPage('Thank You Page', {
     language,
@@ -60,6 +61,26 @@ const Confirmation = () => {
       language
     });
     navigate('/');
+  };
+
+  const copyStatusUrl = () => {
+    if (!statusId) return;
+    
+    const statusUrl = `${window.location.origin}/waitlist-status/${statusId}`;
+    navigator.clipboard.writeText(statusUrl);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000);
+    
+    toast({
+      title: t('confirmation.status.copied'),
+      description: t('confirmation.status.url.description'),
+    });
+    
+    Analytics.trackCTAClicked({
+      element: 'copy_status_url',
+      screen: 'thank_you_page',
+      language
+    });
   };
 
   return (
@@ -125,6 +146,29 @@ const Confirmation = () => {
                 {t('confirmation.share.bonus')}
               </p>
             </div>
+
+            {/* Status URL Section */}
+            {statusId && (
+              <div className="border border-gray-200 rounded-lg p-4 mb-6">
+                <p className="text-sm font-medium text-gray-800 mb-2">
+                  {t('confirmation.status.url.title')}:
+                </p>
+                <div className="flex items-center">
+                  <div className="flex-1 bg-gray-50 border border-gray-200 rounded-l-md px-4 py-2 text-gray-800 font-mono truncate">
+                    {`${window.location.origin}/waitlist-status/${statusId}`}
+                  </div>
+                  <button 
+                    onClick={copyStatusUrl}
+                    className="bg-gray-100 border border-gray-200 border-l-0 rounded-r-md px-3 py-2 text-gray-600 hover:bg-gray-200 transition-colors"
+                  >
+                    {copied ? <Check className="h-5 w-5 text-green-600" /> : <Copy className="h-5 w-5" />}
+                  </button>
+                </div>
+                <p className="text-xs text-gray-500 mt-2">
+                  {t('confirmation.status.url.description')}
+                </p>
+              </div>
+            )}
 
             {/* Back to Home Button */}
             <Button 

@@ -45,7 +45,7 @@ export const useWaitlistSubmission = () => {
           display_alias: displayAlias,
           points: 100 // Initial points
         })
-        .select('position, points, referral_code')
+        .select('position, points, referral_code, status_id')
         .single();
       
       if (error) {
@@ -83,7 +83,8 @@ export const useWaitlistSubmission = () => {
         state: { 
           referralCode: referralCodeData,
           position: positionData,
-          points: 100 // Pass initial points to confirmation page
+          points: 100, // Pass initial points to confirmation page
+          statusId: user.status_id // Pass the status ID
         }
       });
     } catch (error: any) {

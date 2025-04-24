@@ -1,3 +1,4 @@
+import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
 import { TooltipProvider } from "@/components/ui/tooltip";
@@ -15,6 +16,7 @@ import { LanguageProvider } from "./contexts/LanguageContext";
 import WaitlistSignup from "./pages/WaitlistSignup";
 import DealershipSignup from "./pages/DealershipSignup";
 import DealershipConfirmation from "./pages/DealershipConfirmation";
+import WaitlistStatus from "./pages/WaitlistStatus";
 
 const queryClient = new QueryClient();
 
@@ -111,6 +113,7 @@ const App = () => (
               <Route path="/nafath-verification" element={<NafathVerification />} />
               <Route path="/financing-offers" element={<FinancingOffers />} />
               <Route path="/bank-connection" element={<BankConnection />} />
+              <Route path="/waitlist-status/:statusId" element={<WaitlistStatus />} />
               <Route path="*" element={<NotFound />} />
             </Routes>
           </TooltipProvider>

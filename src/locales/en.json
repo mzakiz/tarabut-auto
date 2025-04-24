@@ -163,5 +163,14 @@
     "tier.standard": "Standard",
     "confirmation.your.tier": "Your Current Tier",
     "confirmation.points": "Points",
-    "confirmation.points.description": "Earn more points by referring friends"
+    "confirmation.points.description": "Earn more points by referring friends",
+    "confirmation.status.url.title": "Your Status URL",
+    "confirmation.status.url.description": "Share this link to check your waitlist status anytime",
+    "confirmation.status.copied": "Status URL copied!",
+    "waitlist.status.check": "Check Your Waitlist Status",
+    "waitlist.status.verify": "Verify Status",
+    "waitlist.status.invalid_credentials": "Invalid phone number or email",
+    "waitlist.status.error": "Unable to verify your status. Please try again.",
+    "waitlist.position": "Position",
+    "waitlist.points": "Points"
 }
