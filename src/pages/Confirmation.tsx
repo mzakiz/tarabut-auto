@@ -1,20 +1,35 @@
 
 import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 import { Check, Copy, Share2, ArrowRight, Trophy } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/components/ui/use-toast';
 import { Progress } from '@/components/ui/progress';
 import { useIsMobile } from '@/hooks/use-mobile';
 import confetti from 'canvas-confetti';
+import { useAnalyticsPage, Analytics } from '@/services/analytics';
+import { useLanguage } from '@/contexts/LanguageContext';
+import { useTranslation } from '@/hooks/useTranslation';
 
 const Confirmation = () => {
   const [copied, setCopied] = useState(false);
   const navigate = useNavigate();
+  const location = useLocation();
   const isMobile = useIsMobile();
-  const referralCode = 'TOYOTA25';
+  const { language } = useLanguage();
+  const { t } = useTranslation();
+  
+  // Get data from location state or use defaults
+  const referralCode = location.state?.referralCode || 'TOYOTA25';
+  const waitlistPosition = location.state?.position || 42;
   const affordabilityAmount = 320000;
-  const waitlistPosition = 42; // This would typically come from your backend
+  
+  // Track page view
+  useAnalyticsPage('Thank You Page', {
+    language,
+    waitlist_position: waitlistPosition,
+    has_referral: !!location.state?.referralCode
+  });
   
   React.useEffect(() => {
     // Launch confetti when component mounts
@@ -34,6 +49,63 @@ const Confirmation = () => {
       title: "Referral code copied!",
       description: "Share with friends to move up the waitlist.",
     });
+    
+    // Track the copy action
+    Analytics.trackCTAClicked({
+      element: 'copy_referral_code',
+      screen: 'thank_you_page',
+      language
+    });
+  };
+  
+  const handleBackToHome = () => {
+    // Track the navigation action
+    Analytics.trackCTAClicked({
+      element: 'return_home',
+      screen: 'thank_you_page',
+      language
+    });
+    navigate('/');
+  };
+  
+  const handleShare = (method: string) => {
+    // Track the share action
+    Analytics.trackReferralShared({
+      method,
+      screen: 'thank_you_page',
+      language
+    });
+    
+    // Share functionality would vary by method
+    // For now we just show a toast
+    toast({
+      title: "Sharing via " + method,
+      description: "Share your referral code with friends",
+    });
+    
+    // In a real implementation, we would handle different share methods
+    switch (method) {
+      case 'whatsapp':
+        window.open(`https://wa.me/?text=Join%20Tarabut%20Auto%20waitlist%20with%20my%20code:%20${referralCode}`, '_blank');
+        break;
+        
+      case 'twitter':
+        window.open(`https://twitter.com/intent/tweet?text=Join%20Tarabut%20Auto%20waitlist%20with%20my%20code:%20${referralCode}`, '_blank');
+        break;
+        
+      case 'email':
+        window.location.href = `mailto:?subject=Join%20Tarabut%20Auto%20Waitlist&body=Use%20my%20referral%20code:%20${referralCode}`;
+        break;
+        
+      default:
+        if (navigator.share) {
+          navigator.share({
+            title: 'Join Tarabut Auto Waitlist',
+            text: `Use my referral code: ${referralCode}`,
+            url: window.location.origin,
+          });
+        }
+    }
   };
 
   return (
@@ -131,27 +203,42 @@ const Confirmation = () => {
               
               <div className="space-y-4">
                 <Button 
-                  onClick={() => navigate('/')}
+                  onClick={handleBackToHome}
                   className="w-full bg-ksa-primary hover:bg-ksa-primary/90 text-white"
                 >
                   Back to Home
                   <ArrowRight className="ml-2 h-4 w-4" />
                 </Button>
                 
-                <Button 
-                  variant="outline"
-                  onClick={() => {
-                    // Share functionality would go here
-                    toast({
-                      title: "Sharing options",
-                      description: "Share your referral code with friends",
-                    });
-                  }}
-                  className="w-full"
-                >
-                  <Share2 className="mr-2 h-4 w-4" />
-                  Share with Friends
-                </Button>
+                <div className="grid grid-cols-3 gap-3">
+                  <Button 
+                    variant="outline"
+                    onClick={() => handleShare('whatsapp')}
+                    className="flex flex-col items-center justify-center py-2 px-1"
+                    size="sm"
+                  >
+                    <span className="text-lg mb-1">📱</span>
+                    <span className="text-xs">WhatsApp</span>
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => handleShare('twitter')}
+                    className="flex flex-col items-center justify-center py-2 px-1"
+                    size="sm"
+                  >
+                    <span className="text-lg mb-1">🐦</span>
+                    <span className="text-xs">Twitter</span>
+                  </Button>
+                  <Button 
+                    variant="outline"
+                    onClick={() => handleShare('email')}
+                    className="flex flex-col items-center justify-center py-2 px-1"
+                    size="sm"
+                  >
+                    <span className="text-lg mb-1">✉️</span>
+                    <span className="text-xs">Email</span>
+                  </Button>
+                </div>
               </div>
             </div>
           </div>

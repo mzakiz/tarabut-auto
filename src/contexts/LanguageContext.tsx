@@ -50,6 +50,9 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       if (path.includes('/ar/') && language !== 'ar') {
         setLanguageState('ar');
         console.log('[LanguageContext] URL changed, setting language to ar');
+        
+        // We don't track here because this is an automatic change
+        // The manual language switch is tracked in the Header component
       } else if (!path.includes('/ar/') && language !== 'en') {
         setLanguageState('en');
         console.log('[LanguageContext] URL changed, setting language to en');
@@ -77,6 +80,15 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     
     // Update the language state
     setLanguageState(newLanguage);
+    
+    // Track document direction for RTL support
+    if (newLanguage === 'ar') {
+      document.documentElement.dir = 'rtl';
+      document.documentElement.lang = 'ar';
+    } else {
+      document.documentElement.dir = 'ltr';
+      document.documentElement.lang = 'en';
+    }
     
     // Reset the flag after a delay to allow for navigation to complete
     setTimeout(() => {

@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { useIsMobile } from '@/hooks/use-mobile';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { Analytics } from '@/services/analytics';
 import Navigation from './Navigation';
 import LanguageDropdown from './LanguageDropdown';
 
@@ -30,6 +31,13 @@ const Header = () => {
       console.log(`Ignoring language change request - already ${language} or changing`);
       return;
     }
+    
+    // Track language change
+    Analytics.trackLanguageSwitched({
+      from: language,
+      to: newLanguage,
+      screen: 'landing_page'
+    });
     
     const pathParts = location.pathname.split('/');
     let variant = 'speed';
@@ -81,7 +89,22 @@ const Header = () => {
               variant="ghost" 
               size="icon"
               className="text-white min-w-[44px] min-h-[44px] p-2"
-              onClick={() => setMobileMenuOpen(!mobileMenuOpen)}
+              onClick={() => {
+                setMobileMenuOpen(!mobileMenuOpen);
+                if (!mobileMenuOpen) {
+                  Analytics.trackCTAClicked({
+                    element: 'mobile_menu_open',
+                    screen: 'landing_page',
+                    language
+                  });
+                } else {
+                  Analytics.trackCTAClicked({
+                    element: 'mobile_menu_close',
+                    screen: 'landing_page',
+                    language
+                  });
+                }
+              }}
             >
               {mobileMenuOpen ? (
                 <X className="w-6 h-6" />

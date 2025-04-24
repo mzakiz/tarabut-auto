@@ -1,4 +1,5 @@
-import React from 'react';
+
+import React, { useRef, useEffect } from 'react';
 import Header from '@/components/header/Header';
 import CarShowcase from '@/components/CarShowcase';
 import FeaturesSection from '@/components/FeaturesSection';
@@ -6,6 +7,8 @@ import Footer from '@/components/Footer';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Head } from '@/components/Head';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useAnalyticsPage, Analytics, useDeviceDetection } from '@/services/analytics';
+import { useInView } from 'react-intersection-observer';
 
 interface IndexProps {
   variant?: 'speed' | 'personal' | 'budget';
@@ -13,8 +16,36 @@ interface IndexProps {
 }
 
 const Index: React.FC<IndexProps> = ({ variant = 'speed', lang }) => {
-  const { setLanguage } = useLanguage();
+  const { setLanguage, language } = useLanguage();
   const { t } = useTranslation();
+  const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
+  
+  // Track page view
+  useAnalyticsPage('Landing Page', {
+    language,
+    variant
+  });
+  
+  // Track device information
+  useDeviceDetection();
+  
+  // Hero section scroll tracking with Intersection Observer
+  const { ref: heroRef, inView: heroInView } = useInView({
+    threshold: 0.5,
+    triggerOnce: true
+  });
+  
+  // Features section scroll tracking
+  const { ref: featuresRef, inView: featuresInView } = useInView({
+    threshold: 0.3,
+    triggerOnce: true
+  });
+  
+  // Specs section scroll tracking
+  const { ref: specsRef, inView: specsInView } = useInView({
+    threshold: 0.3,
+    triggerOnce: true
+  });
 
   React.useEffect(() => {
     if (lang) {
@@ -36,6 +67,14 @@ const Index: React.FC<IndexProps> = ({ variant = 'speed', lang }) => {
               top: targetElement.offsetTop - 80,
               behavior: 'smooth'
             });
+            
+            // Track section navigation
+            Analytics.trackCTAClicked({
+              element: `navigate_to_${targetId}`,
+              screen: 'landing_page',
+              language,
+              variant
+            });
           }
         }
       });
@@ -46,7 +85,52 @@ const Index: React.FC<IndexProps> = ({ variant = 'speed', lang }) => {
         anchor.removeEventListener('click', function() {});
       });
     };
-  }, []);
+  }, [language, variant]);
+  
+  // Track when hero section comes into view
+  useEffect(() => {
+    if (heroInView) {
+      Analytics.trackSectionScrolledTo({
+        section: 'hero',
+        screen: 'landing_page',
+        language,
+        variant
+      });
+    }
+  }, [heroInView, language, variant]);
+  
+  // Track when features section comes into view
+  useEffect(() => {
+    if (featuresInView) {
+      Analytics.trackSectionScrolledTo({
+        section: 'features',
+        screen: 'landing_page',
+        language,
+        variant
+      });
+    }
+  }, [featuresInView, language, variant]);
+  
+  // Track when specs section comes into view
+  useEffect(() => {
+    if (specsInView) {
+      Analytics.trackSectionScrolledTo({
+        section: 'specs',
+        screen: 'landing_page',
+        language,
+        variant
+      });
+    }
+  }, [specsInView, language, variant]);
+
+  const handleWaitlistCTA = () => {
+    Analytics.trackCTAClicked({
+      element: 'get_on_waitlist',
+      screen: 'landing_page',
+      language,
+      variant
+    });
+  };
 
   return (
     <div className="min-h-screen bg-white overflow-x-hidden">
@@ -55,17 +139,21 @@ const Index: React.FC<IndexProps> = ({ variant = 'speed', lang }) => {
         description="Experience the best car deals in Saudi Arabia with Shariah-compliant financing options tailored to your needs."
       />
       <Header />
-      <CarShowcase variant={variant} />
-      <FeaturesSection />
+      <div ref={heroRef}>
+        <CarShowcase variant={variant} onWaitlistCTAClick={handleWaitlistCTA} />
+      </div>
+      <div ref={featuresRef}>
+        <FeaturesSection />
+      </div>
       
-      <section id="specs" className="py-12 md:py-20 bg-gray-100">
+      <section id="specs" ref={specsRef} className="py-12 md:py-20 bg-gray-100">
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 md:mb-16">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-ksa-dark mb-3 md:mb-4">
-              {t('specs.title')}
+              {t('car.specs')}
             </h2>
             <p className="text-base md:text-lg text-gray-600 max-w-3xl mx-auto px-2">
-              {t('specs.subtitle')}
+              {t('car.specs.description')}
             </p>
           </div>
           

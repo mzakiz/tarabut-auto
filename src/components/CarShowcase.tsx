@@ -1,164 +1,91 @@
 
-import React, { useState, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React from 'react';
 import { Button } from '@/components/ui/button';
-import { motion } from 'framer-motion';
-import { Link } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useLanguage } from '@/contexts/LanguageContext';
+import { useNavigate } from 'react-router-dom';
 
 interface CarShowcaseProps {
   variant?: 'speed' | 'personal' | 'budget';
+  onWaitlistCTAClick?: () => void;
 }
 
-const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed' }) => {
+const CarShowcase: React.FC<CarShowcaseProps> = ({ variant = 'speed', onWaitlistCTAClick }) => {
+  const { t } = useTranslation();
+  const { language } = useLanguage();
   const navigate = useNavigate();
-  const { t, language, isChangingLanguage } = useTranslation();
-  const isRtl = language === 'ar';
-  const [videoLoaded, setVideoLoaded] = useState(false);
-  
-  const handleSignupClick = () => {
+  const isRTL = language === 'ar';
+
+  const handleWaitlistClick = () => {
+    if (onWaitlistCTAClick) {
+      onWaitlistCTAClick();
+    }
     navigate('/waitlist-signup');
   };
 
-  // Use the correct translation keys based on variant
-  const getTaglineKey = () => {
-    if (variant === 'personal') return 'offer.tagline';
-    if (variant === 'budget') return 'budget.tagline';
-    return 'speed.tagline'; // default to speed
+  const handleDealershipClick = () => {
+    navigate('/dealership-signup');
   };
+
+  const taglines = {
+    speed: {
+      tagline: t('speed.tagline'),
+      subtitle: t('speed.subtitle')
+    },
+    personal: {
+      tagline: t('offer.tagline'),
+      subtitle: t('offer.subtitle')
+    },
+    budget: {
+      tagline: t('budget.tagline'),
+      subtitle: t('budget.subtitle')
+    }
+  };
+
+  const currentTagline = taglines[variant];
   
-  const getSubtitleKey = () => {
-    if (variant === 'personal') return 'offer.subtitle';
-    if (variant === 'budget') return 'budget.subtitle';
-    return 'speed.subtitle'; // default to speed
-  };
-
-  // Preload the video as early as possible
-  useEffect(() => {
-    // Create a video element to start loading the video in the background
-    const videoPreload = document.createElement('video');
-    videoPreload.src = '/Camry-2.mp4';
-    videoPreload.preload = 'auto';
-    videoPreload.muted = true;
-    videoPreload.style.display = 'none';
-    document.body.appendChild(videoPreload);
-    
-    // Start loading the video
-    videoPreload.load();
-    
-    // Remove the element after it's loaded
-    videoPreload.onloadeddata = () => {
-      setVideoLoaded(true);
-      setTimeout(() => {
-        document.body.removeChild(videoPreload);
-      }, 1000);
-    };
-    
-    return () => {
-      if (document.body.contains(videoPreload)) {
-        document.body.removeChild(videoPreload);
-      }
-    };
-  }, []);
-
   return (
-    <section className="relative h-screen w-full overflow-hidden bg-black">
-      {/* Video Background with fade-in transition */}
-      <div className="absolute inset-0 w-full h-full bg-black">
-        <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: videoLoaded ? 1 : 0 }}
-          transition={{ duration: 0.8 }}
-          className="w-full h-full"
-        >
-          <video
-            autoPlay
-            loop
-            muted
-            playsInline
-            preload="auto"
-            className="w-full h-full object-cover"
-            style={{ opacity: videoLoaded ? 1 : 0 }}
-          >
-            <source src="/Camry-2.mp4" type="video/mp4" />
-          </video>
-          <div className="absolute inset-0 bg-black/40"></div>
-        </motion.div>
-      </div>
+    <section className="relative h-screen max-h-[800px] min-h-[550px] overflow-hidden bg-tarabut-dark text-white">
+      {/* Video Background */}
+      <video
+        className="absolute top-0 left-0 w-full h-full object-cover opacity-50"
+        autoPlay
+        muted
+        loop
+        playsInline
+        preload="auto"
+      >
+        <source src="/Camry-2.mp4" type="video/mp4" />
+      </video>
       
-      {/* Content Overlay */}
-      <div className="relative h-full flex flex-col justify-between">
-        {/* Main Content */}
-        <div className="flex-grow flex items-center justify-center p-4">
-          <div className="max-w-4xl text-center text-white">
-            <motion.div
-              initial={{ opacity: 0, y: 20 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ duration: 0.8 }}
-            >
-              <h1 className="text-3xl md:text-4xl lg:text-5xl font-founder font-medium tracking-wide leading-tight mb-4 text-white">
-                {isChangingLanguage ? '...' : t(getTaglineKey())}
-              </h1>
-              
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.6, duration: 0.8 }}
+      {/* Content */}
+      <div className="absolute inset-0 flex items-center">
+        <div className={`container mx-auto px-4 sm:px-6 lg:px-10 flex ${isRTL ? 'justify-end text-right' : 'justify-start text-left'}`}>
+          <div className={`max-w-xl ${isRTL ? 'mr-0 ml-auto' : 'ml-0'}`}>
+            <div className="mb-3 font-mono">
+              <span className="text-ksa-primary px-2 py-1 rounded-sm text-xs font-medium bg-black bg-opacity-30">2024 YARIS</span>
+            </div>
+            <h1 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold leading-tight font-founder mb-4">
+              {currentTagline.tagline}
+            </h1>
+            <p className="text-xl md:text-2xl text-gray-300 mb-8">
+              {currentTagline.subtitle}
+            </p>
+            
+            <div className={`flex flex-col sm:flex-row gap-4 ${isRTL ? 'items-end' : 'items-start'}`}>
+              <Button
+                onClick={handleWaitlistClick}
+                className="bg-ksa-primary hover:bg-ksa-primary/90 text-white min-h-[44px] font-medium text-lg px-6"
               >
-                <h3 className="text-lg md:text-xl lg:text-2xl font-founder tracking-wide text-tarabut-teal leading-tight mb-12">
-                  {isChangingLanguage ? '...' : t(getSubtitleKey())}
-                </h3>
-              </motion.div>
-              
-              <motion.div
-                initial={{ opacity: 0 }}
-                animate={{ opacity: 1 }}
-                transition={{ delay: 0.8, duration: 0.8 }}
-                className="space-y-4"
+                {t('waitlist.join')}
+              </Button>
+              <Button
+                variant="outline"
+                onClick={handleDealershipClick}
+                className="bg-transparent border-white text-white hover:bg-white/10 min-h-[44px]"
               >
-                <div className="flex flex-col sm:flex-row gap-6 justify-center">
-                  <Button 
-                    className="bg-tarabut-teal hover:bg-tarabut-teal/90 text-black font-semibold px-6 py-4 rounded-lg text-base"
-                    onClick={handleSignupClick}
-                    disabled={isChangingLanguage}
-                  >
-                    {isChangingLanguage ? '...' : t('waitlist.join')}
-                  </Button>
-                  
-                  <Link 
-                    to="/dealership-signup" 
-                    className="inline-flex items-center justify-center text-white hover:text-tarabut-teal transition-colors px-4 py-2 text-base"
-                    tabIndex={isChangingLanguage ? -1 : 0}
-                  >
-                    {isChangingLanguage ? '...' : t('dealership.cta')}
-                  </Link>
-                </div>
-              </motion.div>
-            </motion.div>
-          </div>
-        </div>
-
-        {/* Car Metrics - reduced font sizes */}
-        <div className="w-full py-6 bg-transparent">
-          <div className="container mx-auto px-4">
-            <div className="grid grid-cols-4 gap-4 text-center text-white">
-              <div className="flex flex-col items-center">
-                <div className="text-xs uppercase tracking-wider mb-1">{isChangingLanguage ? '...' : t('metrics.engine')}</div>
-                <div className="text-lg md:text-xl font-semibold">{isChangingLanguage ? '...' : t('metrics.engine.value')}</div>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="text-xs uppercase tracking-wider mb-1">{isChangingLanguage ? '...' : t('metrics.monthly')}</div>
-                <div className="text-lg md:text-xl font-semibold">{isChangingLanguage ? '...' : t('metrics.monthly.value')}</div>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="text-xs uppercase tracking-wider mb-1">{isChangingLanguage ? '...' : t('metrics.power')}</div>
-                <div className="text-lg md:text-xl font-semibold">{isChangingLanguage ? '...' : t('metrics.power.value')}</div>
-              </div>
-              <div className="flex flex-col items-center">
-                <div className="text-xs uppercase tracking-wider mb-1">{isChangingLanguage ? '...' : t('metrics.fuel')}</div>
-                <div className="text-lg md:text-xl font-semibold">{isChangingLanguage ? '...' : t('metrics.fuel.value')}</div>
-              </div>
+                {t('dealership.cta')}
+              </Button>
             </div>
           </div>
         </div>
