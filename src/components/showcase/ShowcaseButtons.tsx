@@ -2,7 +2,7 @@
 import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
-import { useNavigate } from 'react-router-dom';
+import { useNavigate, useLocation } from 'react-router-dom';
 
 interface ShowcaseButtonsProps {
   onWaitlistCTAClick?: () => void;
@@ -11,12 +11,26 @@ interface ShowcaseButtonsProps {
 const ShowcaseButtons: React.FC<ShowcaseButtonsProps> = ({ onWaitlistCTAClick }) => {
   const { t } = useTranslation();
   const navigate = useNavigate();
+  const location = useLocation();
 
   const handleWaitlistClick = () => {
     if (onWaitlistCTAClick) {
       onWaitlistCTAClick();
     }
-    navigate('/waitlist-signup');
+    
+    // Extract current language and variant from URL
+    const pathParts = location.pathname.split('/');
+    let lang = 'en';
+    let variant = 'speed';
+    
+    if (pathParts.length >= 3) {
+      // URL format is /{lang}/{variant}/...
+      lang = pathParts[1] || 'en';
+      variant = pathParts[2] || 'speed';
+    }
+    
+    // Navigate to the waitlist signup with the correct path structure
+    navigate(`/${lang}/${variant}/waitlist-signup`);
   };
 
   const handleDealershipClick = () => {
