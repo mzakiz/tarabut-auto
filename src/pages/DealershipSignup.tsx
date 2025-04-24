@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -12,10 +11,22 @@ import { zodResolver } from '@hookform/resolvers/zod';
 import { useForm } from 'react-hook-form';
 import * as z from 'zod';
 
+const PERSONAL_EMAIL_DOMAINS = [
+  'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 
+  'aol.com', 'mail.com', 'protonmail.com', 'zoho.com'
+];
+
 const formSchema = z.object({
   name: z.string().min(2, { message: "Name must be at least 2 characters" }),
-  email: z.string().email({ message: "Please enter a valid email address" }),
-  phone: z.string().min(9, { message: "Please enter a valid phone number" }),
+  email: z.string()
+    .email({ message: "Please enter a valid email address" })
+    .refine((email) => {
+      const domain = email.split('@')[1].toLowerCase();
+      return !PERSONAL_EMAIL_DOMAINS.includes(domain);
+    }, { message: "Please use your work email address" }),
+  phone: z.string()
+    .regex(/^[0-9]{9}$/, { message: "Phone number must be exactly 9 digits" })
+    .transform(val => `+966${val}`),
   dealershipName: z.string().min(2, { message: "Dealership name must be at least 2 characters" })
 });
 
@@ -55,12 +66,10 @@ const DealershipSignup: React.FC = () => {
         description: "Your dealership has been registered successfully!"
       });
       
-      // Extract path parts for the new routing structure
       const pathParts = location.pathname.split('/');
       const lang = pathParts[1] || 'en';
       const variant = pathParts[2] || 'speed';
       
-      // Navigate to confirmation page with the correct path
       navigate(`/${lang}/${variant}/dealership/confirmation`);
     } catch (error: any) {
       console.error('Error registering dealership:', error);
@@ -99,7 +108,7 @@ const DealershipSignup: React.FC = () => {
               <img 
                 src="/Logos/Tarabut_Auto-2.png" 
                 alt="Tarabut Auto Logo" 
-                className="h-24 w-auto" // Increased from h-12 to h-24
+                className="h-24 w-auto"
               />
             </div>
 
@@ -171,14 +180,21 @@ const DealershipSignup: React.FC = () => {
                   render={({ field }) => (
                     <FormItem>
                       <FormLabel>Phone Number <span className="text-red-500">*</span></FormLabel>
-                      <FormControl>
-                        <Input 
-                          placeholder="Business phone number" 
-                          className="h-12" 
-                          {...field} 
-                        />
-                      </FormControl>
+                      <div className="relative">
+                        <span className="absolute left-3 top-1/2 -translate-y-1/2 text-gray-500">
+                          +966
+                        </span>
+                        <FormControl>
+                          <Input 
+                            placeholder="5XXXXXXXX" 
+                            className="h-12 pl-16"
+                            maxLength={9}
+                            {...field} 
+                          />
+                        </FormControl>
+                      </div>
                       <FormMessage />
+                      <p className="text-sm text-gray-500 mt-1">Enter 9 digits after +966</p>
                     </FormItem>
                   )}
                 />
