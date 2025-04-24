@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -14,7 +13,7 @@ import { useTranslation } from '@/hooks/useTranslation';
 const WaitlistSignup: React.FC = () => {
   const [name, setName] = useState('');
   const [email, setEmail] = useState('');
-  const [phoneNumber, setPhoneNumber] = useState(''); // Changed from phone to phoneNumber
+  const [phoneNumber, setPhoneNumber] = useState('');
   const [referralCode, setReferralCode] = useState('');
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [formTouched, setFormTouched] = useState<Record<string, boolean>>({});
@@ -39,7 +38,7 @@ const WaitlistSignup: React.FC = () => {
   };
 
   const validateReferralCode = async (code: string) => {
-    if (!code) return true; // Optional field
+    if (!code) return true;
     const { data } = await supabase
       .from('waitlist_users')
       .select('referral_code')
@@ -86,7 +85,6 @@ const WaitlistSignup: React.FC = () => {
     }));
   };
 
-  // Get full phone number with prefix for submission
   const getFullPhoneNumber = () => {
     return `+966${phoneNumber}`;
   };
@@ -152,25 +150,45 @@ const WaitlistSignup: React.FC = () => {
           position: positionData
         });
       
-      if (error) throw error;
-      
-      toast({
-        title: t('form.success'),
-        description: t('form.added')
-      });
-      
-      Analytics.trackWaitlistFormSubmitted({
-        success: true,
-        language,
-        screen: 'waitlist_form'
-      });
-      
-      navigate('/confirmation', { 
-        state: { 
-          referralCode: referralCodeData,
-          position: positionData
+      if (error) {
+        if (error.code === '23505' && error.message.includes('waitlist_users_email_key')) {
+          const { data: existingUser, error: existingUserError } = await supabase
+            .from('waitlist_users')
+            .select('position')
+            .eq('email', email)
+            .maybeSingle();
+
+          if (existingUser) {
+            toast({
+              title: "You're Already on the Waitlist!",
+              description: `Your current position is ${existingUser.position}. We'll reach out to you soon!`,
+              variant: "default"
+            });
+          } else {
+            throw error;
+          }
+        } else {
+          throw error;
         }
-      });
+      } else {
+        toast({
+          title: t('form.success'),
+          description: t('form.added')
+        });
+        
+        Analytics.trackWaitlistFormSubmitted({
+          success: true,
+          language,
+          screen: 'waitlist_form'
+        });
+        
+        navigate('/confirmation', { 
+          state: { 
+            referralCode: referralCodeData,
+            position: positionData
+          }
+        });
+      }
     } catch (error: any) {
       console.error('Error joining waitlist:', error);
       toast({
@@ -271,7 +289,6 @@ const WaitlistSignup: React.FC = () => {
                       id="phone"
                       value={phoneNumber}
                       onChange={(e) => {
-                        // Only allow digits
                         const value = e.target.value.replace(/\D/g, '');
                         setPhoneNumber(value);
                       }}
