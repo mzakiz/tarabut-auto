@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -62,11 +63,11 @@ const WaitlistSignup: React.FC = () => {
 
   return (
     <div className="min-h-screen bg-white">
-      <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
+      <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8 relative">
         <Button 
           variant="ghost" 
           onClick={handleBack}
-          className="mb-6"
+          className={`absolute top-4 ${language === 'ar' ? 'right-4' : 'left-4'}`}
         >
           {language === 'ar' ? (
             <>
