@@ -72,7 +72,7 @@ const Header = () => {
         <div className="flex justify-between items-center">
           <div className="flex items-center">
             <img 
-              src="/Logos/tarabut_logo_no_text.png" 
+              src="/lovable-uploads/e36808ad-ab3e-4800-8df3-7ee5779a2624.png" 
               alt="Tarabut Logo" 
               className="h-6 md:h-8 w-auto mr-3"
             />

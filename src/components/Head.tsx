@@ -8,7 +8,7 @@ interface HeadProps {
 }
 
 export const Head = ({ 
-  title = 'Tarabut Auto', 
+  title = 'Tarabut Auto - Islamic Car Financing', 
   description = 'Get Shariah-compliant car financing with Tarabut Auto. Join our waitlist for exclusive access to the best Murabaha car financing deals.'
 }: HeadProps) => {
   const { language } = useLanguage();
