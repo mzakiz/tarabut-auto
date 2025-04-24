@@ -1,4 +1,3 @@
-
 import React, { useRef, useEffect } from 'react';
 import Header from '@/components/header/Header';
 import CarShowcase from '@/components/CarShowcase';
@@ -9,6 +8,7 @@ import { Head } from '@/components/Head';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useAnalyticsPage, Analytics, useDeviceDetection } from '@/services/analytics';
 import { useInView } from 'react-intersection-observer';
+import AffordabilityCalculator from '@/components/AffordabilityCalculator';
 
 interface IndexProps {
   variant?: 'speed' | 'personal' | 'budget';
@@ -146,7 +146,7 @@ const Index: React.FC<IndexProps> = ({ variant = 'speed', lang }) => {
         <FeaturesSection />
       </div>
       
-      <section id="specs" ref={specsRef} className="py-12 md:py-20 bg-gray-100">
+      <section id="specs" ref={specsRef}>
         <div className="container mx-auto px-4 sm:px-6 lg:px-8">
           <div className="text-center mb-8 md:mb-16">
             <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-ksa-dark mb-3 md:mb-4">
@@ -265,6 +265,10 @@ const Index: React.FC<IndexProps> = ({ variant = 'speed', lang }) => {
             </div>
           </div>
         </div>
+      </section>
+      
+      <section id="calculator">
+        <AffordabilityCalculator />
       </section>
       
       <Footer />

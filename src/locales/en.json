@@ -1,4 +1,3 @@
-
 {
     "speed.tagline": "Skip 3-week bank waits for Auto Lending",
     "speed.subtitle": "Get exclusive access to one-minute approvals",
@@ -161,5 +160,15 @@
     "car.engine": "Engine Specifications",
     "car.dimensions": "Dimensions",
     "car.comfort": "Comfort & Technology",
-    "car.safety": "Safety Features"
+    "car.safety": "Safety Features",
+    
+    "calculator.title": "Calculate Your Monthly Payments",
+    "calculator.subtitle": "See how affordable your dream Toyota Camry can be",
+    "calculator.cta.question": "Like what you see?",
+    "calculator.cta.action": "Get on the waitlist",
+    "calculator.loan.amount": "Loan Amount: ",
+    "calculator.loan.tenor": "Loan Duration: ",
+    "calculator.monthly.payment": "Monthly Payment",
+    "calculator.months": "months",
+    "calculator.customize": "Customize Your Payment"
 }

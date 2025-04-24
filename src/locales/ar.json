@@ -1,4 +1,3 @@
-
 {
     "speed.tagline": "تخطى فترات انتظار البنوك لمدة 3 أسابيع للتمويل",
     "speed.subtitle": "احصل على وصول حصري للموافقات في دقيقة واحدة",
@@ -162,5 +161,15 @@
     "car.engine": "مواصفات المحرك",
     "car.dimensions": "الأبعاد",
     "car.comfort": "الراحة والتكنولوجيا",
-    "car.safety": "ميزات السلامة"
+    "car.safety": "ميزات السلامة",
+
+    "calculator.title": "احسب أقساطك الشهرية",
+    "calculator.subtitle": "اكتشف كيف يمكنك امتلاك سيارة تويوتا كامري أحلامك",
+    "calculator.cta.question": "هل أعجبك العرض؟",
+    "calculator.cta.action": "انضم إلى قائمة الانتظار",
+    "calculator.loan.amount": "مبلغ القرض: ",
+    "calculator.loan.tenor": "مدة القرض: ",
+    "calculator.monthly.payment": "القسط الشهري",
+    "calculator.months": "شهر",
+    "calculator.customize": "خصص قسطك الشهري"
 }

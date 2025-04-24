@@ -32,6 +32,18 @@ const Navigation: React.FC<NavigationProps> = ({ isMobile = false, onMobileItemC
       language
     });
     
+    const element = document.getElementById(section);
+    if (element) {
+      const offset = 80; // Account for header height
+      const elementPosition = element.getBoundingClientRect().top;
+      const offsetPosition = elementPosition + window.pageYOffset - offset;
+
+      window.scrollTo({
+        top: offsetPosition,
+        behavior: 'smooth'
+      });
+    }
+    
     // Execute mobile callback if provided
     if (onMobileItemClick) {
       onMobileItemClick();
