@@ -29,8 +29,11 @@ const App = () => (
             <Toaster />
             <Sonner />
             <Routes>
-              {/* Root domain now explicitly redirects to /en/speed */}
+              {/* Root path redirect to /en/speed with highest priority */}
               <Route path="/" element={<Navigate to="/en/speed" replace />} />
+              
+              {/* Explicit path for empty subdomain redirects */}
+              <Route path="" element={<Navigate to="/en/speed" replace />} />
               
               {/* Existing routes remain the same */}
               <Route path="/en/speed">

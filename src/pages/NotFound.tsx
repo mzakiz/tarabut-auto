@@ -17,10 +17,15 @@ const NotFound = () => {
       "404 Error: User attempted to access non-existent route:",
       location.pathname
     );
-  }, [location.pathname]);
+    
+    // If user hits the root domain without the /en/speed path, redirect them
+    if (location.pathname === "/" || location.pathname === "") {
+      navigate("/en/speed", { replace: true });
+    }
+  }, [location.pathname, navigate]);
 
   const handleBackToHome = () => {
-    navigate('/');
+    navigate('/en/speed');
   };
 
   return (
