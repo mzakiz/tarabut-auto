@@ -154,5 +154,12 @@
     "leaderboard.rank": "Rank",
     "leaderboard.player": "Player",
     "leaderboard.points": "Points",
-    "leaderboard.tier": "Tier"
+    "leaderboard.tier": "Tier",
+    
+    "car.specs": "Technical Specifications",
+    "car.specs.description": "Toyota Camry is equipped with advanced technology and engineering excellence",
+    "car.engine": "Engine Specifications",
+    "car.dimensions": "Dimensions",
+    "car.comfort": "Comfort & Technology",
+    "car.safety": "Safety Features"
 }

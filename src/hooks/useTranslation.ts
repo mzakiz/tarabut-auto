@@ -95,6 +95,14 @@ const DEFAULT_FALLBACKS: Record<string, string> = {
   'specs.stability': 'Stability',
   'specs.stability.value': 'VSC',
 
+  // Car categories
+  'car.specs': 'Technical Specifications',
+  'car.specs.description': 'Toyota Camry is equipped with advanced technology and engineering excellence',
+  'car.engine': 'Engine Specifications',
+  'car.dimensions': 'Dimensions',
+  'car.comfort': 'Comfort & Technology',
+  'car.safety': 'Safety Features',
+
   // Footer
   'footer.brand': 'Tarabut Auto',
   'footer.experience': 'Experience Shariah-compliant car financing in Saudi Arabia with options tailored to your needs.',

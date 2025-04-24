@@ -155,5 +155,12 @@
     "leaderboard.rank": "المرتبة",
     "leaderboard.player": "اللاعب",
     "leaderboard.points": "النقاط",
-    "leaderboard.tier": "المستوى"
+    "leaderboard.tier": "المستوى",
+    
+    "car.specs": "المواصفات الفنية",
+    "car.specs.description": "تويوتا كامري مجهزة بتكنولوجيا متقدمة وهندسة متميزة",
+    "car.engine": "مواصفات المحرك",
+    "car.dimensions": "الأبعاد",
+    "car.comfort": "الراحة والتكنولوجيا",
+    "car.safety": "ميزات السلامة"
 }
