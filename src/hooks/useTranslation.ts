@@ -32,7 +32,9 @@ export const useTranslation = () => {
     let current: any = translations[language];
     
     for (const part of parts) {
-      if (current[part] === undefined) {
+      if (!current || current[part] === undefined) {
+        // Instead of changing content, just return the original key
+        // This ensures we don't see the error in the UI but can see it in the console
         console.warn(`Translation key not found: ${key} in language: ${language}`);
         return key;
       }
