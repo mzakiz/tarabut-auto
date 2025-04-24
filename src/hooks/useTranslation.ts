@@ -5,6 +5,24 @@ import { useEffect, useRef, useState } from 'react';
 import enTranslations from '@/locales/en.json';
 import arTranslations from '@/locales/ar.json';
 
+// Default fallback strings for common UI elements to prevent showing raw keys
+const DEFAULT_FALLBACKS: Record<string, string> = {
+  'dealership.registration': 'Dealership Registration',
+  'dealership.registration.subtitle': 'Register your dealership with Tarabut Auto',
+  'dealership.contact.name': 'Contact Person',
+  'dealership.name': 'Dealership Name',
+  'dealership.email': 'Email Address',
+  'dealership.phone': 'Phone Number',
+  'dealership.submit': 'Register Dealership',
+  'form.placeholder.contact': 'Full Name',
+  'form.placeholder.dealership': 'Dealership Name',
+  'form.placeholder.business.email': 'Work Email Address',
+  'form.placeholder.phone': '5XXXXXXXX',
+  'form.validation.work.email': 'Please use your work email address',
+  'form.validation.phone': 'Phone number must be 9 digits',
+  'back': 'Back'
+};
+
 export const useTranslation = () => {
   const { language, isChangingLanguage } = useLanguage();
   const translationVersion = useRef(Date.now());
@@ -24,10 +42,18 @@ export const useTranslation = () => {
 
   // Add fallback to English if Arabic translation is missing
   const getFallbackTranslation = (key: string): string | null => {
+    // First check if we have a default fallback
+    if (DEFAULT_FALLBACKS[key]) {
+      console.warn(`Using default fallback for missing translation: ${key}`);
+      return DEFAULT_FALLBACKS[key];
+    }
+    
+    // Then check if we can fall back to English for Arabic
     if (language === 'ar' && translations['en'][key]) {
       console.warn(`Using English fallback for missing Arabic translation: ${key}`);
       return translations['en'][key];
     }
+    
     return null;
   };
   
@@ -39,7 +65,7 @@ export const useTranslation = () => {
         setMissingKeys(prev => new Set([...prev, `language_${language}`]));
       }
       // Fall back to English if language not found
-      return translations['en'][key] || key;
+      return translations['en'][key] || DEFAULT_FALLBACKS[key] || key;
     }
     
     // Check if the key exists in the translations
@@ -52,6 +78,7 @@ export const useTranslation = () => {
         console.warn(`Translation key not found: ${key} in language: ${language}`);
         setMissingKeys(prev => new Set([...prev, key]));
       }
+      
       // Return the key as fallback
       return key;
     }
