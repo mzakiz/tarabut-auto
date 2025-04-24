@@ -59,12 +59,24 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
       }
     };
     
-    // Execute the handler immediately
+    // Execute the handler immediately to ensure language is set correctly on first render
     handleUrlChange();
     
     window.addEventListener('popstate', handleUrlChange);
     return () => window.removeEventListener('popstate', handleUrlChange);
   }, [language, isChangingLanguage]);
+  
+  // Set document direction when language changes
+  useEffect(() => {
+    if (language === 'ar') {
+      document.documentElement.dir = 'rtl';
+      document.documentElement.lang = 'ar';
+    } else {
+      document.documentElement.dir = 'ltr';
+      document.documentElement.lang = 'en';
+    }
+    console.log(`[LanguageContext] Document direction set to ${language === 'ar' ? 'rtl' : 'ltr'}`);
+  }, [language]);
   
   // Update language context when setLanguage is called
   const setLanguage = (newLanguage: Language) => {
@@ -83,15 +95,6 @@ export const LanguageProvider: React.FC<{ children: React.ReactNode }> = ({ chil
     
     // Update the language state
     setLanguageState(newLanguage);
-    
-    // Track document direction for RTL support
-    if (newLanguage === 'ar') {
-      document.documentElement.dir = 'rtl';
-      document.documentElement.lang = 'ar';
-    } else {
-      document.documentElement.dir = 'ltr';
-      document.documentElement.lang = 'en';
-    }
     
     // Reset the flag after a delay to allow for navigation to complete
     setTimeout(() => {
