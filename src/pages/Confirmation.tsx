@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Check, Copy, ArrowRight, Rocket, Zap, Car, Timer } from 'lucide-react';
@@ -149,7 +150,7 @@ const Confirmation = () => {
             <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
               <div className="flex items-center justify-between mb-2">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-800">{`${t('confirmation.your.tier')}: ${currentTier}`}</h3>
+                  <h3 className="text-lg font-semibold text-gray-800">Your Current Tier: {currentTier}</h3>
                 </div>
                 <div className="text-right">
                   <p className="text-2xl font-bold text-blue-600">{points}</p>
@@ -212,7 +213,7 @@ const Confirmation = () => {
           <div className="mt-8 bg-white rounded-xl shadow-md overflow-hidden">
             <div className="p-6">
               <h3 className="text-lg font-semibold text-gray-800 mb-4">
-                {t('waitlist.tiers.title', 'Waitlist Tier Benefits')}
+                Waitlist Tier Benefits
               </h3>
               <Table>
                 <TableBody>
