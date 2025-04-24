@@ -1,12 +1,18 @@
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
-import { Check, Copy, ArrowRight } from 'lucide-react';
+import { Check, Copy, ArrowRight, Rocket, Zap, Car, Timer } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { toast } from '@/hooks/use-toast';
 import confetti from 'canvas-confetti';
 import { useAnalyticsPage, Analytics } from '@/services/analytics';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import {
+  Table,
+  TableBody,
+  TableCell,
+  TableRow,
+} from "@/components/ui/table";
 
 const getTierForPoints = (points: number): string => {
   if (points >= 1000) return "🌟 VIP Access";
@@ -88,11 +94,37 @@ const Confirmation = () => {
     });
   };
 
+  const tiers = [
+    {
+      icon: <Rocket className="h-5 w-5 text-purple-600" />,
+      name: "🌟 VIP Access",
+      title: "First in line. First to get approved.",
+      description: "🔓 Exclusive perks, early approvals, top priority.",
+    },
+    {
+      icon: <Zap className="h-5 w-5 text-yellow-500" />,
+      name: "⭐ Early Access",
+      title: "Beat the crowd. Get offers before anyone else.",
+      description: "⚡ Fast-track your financing and get notified first.",
+    },
+    {
+      icon: <Car className="h-5 w-5 text-blue-500" />,
+      name: "⚡ Fast Track",
+      title: "You're ahead of the pack.",
+      description: "🚗 Closer to early access. Just a few referrals away from the top.",
+    },
+    {
+      icon: <Timer className="h-5 w-5 text-gray-500" />,
+      name: "🕓 Standard",
+      title: "You've joined the waitlist!",
+      description: "📬 Want to move up? Refer friends and unlock priority access.",
+    },
+  ];
+
   return (
     <div className="min-h-screen bg-white" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <div className="max-w-3xl mx-auto space-y-8">
-          {/* Success Message Section */}
           <div className="bg-white rounded-xl shadow-md overflow-hidden md:shadow-xl p-6 md:p-8">
             <div className="flex justify-center mb-6">
               <div className="h-16 w-16 rounded-full bg-green-100 flex items-center justify-center">
@@ -114,7 +146,6 @@ const Confirmation = () => {
               <p className="text-3xl font-bold text-blue-600 mb-2">#{waitlistPosition}</p>
             </div>
             
-            {/* Points and Tier Display */}
             <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
               <div className="flex items-center justify-between mb-2">
                 <div>
@@ -127,7 +158,6 @@ const Confirmation = () => {
               </div>
             </div>
 
-            {/* Referral Code Section */}
             <div className="border border-gray-200 rounded-lg p-4 mb-6">
               <p className="text-sm font-medium text-gray-800 mb-2">
                 {t('confirmation.share.code')}:
@@ -148,7 +178,6 @@ const Confirmation = () => {
               </p>
             </div>
 
-            {/* Status URL Section */}
             {statusId && (
               <div className="border border-gray-200 rounded-lg p-4 mb-6">
                 <p className="text-sm font-medium text-gray-800 mb-2">
@@ -171,7 +200,6 @@ const Confirmation = () => {
               </div>
             )}
 
-            {/* Back to Home Button */}
             <Button 
               onClick={handleBackToHome}
               className="w-full bg-ksa-primary hover:bg-ksa-primary/90 text-white"
@@ -179,6 +207,43 @@ const Confirmation = () => {
               {t('confirmation.back.home')}
               <ArrowRight className={`${language === 'ar' ? 'mr-2 rotate-180' : 'ml-2'} h-4 w-4`} />
             </Button>
+          </div>
+
+          <div className="mt-8 bg-white rounded-xl shadow-md overflow-hidden">
+            <div className="p-6">
+              <h3 className="text-lg font-semibold text-gray-800 mb-4">
+                {t('waitlist.tiers.title', 'Waitlist Tier Benefits')}
+              </h3>
+              <Table>
+                <TableBody>
+                  {tiers.map((tier, index) => (
+                    <TableRow 
+                      key={index}
+                      className={currentTier === tier.name ? "bg-blue-50" : ""}
+                    >
+                      <TableCell>
+                        <div className="flex items-start space-x-4">
+                          <div className="flex-shrink-0 mt-1">
+                            {tier.icon}
+                          </div>
+                          <div>
+                            <div className="font-semibold text-gray-900">
+                              {tier.name}
+                            </div>
+                            <div className="text-sm text-gray-600 font-medium">
+                              {tier.title}
+                            </div>
+                            <div className="text-sm text-gray-500">
+                              {tier.description}
+                            </div>
+                          </div>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                </TableBody>
+              </Table>
+            </div>
           </div>
         </div>
       </div>
