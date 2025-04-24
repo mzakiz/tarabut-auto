@@ -1,4 +1,3 @@
-
 import { useEffect } from 'react';
 
 // Define event properties interfaces for type safety
@@ -6,6 +5,7 @@ export interface BaseAnalyticsProperties {
   language?: string;
   variant?: string;
   screen?: string;
+  waitlist_position?: number;
 }
 
 export interface CTAClickedProperties extends BaseAnalyticsProperties {
