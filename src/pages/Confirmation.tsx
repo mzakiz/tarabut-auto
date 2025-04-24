@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { Check, Copy, ArrowRight, Rocket, Zap, Car, Timer } from 'lucide-react';
@@ -148,7 +149,7 @@ const Confirmation = () => {
                 <span className="text-sm font-medium text-gray-700">{t('confirmation.position.title')}</span>
               </div>
               <p className="text-3xl font-bold text-blue-600 mb-2">#{waitlistPosition}</p>
-              <p className="text-sm text-gray-600">Refer your friends to earn more points</p>
+              <p className="text-sm text-gray-600">{t('confirmation.position.subtitle')}</p>
             </div>
             
             <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">

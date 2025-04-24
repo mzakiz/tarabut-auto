@@ -21,6 +21,15 @@ export const useTranslation = () => {
     en: enTranslations,
     ar: arTranslations
   };
+
+  // Add fallback to English if Arabic translation is missing
+  const getFallbackTranslation = (key: string): string | null => {
+    if (language === 'ar' && translations['en'][key]) {
+      console.warn(`Using English fallback for missing Arabic translation: ${key}`);
+      return translations['en'][key];
+    }
+    return null;
+  };
   
   const t = (key: string): string => {
     // Make sure we have translations for this language
@@ -29,11 +38,16 @@ export const useTranslation = () => {
         console.error(`No translations found for language: ${language}`);
         setMissingKeys(prev => new Set([...prev, `language_${language}`]));
       }
-      return key;
+      // Fall back to English if language not found
+      return translations['en'][key] || key;
     }
     
     // Check if the key exists in the translations
     if (!translations[language][key]) {
+      // Try to get fallback translation
+      const fallbackTranslation = getFallbackTranslation(key);
+      if (fallbackTranslation) return fallbackTranslation;
+
       if (!missingKeys.has(key)) {
         console.warn(`Translation key not found: ${key} in language: ${language}`);
         setMissingKeys(prev => new Set([...prev, key]));

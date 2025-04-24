@@ -1,6 +1,17 @@
 
 {
     "speed.tagline": "Skip 3-week bank waits for Auto Lending",
+    "speed.subtitle": "Get exclusive access to one-minute approvals",
+    "offer.tagline": "We negotiate with 12 banks so you don't have to",
+    "offer.subtitle": "Get the best exclusive rate",
+    "budget.tagline": "Drive your dream car without breaking your salary",
+    "budget.subtitle": "Experience the best-selling sedan in KSA from 1,299 SAR/month",
+    "waitlist.join": "Join Waitlist",
+    "dealership.cta": "Are you a Dealership?",
+    "nav.features": "Features",
+    "nav.specifications": "Specifications",
+    "nav.affordability": "Affordability",
+    "nav.contact": "Contact Us",
     "confirmation.title": "Congratulations!",
     "confirmation.subtitle": "You've been added to our exclusive waitlist",
     "confirmation.position.title": "Your Position in Line",
@@ -9,5 +20,6 @@
     "confirmation.share.code": "Share your referral code:",
     "confirmation.share.bonus": "Share with friends to move up the waitlist and get exclusive rewards",
     "confirmation.back.home": "Return to Home Page",
-    "waitlist.tiers.title": "Waitlist Tier Benefits"
+    "waitlist.tiers.title": "Waitlist Tier Benefits",
+    "confirmation.position.subtitle": "Refer your friends to earn more points"
 }
