@@ -6,6 +6,7 @@ export interface BaseAnalyticsProperties {
   variant?: string;
   screen?: string;
   waitlist_position?: number;
+  has_referral?: boolean;
 }
 
 export interface CTAClickedProperties extends BaseAnalyticsProperties {
