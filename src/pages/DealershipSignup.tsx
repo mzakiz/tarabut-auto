@@ -179,7 +179,7 @@ const DealershipSignup: React.FC = () => {
                         <Input 
                           type="email" 
                           placeholder={t('form.placeholder.business.email')}
-                          className="h-12" 
+                          className="h-12 text-left" 
                           {...field} 
                           dir="ltr"
                         />
@@ -201,13 +201,13 @@ const DealershipSignup: React.FC = () => {
                         {t('dealership.phone')} <span className="text-red-500">*</span>
                       </FormLabel>
                       <div className="relative">
-                        <span className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 text-gray-500`}>
+                        <span className={`absolute ${language === 'ar' ? 'left-3' : 'left-3'} top-1/2 -translate-y-1/2 text-gray-500`}>
                           +966
                         </span>
                         <FormControl>
                           <Input 
                             placeholder={t('form.placeholder.phone')}
-                            className={`h-12 ${language === 'ar' ? 'pr-16' : 'pl-16'}`}
+                            className="h-12 text-left pl-16"
                             maxLength={9}
                             {...field} 
                             dir="ltr"
