@@ -1,5 +1,5 @@
 import React from 'react';
-import { Linkedin, Instagram, X } from 'lucide-react';
+import { Linkedin, Instagram } from 'lucide-react';
 import { Link } from 'react-router-dom';
 import { useTranslation } from '@/hooks/useTranslation';
 
@@ -18,9 +18,10 @@ const Footer = () => {
       ariaLabel: 'Instagram'
     },
     {
-      icon: X,
+      icon: 'X',
       url: 'https://x.com/tarabutgateway',
-      ariaLabel: 'X (Twitter)'
+      ariaLabel: 'X (Twitter)',
+      customIcon: '/public/lovable-uploads/28ee78a9-4729-4dc4-adbd-35f39e1683eb.png'
     }
   ];
 
@@ -39,7 +40,7 @@ const Footer = () => {
           
           <div className="flex flex-col items-center md:items-end">
             <div className="flex space-x-4 mb-4">
-              {socialLinks.map(({ icon: Icon, url, ariaLabel }) => (
+              {socialLinks.map(({ icon: Icon, url, ariaLabel, customIcon }) => (
                 <a 
                   key={url} 
                   href={url} 
@@ -48,7 +49,15 @@ const Footer = () => {
                   aria-label={ariaLabel}
                   className="text-gray-400 hover:text-tarabut-teal transition-colors"
                 >
-                  <Icon className="h-5 w-5" />
+                  {customIcon ? (
+                    <img 
+                      src={customIcon} 
+                      alt={ariaLabel} 
+                      className="h-5 w-5" 
+                    />
+                  ) : (
+                    <Icon className="h-5 w-5" />
+                  )}
                 </a>
               ))}
             </div>
