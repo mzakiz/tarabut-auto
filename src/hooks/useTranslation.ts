@@ -5,8 +5,9 @@ import { useEffect, useRef, useState } from 'react';
 import enTranslations from '@/locales/en.json';
 import arTranslations from '@/locales/ar.json';
 
-// Default fallback strings for common UI elements to prevent showing raw keys
+// Enhanced default fallbacks for common UI elements to prevent showing raw keys
 const DEFAULT_FALLBACKS: Record<string, string> = {
+  // Dealership related
   'dealership.registration': 'Dealership Registration',
   'dealership.registration.subtitle': 'Register your dealership with Tarabut Auto',
   'dealership.contact.name': 'Contact Person',
@@ -20,7 +21,41 @@ const DEFAULT_FALLBACKS: Record<string, string> = {
   'form.placeholder.phone': '5XXXXXXXX',
   'form.validation.work.email': 'Please use your work email address',
   'form.validation.phone': 'Phone number must be 9 digits',
-  'back': 'Back'
+  'back': 'Back',
+  
+  // Features section
+  'features.title': 'Exceptional Features',
+  'features.subtitle': 'Toyota Camry combines luxury, performance, and efficiency in a perfect package for Saudi roads',
+  'feature.fuel.title': 'Fuel Efficiency',
+  'feature.fuel.description': 'Best-in-class fuel economy of 18.3 km/liter for fewer stops at the pump',
+  'feature.safety.title': 'Safety First',
+  'feature.safety.description': 'Toyota Safety System with pre-collision and lane departure alert',
+  'feature.performance.title': 'Dynamic Performance',
+  'feature.performance.description': 'Powerful 2.5L engine delivers 203 horsepower for quick acceleration',
+  'feature.tech.title': 'Smart Technology',
+  'feature.tech.description': '9" touchscreen with Apple CarPlay and Android Auto support',
+  'feature.interior.title': 'Luxurious Interior',
+  'feature.interior.description': 'Leather seats with heating and ventilation for year-round comfort',
+  'feature.transmission.title': 'Smooth Transmission',
+  'feature.transmission.description': '8-speed automatic transmission for a smooth driving experience',
+
+  // Specifications
+  'specs.title': 'Technical Specifications',
+  'specs.subtitle': 'Toyota Camry is equipped with advanced technology and engineering excellence',
+
+  // Footer
+  'footer.brand': 'Tarabut Auto',
+  'footer.experience': 'Experience Shariah-compliant car financing in Saudi Arabia with options tailored to your needs.',
+  'footer.copyright': 'All Rights Reserved.',
+  'footer.home': 'Home',
+  'footer.about': 'About Tarabut',
+
+  // General fallbacks
+  'confirmation.position.subtitle': 'Refer your friends to move up in the waitlist',
+  'confirmation.your.tier': 'Your Current Tier',
+  'confirmation.share.code': 'Share your referral code:',
+  'confirmation.points': 'Points',
+  'waitlist.tiers.title': 'Waitlist Tier Benefits'
 };
 
 export const useTranslation = () => {
@@ -58,6 +93,11 @@ export const useTranslation = () => {
   };
   
   const t = (key: string): string => {
+    if (!key || typeof key !== 'string') {
+      console.error('Invalid translation key:', key);
+      return 'Invalid Key';
+    }
+
     // Make sure we have translations for this language
     if (!translations[language]) {
       if (!missingKeys.has(`language_${language}`)) {
@@ -80,7 +120,7 @@ export const useTranslation = () => {
       }
       
       // Return the key as fallback
-      return key;
+      return DEFAULT_FALLBACKS[key] || key;
     }
     
     // Return the translation value

@@ -1,3 +1,4 @@
+
 {
     "speed.tagline": "تخطى فترات انتظار البنوك لمدة 3 أسابيع للتمويل",
     "speed.subtitle": "احصل على وصول حصري للموافقات في دقيقة واحدة",
@@ -168,5 +169,20 @@
     "tier.standard": "قياسي",
     "confirmation.your.tier": "مستواك الحالي",
     "confirmation.points": "النقاط",
-    "confirmation.points.description": "اكسب المزيد من النقاط عن طريق دعوة الأصدقاء"
+    "confirmation.points.description": "اكسب المزيد من النقاط عن طريق دعوة الأصدقاء",
+    
+    "specs.title": "المواصفات الفنية",
+    "specs.subtitle": "تويوتا كامري مجهزة بتكنولوجيا متقدمة وتميز هندسي",
+
+    "waitlist.status.check": "تحقق من حالة قائمة الانتظار",
+    "waitlist.status.verify": "تحقق من الحالة",
+    "waitlist.status.invalid_credentials": "بريد إلكتروني أو رقم هاتف غير صالح",
+    "waitlist.status.error": "حدث خطأ. الرجاء المحاولة مرة أخرى لاحقًا.",
+    "waitlist.position": "المرتبة",
+    "waitlist.points": "النقاط",
+
+    "tier.vip_access.points": "٦٠٠+ نقطة",
+    "tier.early_access.points": "٤٠٠-٥٩٩ نقطة",
+    "tier.fast_track.points": "٢٥٠-٣٩٩ نقطة",
+    "tier.standard.points": "١٠٠-٢٤٩ نقطة"
 }
