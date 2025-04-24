@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -69,8 +68,17 @@ const WaitlistSignup: React.FC = () => {
           onClick={handleBack}
           className="mb-6"
         >
-          <ArrowLeft className="mr-2 h-4 w-4" />
-          {t('back.home')}
+          {language === 'ar' ? (
+            <>
+              {t('back.home')}
+              <ArrowLeft className="ml-2 h-4 w-4 rotate-180" />
+            </>
+          ) : (
+            <>
+              <ArrowLeft className="mr-2 h-4 w-4" />
+              {t('back.home')}
+            </>
+          )}
         </Button>
         
         <div className="max-w-md mx-auto bg-white rounded-xl shadow-md overflow-hidden md:shadow-xl">
@@ -83,14 +91,14 @@ const WaitlistSignup: React.FC = () => {
               />
             </div>
 
-            <h1 className="text-2xl font-bold text-center text-gray-800 mb-2">
+            <h1 className={`text-2xl font-bold text-center text-gray-800 mb-2 ${language === 'ar' ? 'text-right' : 'text-left'}`}>
               {t('waitlist.title')}
             </h1>
-            <p className="text-center text-gray-600 mb-8">
+            <p className={`text-center text-gray-600 mb-8 ${language === 'ar' ? 'text-right' : 'text-left'}`}>
               {t('waitlist.description')}
             </p>
 
-            <form onSubmit={handleFormSubmit}>
+            <form onSubmit={handleFormSubmit} dir={language === 'ar' ? 'rtl' : 'ltr'}>
               <div className="space-y-4">
                 <FormField
                   id="name"
@@ -102,6 +110,8 @@ const WaitlistSignup: React.FC = () => {
                   error={formTouched['full_name'] ? validationErrors.name : ''}
                   required
                   placeholder={t('form.placeholder.name')}
+                  className={language === 'ar' ? 'text-right' : 'text-left'}
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
                 />
                 
                 <FormField
@@ -115,6 +125,8 @@ const WaitlistSignup: React.FC = () => {
                   required
                   type="email"
                   placeholder={t('form.placeholder.email')}
+                  className={language === 'ar' ? 'text-right' : 'text-left'}
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
                 />
                 
                 <FormField
@@ -130,6 +142,8 @@ const WaitlistSignup: React.FC = () => {
                   maxLength={9}
                   inputMode="numeric"
                   prefix="+966"
+                  className={language === 'ar' ? 'text-right' : 'text-left'}
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
                 />
                 
                 <FormField
@@ -141,6 +155,8 @@ const WaitlistSignup: React.FC = () => {
                   onBlur={() => handleFieldBlur('referral_code', referralCode)}
                   error={formTouched['referral_code'] ? validationErrors.referralCode : ''}
                   placeholder={t('form.placeholder.referral')}
+                  className={language === 'ar' ? 'text-right' : 'text-left'}
+                  dir={language === 'ar' ? 'rtl' : 'ltr'}
                 />
                 
                 <Button 
