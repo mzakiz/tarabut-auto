@@ -4,7 +4,6 @@ import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
-import { Label } from '@/components/ui/label';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -67,8 +66,8 @@ const DealershipSignup: React.FC = () => {
       if (error) throw error;
       
       toast({
-        title: "Success!",
-        description: "Your dealership has been registered successfully!"
+        title: t('dealership.success'),
+        description: t('dealership.success.description')
       });
       
       const pathParts = location.pathname.split('/');
@@ -79,8 +78,8 @@ const DealershipSignup: React.FC = () => {
     } catch (error: any) {
       console.error('Error registering dealership:', error);
       toast({
-        title: "Error",
-        description: error.message || "Failed to register dealership. Please try again.",
+        title: t('dealership.error'),
+        description: error.message || t('dealership.error.description'),
         variant: "destructive"
       });
     } finally {
@@ -131,7 +130,9 @@ const DealershipSignup: React.FC = () => {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('dealership.contact.name')} <span className="text-red-500">*</span></FormLabel>
+                      <FormLabel className={`${language === 'ar' ? 'text-right block w-full' : ''}`}>
+                        {t('dealership.contact.name')} <span className="text-red-500">*</span>
+                      </FormLabel>
                       <FormControl>
                         <Input 
                           placeholder={t('form.placeholder.contact')}
@@ -140,7 +141,7 @@ const DealershipSignup: React.FC = () => {
                           dir={language === 'ar' ? 'rtl' : 'ltr'}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className={language === 'ar' ? 'text-right' : ''} />
                     </FormItem>
                   )}
                 />
@@ -150,7 +151,9 @@ const DealershipSignup: React.FC = () => {
                   name="dealershipName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('dealership.name')} <span className="text-red-500">*</span></FormLabel>
+                      <FormLabel className={`${language === 'ar' ? 'text-right block w-full' : ''}`}>
+                        {t('dealership.name')} <span className="text-red-500">*</span>
+                      </FormLabel>
                       <FormControl>
                         <Input 
                           placeholder={t('form.placeholder.dealership')}
@@ -159,7 +162,7 @@ const DealershipSignup: React.FC = () => {
                           dir={language === 'ar' ? 'rtl' : 'ltr'}
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className={language === 'ar' ? 'text-right' : ''} />
                     </FormItem>
                   )}
                 />
@@ -169,7 +172,9 @@ const DealershipSignup: React.FC = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('dealership.email')} <span className="text-red-500">*</span></FormLabel>
+                      <FormLabel className={`${language === 'ar' ? 'text-right block w-full' : ''}`}>
+                        {t('dealership.email')} <span className="text-red-500">*</span>
+                      </FormLabel>
                       <FormControl>
                         <Input 
                           type="email" 
@@ -179,7 +184,10 @@ const DealershipSignup: React.FC = () => {
                           dir="ltr"
                         />
                       </FormControl>
-                      <FormMessage />
+                      <FormMessage className={language === 'ar' ? 'text-right' : ''} />
+                      <p className={`text-sm text-gray-500 mt-1 ${language === 'ar' ? 'text-right' : ''}`}>
+                        {t('form.validation.work.email')}
+                      </p>
                     </FormItem>
                   )}
                 />
@@ -189,7 +197,9 @@ const DealershipSignup: React.FC = () => {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel>{t('dealership.phone')} <span className="text-red-500">*</span></FormLabel>
+                      <FormLabel className={`${language === 'ar' ? 'text-right block w-full' : ''}`}>
+                        {t('dealership.phone')} <span className="text-red-500">*</span>
+                      </FormLabel>
                       <div className="relative">
                         <span className={`absolute ${language === 'ar' ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 text-gray-500`}>
                           +966
@@ -204,7 +214,7 @@ const DealershipSignup: React.FC = () => {
                           />
                         </FormControl>
                       </div>
-                      <FormMessage />
+                      <FormMessage className={language === 'ar' ? 'text-right' : ''} />
                       <p className={`text-sm text-gray-500 mt-1 ${language === 'ar' ? 'text-right' : 'text-left'}`}>
                         {t('form.validation.phone')}
                       </p>
