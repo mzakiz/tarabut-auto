@@ -7,8 +7,13 @@ import confetti from 'canvas-confetti';
 import { useAnalyticsPage, Analytics } from '@/services/analytics';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
-import ReferralLeaderboard from '@/components/waitlist/ReferralLeaderboard';
-import { useWaitlistLeaderboard } from '@/hooks/useWaitlistLeaderboard';
+
+const getTierForPoints = (points: number): string => {
+  if (points >= 1000) return "🌟 VIP Access";
+  if (points >= 500) return "⭐ Early Access";
+  if (points >= 200) return "⚡ Fast Track";
+  return "🕓 Standard";
+};
 
 const Confirmation = () => {
   const [copied, setCopied] = useState(false);
@@ -19,15 +24,15 @@ const Confirmation = () => {
   
   const referralCode = location.state?.referralCode || 'TOYOTA25';
   const waitlistPosition = location.state?.position || 42;
-  const statusId = location.state?.statusId; // New status ID from form submission
+  const statusId = location.state?.statusId;
+  const points = location.state?.points || 100;
+  const currentTier = getTierForPoints(points);
   
   useAnalyticsPage('Thank You Page', {
     language,
     waitlist_position: waitlistPosition,
     has_referral: !!location.state?.referralCode
   });
-
-  const { data: leaderboardData, isLoading: isLeaderboardLoading } = useWaitlistLeaderboard();
   
   React.useEffect(() => {
     confetti({
@@ -107,20 +112,16 @@ const Confirmation = () => {
                 <span className="text-sm font-medium text-gray-700">{t('confirmation.position.title')}</span>
               </div>
               <p className="text-3xl font-bold text-blue-600 mb-2">#{waitlistPosition}</p>
-              <p className="text-xs text-gray-500">
-                {t('confirmation.position.subtitle')}
-              </p>
             </div>
             
             {/* Points and Tier Display */}
             <div className="bg-blue-50 border border-blue-100 rounded-lg p-4 mb-6">
               <div className="flex items-center justify-between mb-2">
                 <div>
-                  <h3 className="text-lg font-semibold text-gray-800">{t('confirmation.your.tier')}</h3>
-                  <p className="text-sm text-gray-600">{t('confirmation.points.description')}</p>
+                  <h3 className="text-lg font-semibold text-gray-800">{`${t('confirmation.your.tier')}: ${currentTier}`}</h3>
                 </div>
                 <div className="text-right">
-                  <p className="text-2xl font-bold text-blue-600">{location.state?.points || 100}</p>
+                  <p className="text-2xl font-bold text-blue-600">{points}</p>
                   <p className="text-sm text-gray-500">{t('confirmation.points')}</p>
                 </div>
               </div>
@@ -179,15 +180,6 @@ const Confirmation = () => {
               <ArrowRight className={`${language === 'ar' ? 'mr-2 rotate-180' : 'ml-2'} h-4 w-4`} />
             </Button>
           </div>
-
-          {/* Leaderboard Section */}
-          {isLeaderboardLoading ? (
-            <div className="animate-pulse">
-              <div className="h-64 bg-gray-200 rounded-lg"></div>
-            </div>
-          ) : (
-            <ReferralLeaderboard users={leaderboardData || []} />
-          )}
         </div>
       </div>
     </div>
