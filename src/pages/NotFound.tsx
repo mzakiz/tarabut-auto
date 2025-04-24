@@ -5,6 +5,7 @@ import { useEffect } from "react";
 import { Button } from "@/components/ui/button";
 import { useLanguage } from "@/contexts/LanguageContext";
 import { useTranslation } from "@/hooks/useTranslation";
+import { Head } from "@/components/Head";
 
 const NotFound = () => {
   const location = useLocation();
@@ -18,18 +19,22 @@ const NotFound = () => {
       location.pathname
     );
     
-    // If user hits the root domain without the /en/speed path, redirect them
+    // Handles root path and empty path redirects
     if (location.pathname === "/" || location.pathname === "") {
       navigate("/en/speed", { replace: true });
     }
   }, [location.pathname, navigate]);
 
   const handleBackToHome = () => {
-    navigate('/en/speed');
+    navigate(`/${language}/speed`);
   };
 
   return (
     <div className="min-h-screen flex flex-col items-center justify-center bg-white p-4" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+      <Head 
+        title="404 - Page Not Found | Tarabut Auto"
+        description="The page you are looking for does not exist. Return to Tarabut Auto homepage."
+      />
       <div className="text-center max-w-md">
         <div className="flex justify-center mb-6">
           <img 

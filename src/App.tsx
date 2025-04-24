@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -29,13 +30,11 @@ const App = () => (
             <Toaster />
             <Sonner />
             <Routes>
-              {/* Root path redirect to /en/speed with highest priority */}
+              {/* Root path redirects - higher priority than 404 catch */}
               <Route path="/" element={<Navigate to="/en/speed" replace />} />
-              
-              {/* Explicit path for empty subdomain redirects */}
               <Route path="" element={<Navigate to="/en/speed" replace />} />
               
-              {/* Existing routes remain the same */}
+              {/* English routes */}
               <Route path="/en/speed">
                 <Route index element={<Index variant="speed" />} />
                 <Route path="waitlist-signup" element={<WaitlistSignup />} />
@@ -60,6 +59,7 @@ const App = () => (
                 <Route path="dealership/confirmation" element={<DealershipConfirmation />} />
               </Route>
               
+              {/* Arabic routes */}
               <Route path="/ar/speed">
                 <Route index element={<Index variant="speed" lang="ar" />} />
                 <Route path="waitlist-signup" element={<WaitlistSignup />} />
@@ -84,15 +84,15 @@ const App = () => (
                 <Route path="dealership/confirmation" element={<DealershipConfirmation />} />
               </Route>
               
+              {/* Legacy and special routes */}
               <Route path="/en/legacy-journey-x7k9p2" element={<LegacyJourney />} />
-              
               <Route path="/nafath-verification" element={<NafathVerification />} />
               <Route path="/financing-offers" element={<FinancingOffers />} />
               <Route path="/bank-connection" element={<BankConnection />} />
               <Route path="/waitlist-status/:statusId" element={<WaitlistStatus />} />
-
               <Route path="/confirmation" element={<Confirmation />} />
               
+              {/* Catch all route for 404 - must be last */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </TooltipProvider>
