@@ -33,7 +33,7 @@ export const useTranslation = () => {
       return key;
     }
     
-    // Add version timestamp to help with debugging
+    // Return the translation value
     const translationValue = translations[language][key];
     
     return translationValue;

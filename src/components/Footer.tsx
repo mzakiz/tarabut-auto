@@ -1,3 +1,4 @@
+
 import React from 'react';
 import { Facebook, Instagram, Twitter } from 'lucide-react';
 import { Link } from 'react-router-dom';
@@ -11,10 +12,10 @@ const Footer = () => {
       <div className="container mx-auto px-4 sm:px-6 lg:px-8 py-12">
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-8 md:mb-0">
-            <h3 className="text-xl font-bold mb-4">
+            <h3 className="text-xl font-bold mb-4 text-center md:text-left">
               {isChangingLanguage ? '...' : t('footer.brand')}
             </h3>
-            <p className="text-gray-400 mb-4 max-w-md">
+            <p className="text-gray-400 mb-4 max-w-md text-center md:text-left">
               {isChangingLanguage ? '...' : t('footer.experience')}
             </p>
           </div>
