@@ -95,6 +95,7 @@
     "financing.approval": "Quick approval process",
     "financing.fees": "No hidden fees",
     "financing.shariah": "Fully Shariah-compliant",
+    "footer.brand": "Tarabut Auto",
     "footer.experience": "Experience Shariah-compliant auto financing in Saudi Arabia with options tailored to your needs.",
     "footer.copyright": "All rights reserved.",
     "footer.home": "Home",
@@ -102,5 +103,19 @@
     "nav.features": "Features",
     "nav.specifications": "Specifications",
     "nav.affordability": "Affordability",
-    "nav.contact": "Contact"
+    "nav.contact": "Contact",
+    "features.title": "Exceptional Features",
+    "features.subtitle": "Toyota Yaris combines luxury, performance, and efficiency in the perfect package for Saudi roads",
+    "feature.fuel.title": "Fuel Efficiency",
+    "feature.fuel.description": "Class-leading fuel economy of 18.3 km/liter means fewer stops at the pump",
+    "feature.safety.title": "Safety First",
+    "feature.safety.description": "Toyota Safety Sense with pre-collision system and lane departure alert",
+    "feature.performance.title": "Dynamic Performance",
+    "feature.performance.description": "1.5L Dynamic Force engine delivers 106 hp for quick acceleration",
+    "feature.tech.title": "Smart Technology",
+    "feature.tech.description": "9-inch touchscreen with Apple CarPlay and Android Auto support",
+    "feature.interior.title": "Luxurious Interior",
+    "feature.interior.description": "Leather seating with heating and ventilation for year-round comfort",
+    "feature.transmission.title": "Smooth Transmission",
+    "feature.transmission.description": "CVT automatic transmission for a seamless driving experience"
 }

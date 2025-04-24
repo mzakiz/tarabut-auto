@@ -95,6 +95,7 @@
     "financing.approval": "عملية موافقة سريعة",
     "financing.fees": "لا رسوم خفية",
     "financing.shariah": "متوافق تماماً مع الشريعة الإسلامية",
+    "footer.brand": "ترابط أوتو",
     "footer.experience": "استمتع بتجربة تمويل السيارات المتوافق مع الشريعة الإسلامية في المملكة العربية السعودية مع خيارات مصممة خصيصًا لتلبية احتياجاتك.",
     "footer.copyright": "جميع الحقوق محفوظة.",
     "footer.home": "الرئيسية",
@@ -116,7 +117,5 @@
     "feature.interior.title": "مقصورة فاخرة",
     "feature.interior.description": "مقاعد جلدية مع تدفئة وتهوية للراحة على مدار العام",
     "feature.transmission.title": "ناقل حركة سلس",
-    "feature.transmission.description": "ناقل حركة أوتوماتيكي CVT لتجربة قيادة سلسة",
-    "specs.title": "المواصفات الفنية",
-    "specs.subtitle": "تويوتا يارس مجهزة بأحدث التقنيات والتميز الهندسي"
+    "feature.transmission.description": "ناقل حركة أوتوماتيكي CVT لتجربة قيادة سلسة"
 }

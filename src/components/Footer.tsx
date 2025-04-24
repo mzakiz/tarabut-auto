@@ -6,6 +6,8 @@ import { useTranslation } from '@/hooks/useTranslation';
 
 const Footer = () => {
   const { t, isChangingLanguage } = useTranslation();
+  
+  console.log("Footer brand translation:", t('footer.brand'));
 
   return (
     <footer className="bg-ksa-dark text-white">
@@ -13,7 +15,7 @@ const Footer = () => {
         <div className="flex flex-col md:flex-row justify-between items-center">
           <div className="mb-8 md:mb-0">
             <h3 className="text-xl font-bold mb-4 text-center md:text-left">
-              {isChangingLanguage ? '...' : t('footer.brand')}
+              {isChangingLanguage ? '...' : (t('footer.brand') || 'Tarabut Auto')}
             </h3>
             <p className="text-gray-400 mb-4 max-w-md text-center md:text-left">
               {isChangingLanguage ? '...' : t('footer.experience')}
@@ -54,7 +56,7 @@ const Footer = () => {
         </div>
         
         <div className="mt-12 pt-8 border-t border-gray-800 text-center text-gray-500">
-          <p>&copy; {new Date().getFullYear()} {t('footer.brand')}. {t('footer.copyright')}</p>
+          <p>&copy; {new Date().getFullYear()} {t('footer.brand') || 'Tarabut Auto'}. {t('footer.copyright')}</p>
         </div>
       </div>
     </footer>

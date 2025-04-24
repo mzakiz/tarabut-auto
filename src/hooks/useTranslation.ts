@@ -16,8 +16,8 @@ export const useTranslation = () => {
   
   // Create a new translations object each time to prevent caching
   const translations = {
-    en: { ...enTranslations },
-    ar: { ...arTranslations }
+    en: enTranslations,
+    ar: arTranslations
   };
   
   const t = (key: string): string => {
@@ -34,9 +34,7 @@ export const useTranslation = () => {
     }
     
     // Return the translation value
-    const translationValue = translations[language][key];
-    
-    return translationValue;
+    return translations[language][key];
   };
   
   return { t, language, isChangingLanguage };

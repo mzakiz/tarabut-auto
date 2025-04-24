@@ -64,6 +64,9 @@ const FeaturesSection = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  console.log("Current language:", isChangingLanguage ? "changing" : "stable");
+  console.log("Features title translation:", t('features.title'));
+
   return (
     <section id="features" className="py-12 md:py-20 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
