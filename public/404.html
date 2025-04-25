@@ -1,0 +1,18 @@
+
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Redirecting...</title>
+  <script>
+    // Single Page App redirect strategy
+    // This handles the case when the server returns a 404 for a route
+    // that should be handled by the React Router
+    sessionStorage.setItem('redirectPath', window.location.pathname + window.location.search);
+    window.location.replace('/');
+  </script>
+</head>
+<body>
+  <p>Redirecting to Tarabut Auto...</p>
+</body>
+</html>

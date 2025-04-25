@@ -19,8 +19,17 @@ const NotFound = () => {
       location.pathname
     );
     
-    // Handles root path and empty path redirects
+    // Enhanced route handling for production 404s
+    // Check if this is a language-specific route that should exist
     if (location.pathname === "/" || location.pathname === "") {
+      navigate("/en/speed", { replace: true });
+    } else if (location.pathname.startsWith("/ar/")) {
+      // Try redirecting to the Arabic homepage if we get a 404 on an Arabic route
+      console.log("Redirecting Arabic route to /ar/speed");
+      navigate("/ar/speed", { replace: true });
+    } else if (location.pathname.startsWith("/en/")) {
+      // Try redirecting to the English homepage if we get a 404 on an English route
+      console.log("Redirecting English route to /en/speed");
       navigate("/en/speed", { replace: true });
     }
   }, [location.pathname, navigate]);
