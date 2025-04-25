@@ -25,6 +25,27 @@ if (redirectPath) {
   console.log(`${logPrefix} No redirect path found in sessionStorage`);
 }
 
+// Always check for Arabic routes, regardless of redirects
+const currentPath = window.location.pathname;
+const isArabicRoute = currentPath.indexOf('/ar/') === 0 || currentPath === '/ar';
+
+// Log language detection
+console.log(`${logPrefix} Current path: ${currentPath}`);
+console.log(`${logPrefix} Is Arabic route: ${isArabicRoute}`);
+console.log(`${logPrefix} Current document direction: ${document.documentElement.dir}`);
+console.log(`${logPrefix} Current document language: ${document.documentElement.lang}`);
+
+// Set language direction directly based on current path (this ensures it's set even if the early detection script didn't run)
+if (isArabicRoute) {
+  document.documentElement.dir = 'rtl';
+  document.documentElement.lang = 'ar';
+  console.log(`${logPrefix} Set document direction to RTL for Arabic route`);
+} else {
+  document.documentElement.dir = 'ltr';
+  document.documentElement.lang = 'en';
+  console.log(`${logPrefix} Set document direction to LTR for non-Arabic route`);
+}
+
 // Only process redirects that are recent (less than 10 seconds old)
 const isRecentRedirect = redirectTimestamp && 
   (Date.now() - parseInt(redirectTimestamp, 10)) < 10000;
@@ -73,18 +94,6 @@ if (redirectPath && isRecentRedirect) {
     window.dispatchEvent(new Event('popstate'));
     console.log(`${logPrefix} Dispatched popstate event to trigger re-render`);
   }, 100);
-}
-
-// Additional logging for Arabic routes
-if (window.location.pathname.includes('/ar/')) {
-  console.log(`${logPrefix} Arabic route detected: ${window.location.pathname}`);
-  console.log(`${logPrefix} Document direction: ${document.documentElement.dir}`);
-  console.log(`${logPrefix} Document language: ${document.documentElement.lang}`);
-  
-  // Set direction and language
-  document.documentElement.dir = 'rtl';
-  document.documentElement.lang = 'ar';
-  console.log(`${logPrefix} Set document direction to RTL for Arabic route`);
 }
 
 // Initialize React application

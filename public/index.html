@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
   <head>
@@ -19,6 +20,26 @@
     <meta name="twitter:image" content="/Logos/Tarabut_logo_no_text.png" />
     
     <link rel="icon" type="image/png" href="/Logos/Tarabut_logo_no_text.png" />
+
+    <!-- Early language detection script - runs before any React code -->
+    <script>
+      (function() {
+        // Immediately check if URL contains Arabic route
+        var path = window.location.pathname;
+        var isArabicRoute = path.indexOf('/ar/') === 0 || path === '/ar';
+        
+        // Set HTML attributes immediately if Arabic route
+        if (isArabicRoute) {
+          document.documentElement.lang = 'ar';
+          document.documentElement.dir = 'rtl';
+          console.log('[Early Detection] Arabic route detected, set lang=ar and dir=rtl');
+        } else {
+          document.documentElement.lang = 'en';
+          document.documentElement.dir = 'ltr';
+          console.log('[Early Detection] Non-Arabic route, set lang=en and dir=ltr');
+        }
+      })();
+    </script>
 
     <!-- Fix for direct access to routes in production -->
     <script>
@@ -73,11 +94,35 @@
       .font-founder {
         font-family: 'Founders Grotesk', system-ui, sans-serif !important;
       }
+      
+      /* Add RTL specific CSS */
+      [dir="rtl"] .rtl-flip {
+        transform: scaleX(-1);
+      }
+      
+      /* Add a placeholder style while page is loading */
+      .initial-loading {
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        height: 100vh;
+        width: 100%;
+        background: #fff;
+      }
+      
+      .initial-loading img {
+        max-width: 120px;
+      }
     </style>
   </head>
 
   <body>
-    <div id="root"></div>
+    <div id="root">
+      <!-- Loading placeholder -->
+      <div class="initial-loading">
+        <img src="/Logos/Tarabut_Auto-2.png" alt="Tarabut Auto Logo" />
+      </div>
+    </div>
     <script src="https://cdn.gpteng.co/gptengineer.js" type="module"></script>
     <script type="module" src="/src/main.tsx"></script>
   </body>
