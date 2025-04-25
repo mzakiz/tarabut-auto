@@ -1,4 +1,3 @@
-
 import React from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import { useEffect } from "react";
@@ -16,50 +15,59 @@ const NotFound = () => {
   // Detailed logging prefix
   const logPrefix = "[NotFound]";
   
-  console.error(
-    `${logPrefix} 404 Error: User attempted to access non-existent route:`,
-    location.pathname
-  );
-  console.error(`${logPrefix} Full URL: ${window.location.href}`);
+  // Log full debug information immediately on component mount
+  console.log(`${logPrefix} Component mounted with:`, {
+    currentPath: location.pathname,
+    currentSearch: location.search,
+    fullURL: window.location.href,
+    currentLanguage: language,
+    documentDirection: document.documentElement.dir,
+    documentLang: document.documentElement.lang,
+    environment: import.meta.env.MODE,
+    baseURL: import.meta.env.BASE_URL
+  });
   
   useEffect(() => {
-    // Log detailed environment information to help with debugging
-    console.log(`${logPrefix} Current environment:`, import.meta.env.MODE);
-    console.log(`${logPrefix} Current base URL:`, import.meta.env.BASE_URL);
-    console.log(`${logPrefix} Full URL:`, window.location.href);
-    console.log(`${logPrefix} Current language context:`, language);
-    console.log(`${logPrefix} Document direction:`, document.documentElement.dir);
-    console.log(`${logPrefix} Attempting to determine appropriate redirect...`);
-    
-    // Additional logging for route debugging
-    const pathSegments = location.pathname.split('/').filter(Boolean);
-    console.log(`${logPrefix} Path segments:`, pathSegments);
+    // Enhanced logging for route analysis
+    console.log(`${logPrefix} Analyzing route:`, {
+      pathname: location.pathname,
+      pathSegments: location.pathname.split('/').filter(Boolean),
+      isArabicRoute: location.pathname.startsWith('/ar'),
+      isEnglishRoute: location.pathname.startsWith('/en')
+    });
     
     // Enhanced path detection logic - Handle /ar/ routes directly
     if (location.pathname.startsWith('/ar')) {
-      console.log(`${logPrefix} Direct Arabic route detected: ${location.pathname}`);
+      console.log(`${logPrefix} Processing Arabic route: ${location.pathname}`);
       
       // Set language context to Arabic
       setLanguage('ar');
       
       // Handle specific Arabic paths
       if (location.pathname === '/ar' || location.pathname === '/ar/') {
-        console.log(`${logPrefix} Base Arabic route, redirecting to /ar/speed`);
+        console.log(`${logPrefix} Redirecting base Arabic route to /ar/speed`);
         navigate('/ar/speed', { replace: true });
         return;
       }
       
-      // Check for specific feature paths
-      if (location.pathname.startsWith('/ar/speed') || 
-          location.pathname.startsWith('/ar/offer') || 
-          location.pathname.startsWith('/ar/budget')) {
-        console.log(`${logPrefix} Valid Arabic feature route: ${location.pathname}`);
+      // Check for specific feature paths with more detailed logging
+      const validArPaths = ['/ar/speed', '/ar/offer', '/ar/budget'];
+      const isValidPath = validArPaths.some(path => location.pathname.startsWith(path));
+      
+      console.log(`${logPrefix} Path validation:`, {
+        path: location.pathname,
+        isValid: isValidPath,
+        validPaths: validArPaths
+      });
+      
+      if (isValidPath) {
+        console.log(`${logPrefix} Confirmed valid Arabic route: ${location.pathname}`);
         navigate(location.pathname, { replace: true });
         return;
       }
       
-      // Default Arabic fallback
-      console.log(`${logPrefix} Invalid Arabic path, defaulting to /ar/speed`);
+      // Log invalid path handling
+      console.log(`${logPrefix} Invalid Arabic path detected, redirecting to /ar/speed`);
       navigate('/ar/speed', { replace: true });
       return;
     }
