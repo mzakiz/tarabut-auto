@@ -9,6 +9,8 @@ console.log(`${logPrefix} Application starting...`);
 console.log(`${logPrefix} Current URL path: ${window.location.pathname}`);
 console.log(`${logPrefix} Current URL search: ${window.location.search}`);
 console.log(`${logPrefix} Full URL: ${window.location.href}`);
+console.log(`${logPrefix} Project base URL: ${import.meta.env.BASE_URL}`);
+console.log(`${logPrefix} Environment mode: ${import.meta.env.MODE}`);
 
 // Check for redirect information
 const redirectPath = sessionStorage.getItem('redirectPath');
