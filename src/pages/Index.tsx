@@ -20,28 +20,23 @@ const Index: React.FC<IndexProps> = ({ variant = 'speed', lang }) => {
   const { t } = useTranslation();
   const sectionRefs = useRef<Record<string, HTMLElement | null>>({});
   
-  // Track page view
   useAnalyticsPage('Landing Page', {
     language,
     variant
   });
   
-  // Track device information
   useDeviceDetection();
   
-  // Hero section scroll tracking with Intersection Observer
   const { ref: heroRef, inView: heroInView } = useInView({
     threshold: 0.5,
     triggerOnce: true
   });
   
-  // Features section scroll tracking
   const { ref: featuresRef, inView: featuresInView } = useInView({
     threshold: 0.3,
     triggerOnce: true
   });
   
-  // Specs section scroll tracking
   const { ref: specsRef, inView: specsInView } = useInView({
     threshold: 0.3,
     triggerOnce: true
@@ -68,7 +63,6 @@ const Index: React.FC<IndexProps> = ({ variant = 'speed', lang }) => {
               behavior: 'smooth'
             });
             
-            // Track section navigation
             Analytics.trackCTAClicked({
               element: `navigate_to_${targetId}`,
               screen: 'landing_page',
@@ -87,7 +81,6 @@ const Index: React.FC<IndexProps> = ({ variant = 'speed', lang }) => {
     };
   }, [language, variant]);
   
-  // Track when hero section comes into view
   useEffect(() => {
     if (heroInView) {
       Analytics.trackSectionScrolledTo({
@@ -99,7 +92,6 @@ const Index: React.FC<IndexProps> = ({ variant = 'speed', lang }) => {
     }
   }, [heroInView, language, variant]);
   
-  // Track when features section comes into view
   useEffect(() => {
     if (featuresInView) {
       Analytics.trackSectionScrolledTo({
@@ -111,7 +103,6 @@ const Index: React.FC<IndexProps> = ({ variant = 'speed', lang }) => {
     }
   }, [featuresInView, language, variant]);
   
-  // Track when specs section comes into view
   useEffect(() => {
     if (specsInView) {
       Analytics.trackSectionScrolledTo({
@@ -271,7 +262,9 @@ const Index: React.FC<IndexProps> = ({ variant = 'speed', lang }) => {
         <AffordabilityCalculator />
       </section>
       
-      <Footer />
+      <footer id="footer">
+        <Footer />
+      </footer>
     </div>
   );
 };
