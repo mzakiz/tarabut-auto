@@ -34,14 +34,14 @@ const App = () => (
               <Route path="" element={<Navigate to="/en/speed" replace />} />
               <Route path="/index.html" element={<Navigate to="/en/speed" replace />} />
               
-              {/* English routes */}
-              <Route path="/en/speed" element={<Index variant="speed" />} />
+              {/* English routes - direct element assignment for consistent behavior */}
+              <Route path="/en/speed" element={<Index variant="speed" lang="en" />} />
               <Route path="/en/speed/waitlist-signup" element={<WaitlistSignup />} />
               <Route path="/en/speed/waitlist-signup/confirmation" element={<Confirmation />} />
               <Route path="/en/speed/dealership" element={<DealershipSignup />} />
               <Route path="/en/speed/dealership/confirmation" element={<DealershipConfirmation />} />
               
-              {/* Arabic routes - matching the working /ar/offer pattern */}
+              {/* Arabic routes - also using direct element assignment for consistency */}
               <Route path="/ar/speed" element={<Index variant="speed" lang="ar" />} />
               <Route path="/ar/speed/waitlist-signup" element={<WaitlistSignup />} />
               <Route path="/ar/speed/waitlist-signup/confirmation" element={<Confirmation />} />
@@ -49,10 +49,14 @@ const App = () => (
               <Route path="/ar/speed/dealership/confirmation" element={<DealershipConfirmation />} />
               
               {/* Other variant routes */}
-              <Route path="/en/offer" element={<Index variant="personal" />} />
-              <Route path="/en/budget" element={<Index variant="budget" />} />
+              <Route path="/en/offer" element={<Index variant="personal" lang="en" />} />
+              <Route path="/en/budget" element={<Index variant="budget" lang="en" />} />
               <Route path="/ar/offer" element={<Index variant="personal" lang="ar" />} />
               <Route path="/ar/budget" element={<Index variant="budget" lang="ar" />} />
+              
+              {/* Language root routes */}
+              <Route path="/en" element={<Navigate to="/en/speed" replace />} />
+              <Route path="/ar" element={<Navigate to="/ar/speed" replace />} />
               
               {/* Legacy and special routes */}
               <Route path="/en/legacy-journey-x7k9p2" element={<LegacyJourney />} />

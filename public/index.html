@@ -28,7 +28,7 @@
         var path = window.location.pathname;
         var isArabicRoute = path.indexOf('/ar/') === 0 || path === '/ar';
         
-        // Set HTML attributes immediately if Arabic route
+        // Enhanced logic to set HTML attributes correctly and immediately
         if (isArabicRoute) {
           document.documentElement.lang = 'ar';
           document.documentElement.dir = 'rtl';

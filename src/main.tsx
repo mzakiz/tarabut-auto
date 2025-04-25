@@ -25,17 +25,21 @@ if (redirectPath) {
   console.log(`${logPrefix} No redirect path found in sessionStorage`);
 }
 
-// Always check for Arabic routes, regardless of redirects
+// Enhanced language detection logic - always check the URL path directly
 const currentPath = window.location.pathname;
 const isArabicRoute = currentPath.indexOf('/ar/') === 0 || currentPath === '/ar';
+const isEnglishRoute = currentPath.indexOf('/en/') === 0 || currentPath === '/en';
+const detectedLanguage = isArabicRoute ? 'ar' : 'en';
 
 // Log language detection
 console.log(`${logPrefix} Current path: ${currentPath}`);
 console.log(`${logPrefix} Is Arabic route: ${isArabicRoute}`);
+console.log(`${logPrefix} Detected language: ${detectedLanguage}`);
 console.log(`${logPrefix} Current document direction: ${document.documentElement.dir}`);
 console.log(`${logPrefix} Current document language: ${document.documentElement.lang}`);
 
-// Set language direction directly based on current path (this ensures it's set even if the early detection script didn't run)
+// Always force the correct language attributes on the HTML element based on the URL
+// This ensures it's set even if the early detection script didn't run correctly
 if (isArabicRoute) {
   document.documentElement.dir = 'rtl';
   document.documentElement.lang = 'ar';
