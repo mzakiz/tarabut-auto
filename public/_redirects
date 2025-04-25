@@ -1,2 +1,9 @@
 
-/* /index.html 200
+# Redirect all paths to index.html for client-side routing
+/*    /index.html   200
+
+# Explicitly redirect Arabic routes to index.html
+/ar/*  /index.html  200
+
+# Explicitly redirect English routes to index.html
+/en/*  /index.html  200

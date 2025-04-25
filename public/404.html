@@ -7,35 +7,55 @@
   <script>
     // Enhanced SPA redirect strategy for language-specific routes
     (function() {
+      // Detailed logging to track what's happening
+      var logPrefix = "[404 Handler]";
+      
       // Save the current path + query params for redirection
       var path = window.location.pathname;
       var search = window.location.search;
       var fullPath = path + search;
       var host = window.location.host;
       
-      console.log('404 handler - Processing path: ' + path);
+      console.log(logPrefix + ' Processing path:', path);
+      console.log(logPrefix + ' Full URL:', window.location.href);
+      console.log(logPrefix + ' Host:', host);
       
       // Check if we're trying to access a language route
       var isArRoute = path.indexOf('/ar/') === 0;
       var isEnRoute = path.indexOf('/en/') === 0;
       
+      console.log(logPrefix + ' Is Arabic route?', isArRoute);
+      console.log(logPrefix + ' Is English route?', isEnRoute);
+      
       // Store the path for redirection after load
+      // Add a unique identifier to ensure we can track this specific redirection
+      var redirectId = Date.now() + '-' + Math.random().toString(36).substring(2, 10);
       sessionStorage.setItem('redirectPath', fullPath);
       sessionStorage.setItem('redirectTimestamp', Date.now());
+      sessionStorage.setItem('redirectId', redirectId);
+      
+      console.log(logPrefix + ' Stored redirect path:', fullPath);
+      console.log(logPrefix + ' Redirect ID:', redirectId);
       
       if (isArRoute) {
-        console.log('Arabic route detected in 404 handler: ' + path);
+        console.log(logPrefix + ' Arabic route detected:', path);
+        // Ensure the path is properly formatted for Arabic
+        var pathParts = path.split('/');
+        if (pathParts.length >= 3) {
+          var feature = pathParts[2];
+          console.log(logPrefix + ' Arabic feature:', feature);
+        }
       }
       
       // If it's a language-specific route, try to preserve it
       // Otherwise default to English speed route
       if (!isArRoute && !isEnRoute) {
-        console.log('Redirecting non-language route to default: /en/speed');
-        // For paths without language prefix, default to English
+        console.log(logPrefix + ' No language prefix detected, defaulting to /en/speed');
         sessionStorage.setItem('redirectPath', '/en/speed');
       }
       
       // Redirect to the application root
+      console.log(logPrefix + ' Redirecting to root...');
       window.location.replace('/');
     })();
   </script>
@@ -74,5 +94,26 @@
 <body>
   <img src="/Logos/Tarabut_Auto-2.png" alt="Tarabut Auto Logo" />
   <p>Redirecting to Tarabut Auto<span class="loading"></span></p>
+  <script>
+    // Add debug information to the page
+    if (window.location.search.indexOf('debug=true') > -1) {
+      var debugInfo = document.createElement('div');
+      debugInfo.style.marginTop = '20px';
+      debugInfo.style.padding = '10px';
+      debugInfo.style.border = '1px solid #ccc';
+      debugInfo.style.maxWidth = '90%';
+      debugInfo.style.textAlign = 'left';
+      debugInfo.style.fontSize = '12px';
+      debugInfo.style.fontFamily = 'monospace';
+      
+      debugInfo.innerHTML = '<h3>Debug Information</h3>' +
+                           '<p>Path: ' + window.location.pathname + '</p>' +
+                           '<p>Redirecting to: ' + (sessionStorage.getItem('redirectPath') || '/') + '</p>' +
+                           '<p>Redirect ID: ' + sessionStorage.getItem('redirectId') + '</p>' +
+                           '<p>User Agent: ' + navigator.userAgent + '</p>';
+      
+      document.body.appendChild(debugInfo);
+    }
+  </script>
 </body>
 </html>
