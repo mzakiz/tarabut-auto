@@ -19,6 +19,7 @@ export const useWaitlistValidation = () => {
 
   const validateReferralCode = async (code: string) => {
     if (!code) return true;
+    
     const { data } = await supabase
       .from('waitlist_users')
       .select('referral_code')

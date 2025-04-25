@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useParams } from 'react-router-dom';
 import { supabase } from '@/integrations/supabase/client';
@@ -44,6 +43,7 @@ const WaitlistStatus = () => {
     setError(null);
 
     try {
+      // Type assertion to make TypeScript happy
       const { data, error } = await supabase
         .from('waitlist_users')
         .select('*')

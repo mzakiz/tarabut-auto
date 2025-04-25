@@ -13,6 +13,14 @@ interface FormData {
   referralCode: string;
 }
 
+// Define waitlist user type
+interface WaitlistUser {
+  position: number;
+  points: number;
+  referral_code: string;
+  status_id: string;
+}
+
 export const useWaitlistSubmission = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
@@ -86,7 +94,7 @@ export const useWaitlistSubmission = () => {
           referralCode: referralCodeData,
           position: positionData,
           points: 100, // Pass initial points to confirmation page
-          statusId: user?.status_id // Pass the status ID
+          statusId: user?.status_id // Use optional chaining to handle possibly null user
         }
       });
     } catch (error: any) {

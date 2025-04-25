@@ -9,13 +9,99 @@ export type Json =
 export type Database = {
   public: {
     Tables: {
-      [_ in never]: never
+      dealership_signups: {
+        Row: {
+          created_at: string | null
+          dealership_name: string
+          email: string
+          id: string
+          name: string
+          phone: string
+        }
+        Insert: {
+          created_at?: string | null
+          dealership_name: string
+          email: string
+          id?: string
+          name: string
+          phone: string
+        }
+        Update: {
+          created_at?: string | null
+          dealership_name?: string
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+        }
+        Relationships: []
+      }
+      waitlist_users: {
+        Row: {
+          created_at: string | null
+          display_alias: string | null
+          email: string
+          id: string
+          name: string
+          phone: string
+          points: number
+          position: number
+          referral_code: string
+          referrer_code: string | null
+          status_id: string
+          updated_at: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          display_alias?: string | null
+          email: string
+          id?: string
+          name: string
+          phone: string
+          points?: number
+          position: number
+          referral_code: string
+          referrer_code?: string | null
+          status_id?: string
+          updated_at?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          display_alias?: string | null
+          email?: string
+          id?: string
+          name?: string
+          phone?: string
+          points?: number
+          position?: number
+          referral_code?: string
+          referrer_code?: string | null
+          status_id?: string
+          updated_at?: string | null
+        }
+        Relationships: []
+      }
     }
     Views: {
       [_ in never]: never
     }
     Functions: {
-      [_ in never]: never
+      generate_display_alias: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      generate_referral_code: {
+        Args: Record<PropertyKey, never>
+        Returns: string
+      }
+      get_next_waitlist_position: {
+        Args: Record<PropertyKey, never>
+        Returns: number
+      }
+      get_user_tier: {
+        Args: { user_points: number }
+        Returns: string
+      }
     }
     Enums: {
       [_ in never]: never

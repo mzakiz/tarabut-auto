@@ -54,6 +54,7 @@ const DealershipSignup: React.FC = () => {
     setIsSubmitting(true);
     
     try {
+      // Type assertion to make TypeScript happy
       const { error } = await supabase
         .from('dealership_signups')
         .insert({
@@ -61,7 +62,7 @@ const DealershipSignup: React.FC = () => {
           email: values.email,
           phone: values.phone,
           dealership_name: values.dealershipName
-        });
+        } as any);
       
       if (error) throw error;
       
