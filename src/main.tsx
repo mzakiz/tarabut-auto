@@ -3,14 +3,17 @@ import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
 
-// Check for redirect from 404.html
+// Enhanced redirect handling from 404.html
 const redirectPath = sessionStorage.getItem('redirectPath');
 if (redirectPath) {
+  console.log(`Handling redirect to: ${redirectPath}`);
   sessionStorage.removeItem('redirectPath');
-  // Wait a bit for the router to initialize before redirecting
+  
+  // Wait for the router to initialize before redirecting
   setTimeout(() => {
+    // Use history API to avoid full page reload
     window.history.replaceState(null, '', redirectPath);
-  }, 100);
+  }, 200);
 }
 
 createRoot(document.getElementById("root")!).render(<App />);

@@ -1,18 +1,69 @@
-
 <!DOCTYPE html>
 <html>
 <head>
   <meta charset="utf-8">
-  <title>Redirecting...</title>
+  <title>Tarabut Auto - Redirecting...</title>
   <script>
-    // Single Page App redirect strategy
-    // This handles the case when the server returns a 404 for a route
-    // that should be handled by the React Router
-    sessionStorage.setItem('redirectPath', window.location.pathname + window.location.search);
-    window.location.replace('/');
+    // Enhanced SPA redirect strategy for language-specific routes
+    (function() {
+      // Save the current path + query params for redirection
+      var path = window.location.pathname;
+      var search = window.location.search;
+      var fullPath = path + search;
+
+      // Check if we're trying to access a language route
+      var isArRoute = path.indexOf('/ar/') === 0;
+      var isEnRoute = path.indexOf('/en/') === 0;
+      
+      // Store the path for redirection after load
+      sessionStorage.setItem('redirectPath', fullPath);
+      
+      // If it's a language-specific route, try to preserve it
+      // Otherwise default to English speed route
+      if (!isArRoute && !isEnRoute) {
+        console.log('Redirecting non-language route to default: /en/speed');
+        // For paths without language prefix, default to English
+        sessionStorage.setItem('redirectPath', '/en/speed');
+      }
+      
+      // Redirect to the application root
+      window.location.replace('/');
+    })();
   </script>
+  <style>
+    body {
+      font-family: 'Inter', sans-serif;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      height: 100vh;
+      margin: 0;
+      padding: 20px;
+      text-align: center;
+      color: #333;
+    }
+    img {
+      max-width: 200px;
+      margin-bottom: 20px;
+    }
+    .loading {
+      display: inline-block;
+      width: 20px;
+      height: 20px;
+      border: 2px solid rgba(0, 0, 0, 0.1);
+      border-left-color: #259f59;
+      border-radius: 50%;
+      animation: spin 1s linear infinite;
+      margin-left: 8px;
+    }
+    @keyframes spin {
+      to { transform: rotate(360deg); }
+    }
+  </style>
 </head>
 <body>
-  <p>Redirecting to Tarabut Auto...</p>
+  <img src="/Logos/Tarabut_Auto-2.png" alt="Tarabut Auto Logo" />
+  <p>Redirecting to Tarabut Auto<span class="loading"></span></p>
 </body>
 </html>
