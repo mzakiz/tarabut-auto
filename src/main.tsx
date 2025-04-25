@@ -1,4 +1,3 @@
-
 import { createRoot } from 'react-dom/client'
 import App from './App.tsx'
 import './index.css'
@@ -11,6 +10,14 @@ console.log(`${logPrefix} Current URL search: ${window.location.search}`);
 console.log(`${logPrefix} Full URL: ${window.location.href}`);
 console.log(`${logPrefix} Project base URL: ${import.meta.env.BASE_URL}`);
 console.log(`${logPrefix} Environment mode: ${import.meta.env.MODE}`);
+console.log(`${logPrefix} Project name: tarabut-auto`);
+
+// Additional logging for environment variables
+Object.entries(import.meta.env).forEach(([key, value]) => {
+  if (key.startsWith('VITE_')) {
+    console.log(`${logPrefix} Env Variable ${key}: ${value}`);
+  }
+});
 
 // Check for redirect information
 const redirectPath = sessionStorage.getItem('redirectPath');
