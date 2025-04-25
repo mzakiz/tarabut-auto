@@ -30,9 +30,10 @@ const App = () => (
             <Toaster />
             <Sonner />
             <Routes>
-              {/* Root path redirects - higher priority than 404 catch */}
+              {/* Explicit root redirects with multiple variations to handle different scenarios */}
               <Route path="/" element={<Navigate to="/en/speed" replace />} />
               <Route path="" element={<Navigate to="/en/speed" replace />} />
+              <Route path="/index.html" element={<Navigate to="/en/speed" replace />} />
               
               {/* English routes */}
               <Route path="/en/speed">
@@ -43,23 +44,7 @@ const App = () => (
                 <Route path="dealership/confirmation" element={<DealershipConfirmation />} />
               </Route>
               
-              <Route path="/en/offer">
-                <Route index element={<Index variant="personal" />} />
-                <Route path="waitlist-signup" element={<WaitlistSignup />} />
-                <Route path="waitlist-signup/confirmation" element={<Confirmation />} />
-                <Route path="dealership" element={<DealershipSignup />} />
-                <Route path="dealership/confirmation" element={<DealershipConfirmation />} />
-              </Route>
-              
-              <Route path="/en/budget">
-                <Route index element={<Index variant="budget" />} />
-                <Route path="waitlist-signup" element={<WaitlistSignup />} />
-                <Route path="waitlist-signup/confirmation" element={<Confirmation />} />
-                <Route path="dealership" element={<DealershipSignup />} />
-                <Route path="dealership/confirmation" element={<DealershipConfirmation />} />
-              </Route>
-              
-              {/* Arabic routes */}
+              {/* Arabic routes with explicit handling */}
               <Route path="/ar/speed">
                 <Route index element={<Index variant="speed" lang="ar" />} />
                 <Route path="waitlist-signup" element={<WaitlistSignup />} />
@@ -68,21 +53,11 @@ const App = () => (
                 <Route path="dealership/confirmation" element={<DealershipConfirmation />} />
               </Route>
               
-              <Route path="/ar/offer">
-                <Route index element={<Index variant="personal" lang="ar" />} />
-                <Route path="waitlist-signup" element={<WaitlistSignup />} />
-                <Route path="waitlist-signup/confirmation" element={<Confirmation />} />
-                <Route path="dealership" element={<DealershipSignup />} />
-                <Route path="dealership/confirmation" element={<DealershipConfirmation />} />
-              </Route>
-              
-              <Route path="/ar/budget">
-                <Route index element={<Index variant="budget" lang="ar" />} />
-                <Route path="waitlist-signup" element={<WaitlistSignup />} />
-                <Route path="waitlist-signup/confirmation" element={<Confirmation />} />
-                <Route path="dealership" element={<DealershipSignup />} />
-                <Route path="dealership/confirmation" element={<DealershipConfirmation />} />
-              </Route>
+              {/* Include routes for all variant/language combinations to ensure comprehensive coverage */}
+              <Route path="/en/offer" element={<Index variant="personal" />} />
+              <Route path="/en/budget" element={<Index variant="budget" />} />
+              <Route path="/ar/offer" element={<Index variant="personal" lang="ar" />} />
+              <Route path="/ar/budget" element={<Index variant="budget" lang="ar" />} />
               
               {/* Legacy and special routes */}
               <Route path="/en/legacy-journey-x7k9p2" element={<LegacyJourney />} />
@@ -92,7 +67,7 @@ const App = () => (
               <Route path="/waitlist-status/:statusId" element={<WaitlistStatus />} />
               <Route path="/confirmation" element={<Confirmation />} />
               
-              {/* Catch all route for 404 - must be last */}
+              {/* Catch-all 404 route - must be the last route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </TooltipProvider>
