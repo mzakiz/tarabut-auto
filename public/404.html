@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html>
 <head>
@@ -10,13 +11,21 @@
       var path = window.location.pathname;
       var search = window.location.search;
       var fullPath = path + search;
-
+      var host = window.location.host;
+      
+      console.log('404 handler - Processing path: ' + path);
+      
       // Check if we're trying to access a language route
       var isArRoute = path.indexOf('/ar/') === 0;
       var isEnRoute = path.indexOf('/en/') === 0;
       
       // Store the path for redirection after load
       sessionStorage.setItem('redirectPath', fullPath);
+      sessionStorage.setItem('redirectTimestamp', Date.now());
+      
+      if (isArRoute) {
+        console.log('Arabic route detected in 404 handler: ' + path);
+      }
       
       // If it's a language-specific route, try to preserve it
       // Otherwise default to English speed route

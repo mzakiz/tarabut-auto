@@ -19,6 +19,10 @@ const NotFound = () => {
       location.pathname
     );
     
+    // Log current environment to help with debugging
+    console.log("Current environment:", import.meta.env.MODE);
+    console.log("Current base URL:", import.meta.env.BASE_URL);
+    
     // Enhanced intelligent route handling for production 404s
     // More aggressive rerouting to handle edge cases
     
@@ -31,6 +35,8 @@ const NotFound = () => {
     
     // Handle Arabic routes specifically
     if (location.pathname.includes("/ar")) {
+      console.log("Arabic path detected in NotFound component:", location.pathname);
+      
       // Extract the specific feature after /ar/ if it exists
       const pathSegments = location.pathname.split('/');
       if (pathSegments.length >= 3) {
