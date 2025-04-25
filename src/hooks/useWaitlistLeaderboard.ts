@@ -1,6 +1,7 @@
 
 import { useQuery } from '@tanstack/react-query';
 import { supabase } from '@/integrations/supabase/client';
+import type { Tables } from '@/integrations/supabase/types';
 
 // Define types for our waitlist user data
 interface WaitlistUser {
@@ -22,7 +23,7 @@ export const useWaitlistLeaderboard = () => {
       if (error) throw error;
       
       // Use Promise.all to handle async operations in map
-      return Promise.all((data as WaitlistUser[]).map(async (user) => ({
+      return Promise.all((data as Tables<'waitlist_users'>[]).map(async (user) => ({
         ...user,
         tier: await getTierForPoints(user.points)
       })));

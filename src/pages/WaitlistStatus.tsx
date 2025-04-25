@@ -5,6 +5,7 @@ import { Button } from '@/components/ui/button';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { useTranslation } from '@/hooks/useTranslation';
+import type { Tables } from '@/integrations/supabase/types';
 
 const tierDescriptions = {
   'VIP Access': {
@@ -43,7 +44,6 @@ const WaitlistStatus = () => {
     setError(null);
 
     try {
-      // Type assertion to make TypeScript happy
       const { data, error } = await supabase
         .from('waitlist_users')
         .select('*')
@@ -57,7 +57,7 @@ const WaitlistStatus = () => {
         return;
       }
 
-      setUserData(data);
+      setUserData(data as Tables<'waitlist_users'>);
     } catch (err) {
       setError(t('waitlist.status.error'));
     }

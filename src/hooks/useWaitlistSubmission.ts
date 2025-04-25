@@ -5,20 +5,13 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Analytics } from '@/services/analytics';
 import { useTranslation } from '@/hooks/useTranslation';
+import type { Tables } from '@/integrations/supabase/types';
 
 interface FormData {
   name: string;
   email: string;
   phoneNumber: string;
   referralCode: string;
-}
-
-// Define waitlist user type
-interface WaitlistUser {
-  position: number;
-  points: number;
-  referral_code: string;
-  status_id: string;
 }
 
 export const useWaitlistSubmission = () => {
@@ -53,7 +46,7 @@ export const useWaitlistSubmission = () => {
           position: positionData,
           display_alias: displayAlias,
           points: 100 // Initial points
-        })
+        } as Tables<'waitlist_users'>)
         .select('position, points, referral_code, status_id')
         .single();
       

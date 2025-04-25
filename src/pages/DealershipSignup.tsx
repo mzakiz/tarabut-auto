@@ -1,4 +1,3 @@
-
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -12,6 +11,7 @@ import { useForm } from 'react-hook-form';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import * as z from 'zod';
+import type { Tables } from '@/integrations/supabase/types';
 
 const PERSONAL_EMAIL_DOMAINS = [
   'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 
@@ -54,7 +54,6 @@ const DealershipSignup: React.FC = () => {
     setIsSubmitting(true);
     
     try {
-      // Type assertion to make TypeScript happy
       const { error } = await supabase
         .from('dealership_signups')
         .insert({
@@ -62,7 +61,7 @@ const DealershipSignup: React.FC = () => {
           email: values.email,
           phone: values.phone,
           dealership_name: values.dealershipName
-        } as any);
+        } as Tables<'dealership_signups'>);
       
       if (error) throw error;
       
