@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -30,30 +29,26 @@ const App = () => (
             <Toaster />
             <Sonner />
             <Routes>
-              {/* Explicit root redirects with multiple variations to handle different scenarios */}
+              {/* Explicit root redirects */}
               <Route path="/" element={<Navigate to="/en/speed" replace />} />
               <Route path="" element={<Navigate to="/en/speed" replace />} />
               <Route path="/index.html" element={<Navigate to="/en/speed" replace />} />
               
               {/* English routes */}
-              <Route path="/en/speed">
-                <Route index element={<Index variant="speed" />} />
-                <Route path="waitlist-signup" element={<WaitlistSignup />} />
-                <Route path="waitlist-signup/confirmation" element={<Confirmation />} />
-                <Route path="dealership" element={<DealershipSignup />} />
-                <Route path="dealership/confirmation" element={<DealershipConfirmation />} />
-              </Route>
+              <Route path="/en/speed" element={<Index variant="speed" />} />
+              <Route path="/en/speed/waitlist-signup" element={<WaitlistSignup />} />
+              <Route path="/en/speed/waitlist-signup/confirmation" element={<Confirmation />} />
+              <Route path="/en/speed/dealership" element={<DealershipSignup />} />
+              <Route path="/en/speed/dealership/confirmation" element={<DealershipConfirmation />} />
               
-              {/* Arabic routes with explicit handling */}
-              <Route path="/ar/speed">
-                <Route index element={<Index variant="speed" lang="ar" />} />
-                <Route path="waitlist-signup" element={<WaitlistSignup />} />
-                <Route path="waitlist-signup/confirmation" element={<Confirmation />} />
-                <Route path="dealership" element={<DealershipSignup />} />
-                <Route path="dealership/confirmation" element={<DealershipConfirmation />} />
-              </Route>
+              {/* Arabic routes - matching the working /ar/offer pattern */}
+              <Route path="/ar/speed" element={<Index variant="speed" lang="ar" />} />
+              <Route path="/ar/speed/waitlist-signup" element={<WaitlistSignup />} />
+              <Route path="/ar/speed/waitlist-signup/confirmation" element={<Confirmation />} />
+              <Route path="/ar/speed/dealership" element={<DealershipSignup />} />
+              <Route path="/ar/speed/dealership/confirmation" element={<DealershipConfirmation />} />
               
-              {/* Include routes for all variant/language combinations to ensure comprehensive coverage */}
+              {/* Other variant routes */}
               <Route path="/en/offer" element={<Index variant="personal" />} />
               <Route path="/en/budget" element={<Index variant="budget" />} />
               <Route path="/ar/offer" element={<Index variant="personal" lang="ar" />} />
@@ -67,7 +62,7 @@ const App = () => (
               <Route path="/waitlist-status/:statusId" element={<WaitlistStatus />} />
               <Route path="/confirmation" element={<Confirmation />} />
               
-              {/* Catch-all 404 route - must be the last route */}
+              {/* Catch-all 404 route */}
               <Route path="*" element={<NotFound />} />
             </Routes>
           </TooltipProvider>
