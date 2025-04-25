@@ -10,91 +10,86 @@ import { Head } from "@/components/Head";
 const NotFound = () => {
   const location = useLocation();
   const navigate = useNavigate();
-  const { language } = useLanguage();
+  const { language, setLanguage } = useLanguage();
   const { t } = useTranslation();
   
   // Detailed logging prefix
   const logPrefix = "[NotFound]";
-
+  
+  console.error(
+    `${logPrefix} 404 Error: User attempted to access non-existent route:`,
+    location.pathname
+  );
+  console.error(`${logPrefix} Full URL: ${window.location.href}`);
+  
   useEffect(() => {
-    console.error(
-      `${logPrefix} 404 Error: User attempted to access non-existent route:`,
-      location.pathname
-    );
-    
     // Log detailed environment information to help with debugging
     console.log(`${logPrefix} Current environment:`, import.meta.env.MODE);
     console.log(`${logPrefix} Current base URL:`, import.meta.env.BASE_URL);
     console.log(`${logPrefix} Full URL:`, window.location.href);
     console.log(`${logPrefix} Current language context:`, language);
     console.log(`${logPrefix} Document direction:`, document.documentElement.dir);
+    console.log(`${logPrefix} Attempting to determine appropriate redirect...`);
     
-    // Enhanced intelligent route handling for production 404s
-    // More aggressive rerouting to handle edge cases
+    // Additional logging for route debugging
+    const pathSegments = location.pathname.split('/').filter(Boolean);
+    console.log(`${logPrefix} Path segments:`, pathSegments);
     
-    // Check for direct access to root or empty path
-    if (location.pathname === "/" || location.pathname === "") {
-      console.log(`${logPrefix} Root path detected, redirecting to /${language}/speed`);
-      navigate(`/${language}/speed`, { replace: true });
-      return;
-    }
-    
-    // Handle Arabic routes specifically
-    if (location.pathname.includes("/ar")) {
-      console.log(`${logPrefix} Arabic path detected:`, location.pathname);
+    // Enhanced path detection logic - Handle /ar/ routes directly
+    if (location.pathname.startsWith('/ar')) {
+      console.log(`${logPrefix} Direct Arabic route detected: ${location.pathname}`);
       
-      // Extract the specific feature after /ar/ if it exists
-      const pathSegments = location.pathname.split('/');
-      console.log(`${logPrefix} Path segments:`, pathSegments);
+      // Set language context to Arabic
+      setLanguage('ar');
       
-      if (pathSegments.length >= 3) {
-        const feature = pathSegments[2];
-        if (feature && feature.length > 0) {
-          console.log(`${logPrefix} Detected Arabic route with feature: ${feature}`);
-          
-          // Valid features to check against
-          const validFeatures = ["speed", "offer", "budget"];
-          if (validFeatures.includes(feature)) {
-            // This seems like a valid path, try forcing navigation
-            const fullPath = `/ar/${feature}`;
-            console.log(`${logPrefix} Redirecting to valid Arabic path: ${fullPath}`);
-            navigate(fullPath, { replace: true });
-            return;
-          } else {
-            console.log(`${logPrefix} Invalid feature in Arabic path: ${feature}`);
-          }
-        }
+      // Handle specific Arabic paths
+      if (location.pathname === '/ar' || location.pathname === '/ar/') {
+        console.log(`${logPrefix} Base Arabic route, redirecting to /ar/speed`);
+        navigate('/ar/speed', { replace: true });
+        return;
+      }
+      
+      // Check for specific feature paths
+      if (location.pathname.startsWith('/ar/speed') || 
+          location.pathname.startsWith('/ar/offer') || 
+          location.pathname.startsWith('/ar/budget')) {
+        console.log(`${logPrefix} Valid Arabic feature route: ${location.pathname}`);
+        navigate(location.pathname, { replace: true });
+        return;
       }
       
       // Default Arabic fallback
-      console.log(`${logPrefix} Redirecting to Arabic home: /ar/speed`);
-      navigate("/ar/speed", { replace: true });
+      console.log(`${logPrefix} Invalid Arabic path, defaulting to /ar/speed`);
+      navigate('/ar/speed', { replace: true });
       return;
     }
     
     // Handle English routes with similar logic
-    if (location.pathname.includes("/en")) {
-      console.log(`${logPrefix} English path detected:`, location.pathname);
-      const pathSegments = location.pathname.split('/');
+    if (location.pathname.startsWith('/en')) {
+      console.log(`${logPrefix} Direct English route detected: ${location.pathname}`);
       
-      if (pathSegments.length >= 3) {
-        const feature = pathSegments[2];
-        if (feature && feature.length > 0) {
-          // Valid features to check against
-          const validFeatures = ["speed", "offer", "budget"];
-          if (validFeatures.includes(feature)) {
-            // This seems like a valid path
-            const fullPath = `/en/${feature}`;
-            console.log(`${logPrefix} Redirecting to valid English path: ${fullPath}`);
-            navigate(fullPath, { replace: true });
-            return;
-          }
-        }
+      // Set language context to English
+      setLanguage('en');
+      
+      // Handle specific English paths
+      if (location.pathname === '/en' || location.pathname === '/en/') {
+        console.log(`${logPrefix} Base English route, redirecting to /en/speed`);
+        navigate('/en/speed', { replace: true });
+        return;
+      }
+      
+      // Check for specific feature paths
+      if (location.pathname.startsWith('/en/speed') || 
+          location.pathname.startsWith('/en/offer') || 
+          location.pathname.startsWith('/en/budget')) {
+        console.log(`${logPrefix} Valid English feature route: ${location.pathname}`);
+        navigate(location.pathname, { replace: true });
+        return;
       }
       
       // Default English fallback
-      console.log(`${logPrefix} Redirecting to English home: /en/speed`);
-      navigate("/en/speed", { replace: true });
+      console.log(`${logPrefix} Invalid English path, defaulting to /en/speed`);
+      navigate('/en/speed', { replace: true });
       return;
     }
     
@@ -102,7 +97,7 @@ const NotFound = () => {
     const langPrefix = language === 'ar' ? '/ar' : '/en';
     console.log(`${logPrefix} Using current language (${language}) for redirect: ${langPrefix}/speed`);
     navigate(`${langPrefix}/speed`, { replace: true });
-  }, [location.pathname, navigate, language]);
+  }, [location.pathname, navigate, language, setLanguage]);
 
   const handleBackToHome = () => {
     console.log(`${logPrefix} User clicked "Back to Home" button, navigating to /${language}/speed`);
@@ -132,19 +127,18 @@ const NotFound = () => {
           {t('back.home')}
         </Button>
         
-        {/* Debug information in development mode */}
-        {import.meta.env.DEV && (
-          <div className="mt-8 p-4 border border-gray-200 rounded text-left max-w-full overflow-auto">
-            <h3 className="font-bold mb-2 text-sm">Debug Information</h3>
-            <pre className="text-xs whitespace-pre-wrap">
-              {`Path: ${location.pathname}
+        {/* Debug information in all environments to help with troubleshooting */}
+        <div className="mt-8 p-4 border border-gray-200 rounded text-left max-w-full overflow-auto">
+          <h3 className="font-bold mb-2 text-sm">Debug Information</h3>
+          <pre className="text-xs whitespace-pre-wrap">
+            {`Path: ${location.pathname}
 Current Language: ${language}
 Document Direction: ${language === 'ar' ? 'rtl' : 'ltr'}
 Is Production: ${import.meta.env.PROD}
-Base URL: ${import.meta.env.BASE_URL}`}
-            </pre>
-          </div>
-        )}
+Base URL: ${import.meta.env.BASE_URL}
+Timestamp: ${new Date().toISOString()}`}
+          </pre>
+        </div>
       </div>
     </div>
   );

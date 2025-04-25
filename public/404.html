@@ -10,6 +10,11 @@
       // Detailed logging to track what's happening
       var logPrefix = "[404 Handler]";
       
+      // Get the current time for debugging
+      var timestamp = new Date().toISOString();
+      console.log(logPrefix + ' Initialized at ' + timestamp);
+      console.log(logPrefix + ' User agent: ' + navigator.userAgent);
+      
       // Save the current path + query params for redirection
       var path = window.location.pathname;
       var search = window.location.search;
@@ -20,38 +25,74 @@
       console.log(logPrefix + ' Full URL:', window.location.href);
       console.log(logPrefix + ' Host:', host);
       
-      // Check if we're trying to access a language route
-      var isArRoute = path.indexOf('/ar/') === 0;
-      var isEnRoute = path.indexOf('/en/') === 0;
+      // CRITICAL: Check if we're trying to access Arabic routes directly
+      var isArRoute = path.indexOf('/ar/') === 0 || path === '/ar';
+      var isEnRoute = path.indexOf('/en/') === 0 || path === '/en';
+      var isRoot = path === '/' || path === '';
       
-      console.log(logPrefix + ' Is Arabic route?', isArRoute);
-      console.log(logPrefix + ' Is English route?', isEnRoute);
+      console.log(logPrefix + ' Route type detection:');
+      console.log(' - Is Arabic route? ' + isArRoute);
+      console.log(' - Is English route? ' + isEnRoute);
+      console.log(' - Is root route? ' + isRoot);
       
-      // Store the path for redirection after load
-      // Add a unique identifier to ensure we can track this specific redirection
-      var redirectId = Date.now() + '-' + Math.random().toString(36).substring(2, 10);
-      sessionStorage.setItem('redirectPath', fullPath);
-      sessionStorage.setItem('redirectTimestamp', Date.now());
-      sessionStorage.setItem('redirectId', redirectId);
+      // Generate a unique redirect ID for tracking
+      var redirectId = 'redirect_' + Date.now() + '_' + Math.random().toString(36).substring(2, 10);
       
-      console.log(logPrefix + ' Stored redirect path:', fullPath);
-      console.log(logPrefix + ' Redirect ID:', redirectId);
-      
+      // Add VERY EXPLICIT handling for Arabic routes
       if (isArRoute) {
-        console.log(logPrefix + ' Arabic route detected:', path);
-        // Ensure the path is properly formatted for Arabic
-        var pathParts = path.split('/');
-        if (pathParts.length >= 3) {
-          var feature = pathParts[2];
-          console.log(logPrefix + ' Arabic feature:', feature);
+        console.log(logPrefix + ' ARABIC ROUTE DETECTED:', path);
+        
+        // If it's just /ar without a trailing slash, add /speed
+        if (path === '/ar') {
+          console.log(logPrefix + ' Path is exactly /ar, redirecting to /ar/speed');
+          fullPath = '/ar/speed' + search;
         }
+        
+        // Store the path for redirection with explicit language marker
+        sessionStorage.setItem('redirectPath', fullPath);
+        sessionStorage.setItem('redirectLanguage', 'ar');
+        sessionStorage.setItem('redirectTimestamp', Date.now());
+        sessionStorage.setItem('redirectId', redirectId);
+        
+        console.log(logPrefix + ' Stored Arabic redirect path:', fullPath);
+        console.log(logPrefix + ' Redirect ID:', redirectId);
+        
+        // IMMEDIATE redirection for Arabic routes
+        window.location.replace('/');
+        return;
       }
       
-      // If it's a language-specific route, try to preserve it
-      // Otherwise default to English speed route
+      // Handle English routes similarly
+      if (isEnRoute) {
+        console.log(logPrefix + ' ENGLISH ROUTE DETECTED:', path);
+        
+        // If it's just /en without a trailing slash, add /speed
+        if (path === '/en') {
+          console.log(logPrefix + ' Path is exactly /en, redirecting to /en/speed');
+          fullPath = '/en/speed' + search;
+        }
+        
+        // Store the path for redirection with explicit language marker
+        sessionStorage.setItem('redirectPath', fullPath);
+        sessionStorage.setItem('redirectLanguage', 'en');
+        sessionStorage.setItem('redirectTimestamp', Date.now());
+        sessionStorage.setItem('redirectId', redirectId);
+        
+        console.log(logPrefix + ' Stored English redirect path:', fullPath);
+        console.log(logPrefix + ' Redirect ID:', redirectId);
+        
+        // IMMEDIATE redirection for English routes
+        window.location.replace('/');
+        return;
+      }
+      
+      // For all other cases, default to English speed
       if (!isArRoute && !isEnRoute) {
-        console.log(logPrefix + ' No language prefix detected, defaulting to /en/speed');
+        console.log(logPrefix + ' Non-language route detected, defaulting to /en/speed');
         sessionStorage.setItem('redirectPath', '/en/speed');
+        sessionStorage.setItem('redirectLanguage', 'en');
+        sessionStorage.setItem('redirectTimestamp', Date.now());
+        sessionStorage.setItem('redirectId', redirectId);
       }
       
       // Redirect to the application root
@@ -106,10 +147,15 @@
       debugInfo.style.fontSize = '12px';
       debugInfo.style.fontFamily = 'monospace';
       
+      var redirectPath = sessionStorage.getItem('redirectPath') || 'None';
+      var redirectLang = sessionStorage.getItem('redirectLanguage') || 'None';
+      var redirectId = sessionStorage.getItem('redirectId') || 'None';
+      
       debugInfo.innerHTML = '<h3>Debug Information</h3>' +
                            '<p>Path: ' + window.location.pathname + '</p>' +
-                           '<p>Redirecting to: ' + (sessionStorage.getItem('redirectPath') || '/') + '</p>' +
-                           '<p>Redirect ID: ' + sessionStorage.getItem('redirectId') + '</p>' +
+                           '<p>Redirecting to: ' + redirectPath + '</p>' +
+                           '<p>Language: ' + redirectLang + '</p>' +
+                           '<p>Redirect ID: ' + redirectId + '</p>' +
                            '<p>User Agent: ' + navigator.userAgent + '</p>';
       
       document.body.appendChild(debugInfo);

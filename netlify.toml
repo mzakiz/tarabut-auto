@@ -3,6 +3,19 @@
   from = "/*"
   to = "/index.html"
   status = 200
+  force = true
+
+[[redirects]]
+  from = "/ar/*"
+  to = "/index.html"
+  status = 200
+  force = true
+
+[[redirects]]
+  from = "/en/*"
+  to = "/index.html"
+  status = 200
+  force = true
 
 [[headers]]
   for = "/*"
