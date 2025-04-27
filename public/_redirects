@@ -7,6 +7,10 @@
 /ar    /ar/speed    301
 /en    /en/speed    301
 
+# Domain-specific routing
+auto.tarabut.com/ar/speed    /ar/speed    200
+auto.tarabut.com/en/speed    /en/speed    200
+
 # Default language redirect for root
 /      /en/speed    302
 
