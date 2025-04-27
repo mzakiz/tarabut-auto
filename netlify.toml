@@ -1,4 +1,3 @@
-
 [[redirects]]
   from = "/*"
   to = "/index.html"
@@ -33,7 +32,7 @@
   from = "/"
   to = "/en/speed"
   status = 302
-  force = false
+  force = true
 
 [[headers]]
   for = "/*"
@@ -43,4 +42,3 @@
     X-Content-Type-Options = "nosniff"
     Referrer-Policy = "strict-origin-when-cross-origin"
     Permissions-Policy = "camera=(), microphone=(), geolocation=()"
-
