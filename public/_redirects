@@ -1,7 +1,15 @@
 
-# Explicit redirects for language routes with higher priority
+# Language specific routes with higher priority
 /ar/*  /index.html  200
 /en/*  /index.html  200
 
-# Generic fallback for all other routes
-/*    /index.html   200
+# Base language redirects
+/ar    /ar/speed    301
+/en    /en/speed    301
+
+# Default language redirect for root
+/      /en/speed    302
+
+# Catch all for SPA routing
+/*     /index.html  200
+

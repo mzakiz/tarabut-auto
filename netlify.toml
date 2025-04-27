@@ -17,7 +17,30 @@
   status = 200
   force = true
 
+[[redirects]]
+  from = "/ar"
+  to = "/ar/speed"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/en"
+  to = "/en/speed"
+  status = 301
+  force = true
+
+[[redirects]]
+  from = "/"
+  to = "/en/speed"
+  status = 302
+  force = false
+
 [[headers]]
   for = "/*"
     [headers.values]
     Cache-Control = "public, max-age=0, must-revalidate"
+    X-Frame-Options = "DENY"
+    X-Content-Type-Options = "nosniff"
+    Referrer-Policy = "strict-origin-when-cross-origin"
+    Permissions-Policy = "camera=(), microphone=(), geolocation=()"
+
