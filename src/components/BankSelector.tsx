@@ -1,6 +1,7 @@
-
 import React from 'react';
 import { motion } from 'framer-motion';
+import { Analytics } from '@/services/analytics';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface BankSymbol {
   id: string;
@@ -14,6 +15,8 @@ interface BankSelectorProps {
 }
 
 const BankSelector: React.FC<BankSelectorProps> = ({ onBankSelect, selectedBank }) => {
+  const { language } = useLanguage();
+  
   const banks: BankSymbol[] = [
     { id: 'snb', name: 'Saudi National Bank', svgPath: '/Symbols/SNB_symbol.svg' },
     { id: 'rajhi', name: 'Al Rajhi Bank', svgPath: '/Symbols/Alrajhi_symbol.svg' },
@@ -29,12 +32,22 @@ const BankSelector: React.FC<BankSelectorProps> = ({ onBankSelect, selectedBank 
   ];
 
   const handleBankClick = (bankId: string) => {
+    const selectedBankData = banks.find(bank => bank.id === bankId);
+    
+    if (selectedBankData) {
+      Analytics.trackBankSelection({
+        bank_id: bankId,
+        bank_name: selectedBankData.name,
+        language,
+        screen: 'bank_selection'
+      });
+    }
+    
     if (onBankSelect) {
       onBankSelect(bankId);
     }
   };
 
-  // Grid layout with hover animations
   return (
     <div className="w-full mx-auto">
       <div className="grid grid-cols-2 gap-4 md:gap-6">

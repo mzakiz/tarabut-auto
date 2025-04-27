@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Calculator, ArrowRight } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -6,6 +5,7 @@ import { Slider } from '@/components/ui/slider';
 import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import { Analytics } from '@/services/analytics';
 
 const AffordabilityCalculator = () => {
   const [carPrice, setCarPrice] = useState(120000);
@@ -30,7 +30,28 @@ const AffordabilityCalculator = () => {
   useEffect(() => {
     const payment = calculateMonthlyPayment();
     setMonthlyPayment(payment);
-  }, [carPrice, loanTerm]);
+    
+    // Track calculator interaction when values change
+    Analytics.trackCalculatorInteraction({
+      action: 'amount_changed',
+      value: carPrice,
+      language,
+      screen: 'calculator'
+    });
+  }, [carPrice]);
+  
+  useEffect(() => {
+    const payment = calculateMonthlyPayment();
+    setMonthlyPayment(payment);
+    
+    // Track calculator interaction when term changes
+    Analytics.trackCalculatorInteraction({
+      action: 'term_changed',
+      value: loanTerm,
+      language,
+      screen: 'calculator'
+    });
+  }, [loanTerm]);
   
   useEffect(() => {
     const handleScroll = () => {

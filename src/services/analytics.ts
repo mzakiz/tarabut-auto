@@ -50,6 +50,28 @@ export interface DeviceDetectedProperties extends BaseAnalyticsProperties {
   browser: string;
 }
 
+export interface VideoEngagementProperties extends BaseAnalyticsProperties {
+  action: 'play' | 'pause' | 'complete';
+  duration?: number;
+  time?: number;
+}
+
+export interface CalculatorInteractionProperties extends BaseAnalyticsProperties {
+  action: 'amount_changed' | 'term_changed';
+  value: number;
+}
+
+export interface BankSelectionProperties extends BaseAnalyticsProperties {
+  bank_id: string;
+  bank_name: string;
+}
+
+export interface ErrorProperties extends BaseAnalyticsProperties {
+  error_type: string;
+  error_message: string;
+  component?: string;
+}
+
 // Analytics service with type-safe methods
 export const Analytics = {
   // Page views
@@ -137,6 +159,38 @@ export const Analytics = {
     if (window.analytics) {
       window.analytics.track('form_field_left_blank', props);
       console.log('Track form field left blank:', props);
+    }
+  },
+
+  // Video engagement tracking
+  trackVideoEngagement: (props: VideoEngagementProperties) => {
+    if (window.analytics) {
+      window.analytics.track('video_engagement', props);
+      console.log('Track video engagement:', props);
+    }
+  },
+
+  // Calculator interaction tracking
+  trackCalculatorInteraction: (props: CalculatorInteractionProperties) => {
+    if (window.analytics) {
+      window.analytics.track('calculator_interaction', props);
+      console.log('Track calculator interaction:', props);
+    }
+  },
+
+  // Bank selection tracking
+  trackBankSelection: (props: BankSelectionProperties) => {
+    if (window.analytics) {
+      window.analytics.track('bank_selected', props);
+      console.log('Track bank selected:', props);
+    }
+  },
+
+  // Error tracking
+  trackError: (props: ErrorProperties) => {
+    if (window.analytics) {
+      window.analytics.track('error_occurred', props);
+      console.log('Track error:', props);
     }
   }
 };
