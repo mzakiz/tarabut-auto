@@ -1,12 +1,15 @@
 
 import { useEffect } from 'react';
-import { BaseAnalyticsProperties } from './types';
+import { ViewEventProperties } from './types';
 import { Analytics } from './index';
 import { detectDeviceInfo } from './deviceDetection';
 
-export const useAnalyticsPage = (pageName: string, properties: BaseAnalyticsProperties = {}) => {
+export const useAnalyticsPage = (pageName: string, properties: ViewEventProperties = {}) => {
   useEffect(() => {
-    Analytics.page(pageName, properties);
+    Analytics.page(pageName, {
+      ...properties,
+      referrer: document.referrer || undefined,
+    });
   }, [pageName]); // eslint-disable-line react-hooks/exhaustive-deps
 };
 

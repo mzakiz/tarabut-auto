@@ -1,4 +1,3 @@
-
 // Analytics event property interfaces
 export interface BaseAnalyticsProperties {
   language?: string;
@@ -69,6 +68,20 @@ export interface ErrorProperties extends BaseAnalyticsProperties {
   error_type: string;
   error_message: string;
   component?: string;
+}
+
+// New interface for view events
+export interface ViewEventProperties extends BaseAnalyticsProperties {
+  view_location?: string;  // For views within a page (e.g., modal, section)
+  view_context?: string;   // Additional context about the view
+  referrer?: string;      // Where the user came from
+}
+
+// Updated naming for action events
+export interface ClickEventProperties extends BaseAnalyticsProperties {
+  element_type: string;   // button, link, icon, etc.
+  element_location: string; // header, footer, main, etc.
+  element_context?: string; // Additional context about the click
 }
 
 // Type definition for window.analytics

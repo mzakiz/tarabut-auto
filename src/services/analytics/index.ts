@@ -1,7 +1,7 @@
-
 import type {
   BaseAnalyticsProperties,
-  CTAClickedProperties,
+  ViewEventProperties,
+  ClickEventProperties,
   LanguageSwitchedProperties,
   SectionScrolledProperties,
   FormFieldProperties,
@@ -16,121 +16,127 @@ import type {
   ErrorProperties
 } from './types';
 
-// Analytics service with type-safe methods
+// Analytics service with consistent naming convention
 export const Analytics = {
-  // Page views
-  page: (name: string, properties: BaseAnalyticsProperties = {}) => {
+  // Page views with "Viewed:" prefix
+  page: (name: string, properties: ViewEventProperties = {}) => {
     if (window.analytics) {
-      window.analytics.page(name, properties);
-      console.log('Page tracked:', name, properties);
+      window.analytics.track(`Viewed: ${name}`, {
+        ...properties,
+        view_location: 'page',
+      });
+      console.log(`Viewed: ${name}`, properties);
     }
   },
 
-  // CTA clicks
-  trackCTAClicked: (props: CTAClickedProperties) => {
+  // CTA clicks with "Clicked:" prefix
+  trackCTAClicked: (props: ClickEventProperties) => {
     if (window.analytics) {
-      window.analytics.track('cta_clicked', props);
-      console.log('Track CTA clicked:', props);
+      window.analytics.track(`Clicked: ${props.element_type}`, props);
+      console.log(`Clicked: ${props.element_type}`, props);
     }
   },
 
-  // Language switching
+  // Language switching becomes an action
   trackLanguageSwitched: (props: LanguageSwitchedProperties) => {
     if (window.analytics) {
-      window.analytics.track('language_switched', props);
-      console.log('Track language switched:', props);
+      window.analytics.track('Selected: Language', props);
+      console.log('Selected: Language', props);
     }
   },
 
-  // Section scrolling
+  // Section scrolling becomes a view
   trackSectionScrolledTo: (props: SectionScrolledProperties) => {
     if (window.analytics) {
-      window.analytics.track('section_scrolled_to', props);
-      console.log('Track section scrolled to:', props);
+      window.analytics.track(`Viewed: ${props.section} Section`, {
+        ...props,
+        view_location: 'section'
+      });
+      console.log(`Viewed: ${props.section} Section`, props);
     }
   },
 
-  // Form interactions
+  // Form interactions become actions
   trackFormFieldEntered: (props: FormFieldProperties) => {
     if (window.analytics) {
-      window.analytics.track('form_field_entered', props);
-      console.log('Track form field entered:', props);
+      window.analytics.track(`Entered: Form Field`, props);
+      console.log('Entered: Form Field', props);
     }
   },
 
   trackFormDropdownSelected: (props: FormDropdownProperties) => {
     if (window.analytics) {
-      window.analytics.track('form_dropdown_selected', props);
-      console.log('Track form dropdown selected:', props);
+      window.analytics.track(`Selected: Dropdown Option`, props);
+      console.log('Selected: Dropdown Option', props);
     }
   },
 
   trackWaitlistFormSubmitted: (props: FormSubmittedProperties) => {
     if (window.analytics) {
-      window.analytics.track('waitlist_form_submitted', props);
-      console.log('Track form submitted:', props);
+      window.analytics.track('Submitted: Waitlist Form', props);
+      console.log('Submitted: Waitlist Form', props);
     }
   },
 
   trackFormSubmissionFailed: (props: FormSubmissionFailedProperties) => {
     if (window.analytics) {
-      window.analytics.track('form_submission_failed', props);
-      console.log('Track form submission failed:', props);
+      window.analytics.track('Encountered: Form Submission Error', props);
+      console.log('Encountered: Form Submission Error', props);
     }
   },
 
   // Referral tracking
   trackReferralShared: (props: ReferralSharedProperties) => {
     if (window.analytics) {
-      window.analytics.track('referral_shared', props);
-      console.log('Track referral shared:', props);
+      window.analytics.track('Shared: Referral', props);
+      console.log('Shared: Referral', props);
     }
   },
 
   // Device detection
   trackDeviceDetected: (props: DeviceDetectedProperties) => {
     if (window.analytics) {
-      window.analytics.track('device_detected', props);
-      console.log('Track device detected:', props);
+      window.analytics.track('Detected: Device', props);
+      console.log('Detected: Device', props);
     }
   },
 
   trackFormFieldLeftBlank: (props: FormFieldProperties) => {
     if (window.analytics) {
-      window.analytics.track('form_field_left_blank', props);
-      console.log('Track form field left blank:', props);
+      window.analytics.track('Left Blank: Form Field', props);
+      console.log('Left Blank: Form Field', props);
     }
   },
 
   // Video engagement tracking
   trackVideoEngagement: (props: VideoEngagementProperties) => {
     if (window.analytics) {
-      window.analytics.track('video_engagement', props);
-      console.log('Track video engagement:', props);
+      window.analytics.track('Engaged: Video', props);
+      console.log('Engaged: Video', props);
     }
   },
 
   // Calculator interaction tracking
   trackCalculatorInteraction: (props: CalculatorInteractionProperties) => {
     if (window.analytics) {
-      window.analytics.track('calculator_interaction', props);
-      console.log('Track calculator interaction:', props);
+      window.analytics.track('Interacted: Calculator', props);
+      console.log('Interacted: Calculator', props);
     }
   },
 
   // Bank selection tracking
   trackBankSelection: (props: BankSelectionProperties) => {
     if (window.analytics) {
-      window.analytics.track('bank_selected', props);
-      console.log('Track bank selected:', props);
+      window.analytics.track('Selected: Bank', props);
+      console.log('Selected: Bank', props);
     }
   },
 
   // Error tracking
   trackError: (props: ErrorProperties) => {
     if (window.analytics) {
-      window.analytics.track('error_occurred', props);
-      console.log('Track error:', props);
+      window.analytics.track('Encountered: Error', props);
+      console.log('Encountered: Error', props);
     }
   }
 };
