@@ -1,3 +1,4 @@
+
 import React, { useRef, useEffect } from 'react';
 import Header from '@/components/header/Header';
 import CarShowcase from '@/components/CarShowcase';
@@ -64,7 +65,9 @@ const Index: React.FC<IndexProps> = ({ variant = 'speed', lang }) => {
             });
             
             Analytics.trackCTAClicked({
-              element: `navigate_to_${targetId}`,
+              element_type: 'link',
+              element_location: 'page_content',
+              element_context: `navigate_to_${targetId}`,
               screen: 'landing_page',
               language,
               variant
@@ -116,7 +119,9 @@ const Index: React.FC<IndexProps> = ({ variant = 'speed', lang }) => {
 
   const handleWaitlistCTA = () => {
     Analytics.trackCTAClicked({
-      element: 'get_on_waitlist',
+      element_type: 'button',
+      element_location: 'hero_section',
+      element_context: 'get_on_waitlist',
       screen: 'landing_page',
       language,
       variant

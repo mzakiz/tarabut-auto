@@ -93,13 +93,17 @@ const Header = () => {
                 setMobileMenuOpen(!mobileMenuOpen);
                 if (!mobileMenuOpen) {
                   Analytics.trackCTAClicked({
-                    element: 'mobile_menu_open',
+                    element_type: 'button',
+                    element_location: 'header',
+                    element_context: 'mobile_menu_open',
                     screen: 'landing_page',
                     language
                   });
                 } else {
                   Analytics.trackCTAClicked({
-                    element: 'mobile_menu_close',
+                    element_type: 'button',
+                    element_location: 'header',
+                    element_context: 'mobile_menu_close',
                     screen: 'landing_page',
                     language
                   });

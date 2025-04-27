@@ -27,7 +27,9 @@ const Navigation: React.FC<NavigationProps> = ({ isMobile = false, onMobileItemC
   const handleNavClick = (section: string) => {
     // Track navigation click
     Analytics.trackCTAClicked({
-      element: `navigate_to_${section}`,
+      element_type: 'navigation_link',
+      element_location: isMobile ? 'mobile_menu' : 'header',
+      element_context: `navigate_to_${section}`,
       screen: 'landing_page',
       language
     });

@@ -1,3 +1,4 @@
+
 // Analytics event property interfaces
 export interface BaseAnalyticsProperties {
   language?: string;
@@ -70,7 +71,7 @@ export interface ErrorProperties extends BaseAnalyticsProperties {
   component?: string;
 }
 
-// New interface for view events
+// View events properties
 export interface ViewEventProperties extends BaseAnalyticsProperties {
   view_location?: string;  // For views within a page (e.g., modal, section)
   view_context?: string;   // Additional context about the view

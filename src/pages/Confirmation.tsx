@@ -60,7 +60,9 @@ const Confirmation = () => {
     });
     
     Analytics.trackCTAClicked({
-      element: 'copy_referral_code',
+      element_type: 'button',
+      element_location: 'thank_you_page',
+      element_context: 'copy_referral_code',
       screen: 'thank_you_page',
       language
     });
@@ -68,7 +70,9 @@ const Confirmation = () => {
   
   const handleBackToHome = () => {
     Analytics.trackCTAClicked({
-      element: 'return_home',
+      element_type: 'button',
+      element_location: 'thank_you_page',
+      element_context: 'return_home',
       screen: 'thank_you_page',
       language
     });
@@ -89,7 +93,9 @@ const Confirmation = () => {
     });
     
     Analytics.trackCTAClicked({
-      element: 'copy_status_url',
+      element_type: 'button',
+      element_location: 'thank_you_page',
+      element_context: 'copy_status_url',
       screen: 'thank_you_page',
       language
     });

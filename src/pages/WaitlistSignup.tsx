@@ -54,7 +54,9 @@ const WaitlistSignup: React.FC = () => {
   
   const handleBack = () => {
     Analytics.trackCTAClicked({
-      element: 'back_to_home',
+      element_type: 'button',
+      element_location: 'waitlist_form',
+      element_context: 'back_to_home',
       screen: 'waitlist_form',
       language
     });
