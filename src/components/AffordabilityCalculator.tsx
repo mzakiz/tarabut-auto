@@ -87,7 +87,8 @@ const AffordabilityCalculator = () => {
         <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'}`}>
           <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2">
-              <div className={`bg-gradient-to-br from-ksa-primary to-ksa-secondary p-8 text-white ${isRTL ? 'order-2' : 'order-1'}`}>
+              {/* Green section with payment information */}
+              <div className={`bg-gradient-to-br from-ksa-primary to-ksa-secondary p-8 text-white ${isRTL ? 'md:order-last' : 'md:order-first'}`}>
                 <div className={`flex items-center mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
                   <Calculator className={`h-8 w-8 ${isRTL ? 'ml-3' : 'mr-3'}`} />
                   <h2 className="text-2xl font-bold">{t('calculator.customize')}</h2>
@@ -111,7 +112,8 @@ const AffordabilityCalculator = () => {
                 </div>
               </div>
               
-              <div className={`p-8 ${isRTL ? 'order-1' : 'order-2'}`}>
+              {/* White section with sliders */}
+              <div className={`p-8 ${isRTL ? 'md:order-first' : 'md:order-last'}`}>
                 <div className="space-y-6">
                   <div className={isRTL ? 'text-right' : 'text-left'}>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
@@ -123,7 +125,7 @@ const AffordabilityCalculator = () => {
                       max={150000}
                       step={1000}
                       onValueChange={(value) => setCarPrice(value[0])}
-                      className="my-4 rtl:rotate-180"
+                      className="my-4"
                       dir={isRTL ? "rtl" : "ltr"}
                     />
                   </div>
@@ -138,7 +140,7 @@ const AffordabilityCalculator = () => {
                       max={60}
                       step={12}
                       onValueChange={(value) => setLoanTerm(value[0])}
-                      className="my-4 rtl:rotate-180"
+                      className="my-4"
                       dir={isRTL ? "rtl" : "ltr"}
                     />
                   </div>
