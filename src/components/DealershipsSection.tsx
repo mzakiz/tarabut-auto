@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Zap, BarChart, Gauge, Users } from 'lucide-react';
@@ -89,28 +88,50 @@ const DealershipsSection = () => {
           </p>
         </div>
 
-        <div ref={ref} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 xl:grid-cols-4 gap-6 md:gap-8 max-w-6xl mx-auto mb-12">
-          {benefits.map((benefit, index) => (
+        <div ref={ref} className="max-w-6xl mx-auto mb-12">
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div
-              key={benefit.id}
-              className={`bg-white rounded-lg border border-gray-200 shadow-md p-6 transition-all duration-500 ease-out transform ${
-                visibleBenefits.includes(benefit.id) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+              className={`md:col-span-3 bg-gradient-to-r from-tarabut-purple to-tarabut-blue rounded-xl p-8 text-white transition-all duration-500 ease-out transform ${
+                visibleBenefits.includes(1) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
               }`}
-              style={{ transitionDelay: `${index * benefitDelayBase}ms` }}
             >
-              <div className="flex flex-col items-start">
-                <div className="bg-tarabut-secondary/10 p-3 rounded-full mb-4">
-                  <div className="text-tarabut-secondary">{benefit.icon}</div>
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+                <div className="bg-white/20 p-6 rounded-full shrink-0">
+                  {benefits[0].icon}
                 </div>
-                <h3 className="text-lg md:text-xl font-semibold mb-3 text-ksa-dark">
-                  {isChangingLanguage ? '...' : t(benefit.titleKey)}
-                </h3>
-                <p className="text-sm md:text-base text-gray-600">
-                  {isChangingLanguage ? '...' : t(benefit.descriptionKey)}
-                </p>
+                <div className="text-center md:text-left">
+                  <h3 className="text-2xl font-semibold mb-4">
+                    {isChangingLanguage ? '...' : t(benefits[0].titleKey)}
+                  </h3>
+                  <p className="text-white/90 text-lg leading-relaxed">
+                    {isChangingLanguage ? '...' : t(benefits[0].descriptionKey)}
+                  </p>
+                </div>
               </div>
             </div>
-          ))}
+
+            {benefits.slice(1).map((benefit, index) => (
+              <div
+                key={benefit.id}
+                className={`bg-white rounded-xl p-6 shadow-sm transition-all duration-500 ease-out transform ${
+                  visibleBenefits.includes(benefit.id) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
+                }`}
+                style={{ transitionDelay: `${(index + 1) * 100}ms` }}
+              >
+                <div className="flex flex-col items-center text-center">
+                  <div className="bg-tarabut-secondary/10 p-4 rounded-full mb-4">
+                    <div className="text-tarabut-secondary">{benefit.icon}</div>
+                  </div>
+                  <h3 className="text-lg font-semibold mb-3 text-ksa-dark">
+                    {isChangingLanguage ? '...' : t(benefit.titleKey)}
+                  </h3>
+                  <p className="text-gray-600">
+                    {isChangingLanguage ? '...' : t(benefit.descriptionKey)}
+                  </p>
+                </div>
+              </div>
+            ))}
+          </div>
         </div>
 
         <div className="text-center">

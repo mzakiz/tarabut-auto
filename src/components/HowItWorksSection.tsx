@@ -74,21 +74,40 @@ const HowItWorksSection = () => {
           </p>
         </div>
 
-        <div ref={ref} className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 md:gap-8">
+        <div ref={ref} className="relative max-w-4xl mx-auto">
+          <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/10 transform -translate-x-1/2 hidden md:block" />
+          
           {steps.map((step, index) => (
             <div
               key={step.id}
-              className={`bg-white/5 backdrop-blur-sm border border-white/10 rounded-lg p-6 transition-all duration-500 ease-out transform ${
+              className={`relative flex items-center mb-12 last:mb-0 transition-all duration-500 ease-out ${
                 visibleSteps.includes(step.id) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
-              }`}
-              style={{ transitionDelay: `${index * stepDelayBase}ms` }}
+              } ${index % 2 === 0 ? 'md:flex-row' : 'md:flex-row-reverse'}`}
+              style={{ transitionDelay: `${index * 150}ms` }}
             >
-              <div className="flex flex-col items-center text-center">
-                <div className="bg-tarabut-teal/20 p-4 rounded-full mb-4">
-                  <div className="text-tarabut-teal">{step.icon}</div>
+              <div className={`hidden md:block w-1/2 ${index % 2 === 0 ? 'text-right pr-8' : 'text-left pl-8'}`}>
+                <div className={`inline-block ${index % 2 === 0 ? 'ml-auto' : 'mr-auto'}`}>
+                  <div className="bg-tarabut-teal/20 p-4 rounded-full mb-4 inline-flex">
+                    <div className="text-tarabut-teal">{step.icon}</div>
+                  </div>
+                  <h3 className="text-lg md:text-xl font-semibold mb-3 text-white">
+                    {isChangingLanguage ? '...' : t(step.titleKey)}
+                  </h3>
+                  <p className="text-sm md:text-base text-white/80 max-w-sm">
+                    {isChangingLanguage ? '...' : t(step.descriptionKey)}
+                  </p>
                 </div>
-                <div className="rounded-full bg-white/10 w-8 h-8 flex items-center justify-center mb-4">
-                  <span className="text-white font-bold">{step.id}</span>
+              </div>
+              
+              <div className="absolute left-1/2 transform -translate-x-1/2 md:static md:transform-none">
+                <div className="w-10 h-10 rounded-full bg-tarabut-teal flex items-center justify-center text-tarabut-dark font-bold">
+                  {step.id}
+                </div>
+              </div>
+
+              <div className={`md:hidden mt-4 text-center ${index % 2 === 0 ? 'md:text-right md:pr-8' : 'md:text-left md:pl-8'}`}>
+                <div className="bg-tarabut-teal/20 p-4 rounded-full mb-4 inline-flex">
+                  <div className="text-tarabut-teal">{step.icon}</div>
                 </div>
                 <h3 className="text-lg md:text-xl font-semibold mb-3 text-white">
                   {isChangingLanguage ? '...' : t(step.titleKey)}
