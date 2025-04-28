@@ -3,6 +3,8 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useTranslation } from '@/hooks/useTranslation';
 import { useNavigate, useLocation } from 'react-router-dom';
+import { Analytics } from '@/services/analytics';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 interface ShowcaseButtonsProps {
   onWaitlistCTAClick?: () => void;
@@ -12,29 +14,46 @@ const ShowcaseButtons: React.FC<ShowcaseButtonsProps> = ({ onWaitlistCTAClick })
   const { t } = useTranslation();
   const navigate = useNavigate();
   const location = useLocation();
+  const { language } = useLanguage();
+
+  const getPathDetails = () => {
+    const pathParts = location.pathname.split('/');
+    return {
+      lang: pathParts[1] || 'en',
+      variant: pathParts[2] || 'speed'
+    };
+  };
 
   const handleWaitlistClick = () => {
+    const { lang, variant } = getPathDetails();
+    
+    Analytics.trackCTAClicked({
+      element_type: 'button',
+      element_location: 'hero_section',
+      element_context: 'waitlist_signup',
+      screen: 'landing_page',
+      language,
+      variant
+    });
+    
     if (onWaitlistCTAClick) {
       onWaitlistCTAClick();
-    }
-    
-    // Extract current language and variant from URL
-    const pathParts = location.pathname.split('/');
-    let lang = 'en';
-    let variant = 'speed';
-    
-    if (pathParts.length >= 3) {
-      lang = pathParts[1] || 'en';
-      variant = pathParts[2] || 'speed';
     }
     
     navigate(`/${lang}/${variant}/waitlist-signup`);
   };
 
   const handleDealershipClick = () => {
-    const pathParts = location.pathname.split('/');
-    const lang = pathParts[1] || 'en';
-    const variant = pathParts[2] || 'speed';
+    const { lang, variant } = getPathDetails();
+    
+    Analytics.trackCTAClicked({
+      element_type: 'button',
+      element_location: 'hero_section',
+      element_context: 'dealership_signup',
+      screen: 'landing_page',
+      language,
+      variant
+    });
     
     navigate(`/${lang}/${variant}/dealership`);
   };

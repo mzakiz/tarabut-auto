@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect } from 'react';
 import { Calculator, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -32,10 +31,13 @@ const AffordabilityCalculator = () => {
     const payment = calculateMonthlyPayment();
     setMonthlyPayment(payment);
     
-    // Track calculator interaction when values change
+    // Enhanced analytics for calculator interaction
     Analytics.trackCalculatorInteraction({
       action: 'amount_changed',
       value: carPrice,
+      term: loanTerm,
+      monthly_payment: payment,
+      currency: 'SAR',
       language,
       screen: 'calculator'
     });
@@ -45,15 +47,17 @@ const AffordabilityCalculator = () => {
     const payment = calculateMonthlyPayment();
     setMonthlyPayment(payment);
     
-    // Track calculator interaction when term changes
+    // Enhanced analytics for term changes
     Analytics.trackCalculatorInteraction({
       action: 'term_changed',
       value: loanTerm,
+      monthly_payment: payment,
+      currency: 'SAR',
       language,
       screen: 'calculator'
     });
   }, [loanTerm]);
-  
+
   useEffect(() => {
     const handleScroll = () => {
       const section = document.getElementById('calculator');
@@ -62,8 +66,15 @@ const AffordabilityCalculator = () => {
       const sectionTop = section.getBoundingClientRect().top;
       const windowHeight = window.innerHeight;
       
-      if (sectionTop < windowHeight * 0.75) {
+      if (sectionTop < windowHeight * 0.75 && !isVisible) {
         setIsVisible(true);
+        
+        // Track when calculator becomes visible
+        Analytics.trackSectionScrolledTo({
+          section: 'calculator',
+          screen: 'landing_page',
+          language,
+        });
       }
     };
     
@@ -71,7 +82,7 @@ const AffordabilityCalculator = () => {
     handleScroll();
     
     return () => window.removeEventListener('scroll', handleScroll);
-  }, []);
+  }, [isVisible, language]);
 
   // Arrow icon based on language direction
   const ArrowIcon = isRTL ? ArrowLeft : ArrowRight;

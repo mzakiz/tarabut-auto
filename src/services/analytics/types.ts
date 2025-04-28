@@ -1,4 +1,3 @@
-
 // Analytics event property interfaces
 export interface BaseAnalyticsProperties {
   language?: string;
@@ -56,8 +55,11 @@ export interface VideoEngagementProperties extends BaseAnalyticsProperties {
 }
 
 export interface CalculatorInteractionProperties extends BaseAnalyticsProperties {
-  action: 'amount_changed' | 'term_changed';
+  action: 'amount_changed' | 'term_changed' | 'monthly_payment_updated';
   value: number;
+  term?: number;
+  monthly_payment?: number;
+  currency?: string;
 }
 
 export interface BankSelectionProperties extends BaseAnalyticsProperties {
