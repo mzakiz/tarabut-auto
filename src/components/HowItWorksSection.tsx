@@ -1,7 +1,7 @@
 
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
-import { Shield, Bank, Clock, Car } from 'lucide-react';
+import { Shield, Wallet, Clock, Car } from 'lucide-react';
 import { useInView } from 'react-intersection-observer';
 import { Analytics } from '@/services/analytics';
 import { useLanguage } from '@/contexts/LanguageContext';
@@ -20,7 +20,7 @@ const HowItWorksSection = () => {
     },
     {
       id: 2,
-      icon: <Bank className="h-8 w-8 md:h-10 md:w-10" />,
+      icon: <Wallet className="h-8 w-8 md:h-10 md:w-10" />,
       titleKey: "how_it_works.step2.title",
       descriptionKey: "how_it_works.step2.description",
     },
