@@ -14,10 +14,12 @@ const Navigation: React.FC<NavigationProps> = ({ isMobile = false, onMobileItemC
   const { language } = useLanguage();
   
   const navItems = [
-    { href: '#features', label: t('nav.features') },
-    { href: '#specs', label: t('nav.specifications') },
+    { href: '#home', label: t('nav.home') },
+    { href: '#how-it-works', label: t('nav.how_it_works') },
+    { href: '#car-buyers', label: t('nav.car_buyers') },
+    { href: '#dealerships', label: t('nav.dealerships') },
     { href: '#calculator', label: t('nav.affordability') },
-    { href: '#footer', label: t('nav.contact') } // Updated to scroll to footer
+    { href: '#footer', label: t('nav.contact') }
   ];
 
   const baseClasses = "text-white/80 hover:text-white transition-colors duration-200 text-sm tracking-wide";
