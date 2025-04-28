@@ -1,5 +1,6 @@
+
 import React, { useState, useEffect } from 'react';
-import { Calculator, ArrowRight } from 'lucide-react';
+import { Calculator, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
 import { useNavigate } from 'react-router-dom';
@@ -72,6 +73,9 @@ const AffordabilityCalculator = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  // Arrow icon based on language direction
+  const ArrowIcon = isRTL ? ArrowLeft : ArrowRight;
+
   return (
     <section id="calculator" className="py-20 bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -83,29 +87,33 @@ const AffordabilityCalculator = () => {
         <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'}`}>
           <div className="max-w-4xl mx-auto bg-white rounded-2xl shadow-xl overflow-hidden">
             <div className="grid grid-cols-1 md:grid-cols-2">
-              <div className="bg-gradient-to-br from-ksa-primary to-ksa-secondary p-8 text-white">
-                <div className="flex items-center mb-6">
-                  <Calculator className="h-8 w-8 mr-3" />
+              <div className={`bg-gradient-to-br from-ksa-primary to-ksa-secondary p-8 text-white ${isRTL ? 'order-2' : 'order-1'}`}>
+                <div className={`flex items-center mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
+                  <Calculator className={`h-8 w-8 ${isRTL ? 'ml-3' : 'mr-3'}`} />
                   <h2 className="text-2xl font-bold">{t('calculator.customize')}</h2>
                 </div>
                 
                 <div className="mb-8">
-                  <div className="flex justify-between mb-2">
+                  <div className={`flex justify-between mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
                     <span className="font-medium">{t('calculator.monthly.payment')}</span>
                     <span className="text-2xl font-bold">SAR {Math.round(monthlyPayment).toLocaleString()}</span>
                   </div>
                   <div className="w-full bg-white/20 h-2 rounded-full">
                     <div 
                       className="bg-white h-2 rounded-full transition-all duration-500"
-                      style={{ width: `${(monthlyPayment / 3000) * 100}%`, maxWidth: '100%' }}
+                      style={{ 
+                        width: `${(monthlyPayment / 3000) * 100}%`, 
+                        maxWidth: '100%',
+                        float: isRTL ? 'right' : 'left'
+                      }}
                     ></div>
                   </div>
                 </div>
               </div>
               
-              <div className="p-8">
+              <div className={`p-8 ${isRTL ? 'order-1' : 'order-2'}`}>
                 <div className="space-y-6">
-                  <div>
+                  <div className={isRTL ? 'text-right' : 'text-left'}>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       {t('calculator.loan.amount')}: SAR {carPrice.toLocaleString()}
                     </label>
@@ -115,11 +123,12 @@ const AffordabilityCalculator = () => {
                       max={150000}
                       step={1000}
                       onValueChange={(value) => setCarPrice(value[0])}
-                      className="my-4"
+                      className="my-4 rtl:rotate-180"
+                      dir={isRTL ? "rtl" : "ltr"}
                     />
                   </div>
                   
-                  <div>
+                  <div className={isRTL ? 'text-right' : 'text-left'}>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
                       {t('calculator.loan.tenor')}: {loanTerm} {t('calculator.months')}
                     </label>
@@ -129,7 +138,8 @@ const AffordabilityCalculator = () => {
                       max={60}
                       step={12}
                       onValueChange={(value) => setLoanTerm(value[0])}
-                      className="my-4"
+                      className="my-4 rtl:rotate-180"
+                      dir={isRTL ? "rtl" : "ltr"}
                     />
                   </div>
                 </div>
@@ -144,7 +154,7 @@ const AffordabilityCalculator = () => {
               className="bg-ksa-primary hover:bg-ksa-primary/90 text-white px-8 py-6 text-lg"
             >
               {t('calculator.cta.action')}
-              <ArrowRight className={`${isRTL ? 'mr-2' : 'ml-2'} h-5 w-5`} />
+              <ArrowIcon className={`${isRTL ? 'mr-2' : 'ml-2'} h-5 w-5`} />
             </Button>
           </div>
         </div>
