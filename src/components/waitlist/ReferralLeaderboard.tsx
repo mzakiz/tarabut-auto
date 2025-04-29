@@ -16,9 +16,14 @@ interface LeaderboardUser {
 interface ReferralLeaderboardProps {
   users?: LeaderboardUser[];
   variant?: string;
+  visible?: boolean; // New prop to control visibility
 }
 
-const ReferralLeaderboard = ({ users = [], variant: propVariant }: ReferralLeaderboardProps) => {
+const ReferralLeaderboard = ({ 
+  users = [], 
+  variant: propVariant,
+  visible = false // Default to hidden based on user request
+}: ReferralLeaderboardProps) => {
   const { t } = useTranslation();
   const location = useLocation();
   
@@ -52,6 +57,11 @@ const ReferralLeaderboard = ({ users = [], variant: propVariant }: ReferralLeade
         return <span className="text-gray-500">{index + 1}</span>;
     }
   };
+
+  // If not visible, don't render anything
+  if (!visible) {
+    return null;
+  }
 
   return (
     <div className="rounded-lg border bg-card">

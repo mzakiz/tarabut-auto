@@ -35,7 +35,8 @@ export const useWaitlistLeaderboard = (variant?: string) => {
         ...user,
         tier: await getTierForPoints(user.points)
       })));
-    }
+    },
+    enabled: false // Disable auto-fetching since we're not displaying the leaderboard
   });
 };
 

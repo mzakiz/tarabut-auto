@@ -3,7 +3,6 @@ import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
-import ReferralLeaderboard from '@/components/waitlist/ReferralLeaderboard';
 import { Head } from '@/components/Head';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -199,8 +198,6 @@ const Confirmation = () => {
             {t('confirmation.points_description')}
           </p>
         </div>
-        
-        <ReferralLeaderboard users={[]} variant={currentVariant} />
       </div>
     </div>
   );
