@@ -1,3 +1,4 @@
+
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import {
@@ -5,7 +6,10 @@ import {
   getTranslationVersion,
   refreshTranslationVersion,
   initializeTranslations,
-  areTranslationsReady
+  areTranslationsReady,
+  preloadAllTranslations,
+  storeTranslationsInSession,
+  getTranslationsFromSession
 } from '@/utils/translationPreloader';
 
 // Enhanced default fallbacks for common UI elements to prevent showing raw keys
@@ -54,23 +58,40 @@ const DEFAULT_FALLBACKS: Record<string, string> = {
   'loading': 'Loading...'
 };
 
+// Force immediate translation initialization when this module loads
+preloadAllTranslations();
+
 /**
  * Custom hook for translations with improved performance and reliability
  */
 export const useTranslation = () => {
   const { language, isChangingLanguage } = useLanguage();
-  const [isReady, setIsReady] = useState(() => areTranslationsReady());
+  const [isReady, setIsReady] = useState(() => {
+    const ready = areTranslationsReady();
+    if (!ready) {
+      // Try to initialize translations immediately
+      initializeTranslations();
+    }
+    return ready;
+  });
   const [version, setVersion] = useState(() => getTranslationVersion());
   const missingKeys = useRef(new Set<string>());
   
-  // Initialize translations on mount
+  // Load translations as early as possible 
   useEffect(() => {
     if (!isReady) {
-      initializeTranslations();
+      console.log('[useTranslation] Forcing translation initialization');
+      preloadAllTranslations();
+      storeTranslationsInSession();
       setIsReady(true);
       setVersion(getTranslationVersion());
     }
   }, [isReady]);
+  
+  // Store translations in session storage for persistence across page loads
+  useEffect(() => {
+    storeTranslationsInSession();
+  }, [language]);
   
   // Force re-render when language changes
   useEffect(() => {
@@ -118,11 +139,18 @@ export const useTranslation = () => {
     };
   }, [language, version]);
   
+  // Force translations to load on every render
+  preloadAllTranslations();
+  
   return { 
     t, 
     language,
     isChangingLanguage,
     isTranslationReady: isReady,
-    refreshTranslations: () => setVersion(refreshTranslationVersion())
+    refreshTranslations: () => {
+      preloadAllTranslations();
+      storeTranslationsInSession();
+      setVersion(refreshTranslationVersion());
+    }
   };
 };

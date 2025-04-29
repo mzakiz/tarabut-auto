@@ -7,27 +7,31 @@ import { Head } from '@/components/Head';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Analytics } from '@/services/analytics';
-import { initializeTranslations } from '@/utils/translationPreloader';
+import { preloadAllTranslations, storeTranslationsInSession } from '@/utils/translationPreloader';
 import confetti from 'canvas-confetti';
 
+// Force preload translations when this module loads
+preloadAllTranslations();
+
 const Confirmation = () => {
-  // Initialize translations immediately
-  initializeTranslations();
-  
+  // Immediately preload translations as early as possible
+  preloadAllTranslations();
+  storeTranslationsInSession();
+
   // Custom hook to get language
   const { language } = useLanguage();
-  const { t } = useTranslation();
+  const { t, refreshTranslations } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
   const [searchParams] = useSearchParams();
 
   // Get parameters from URL query params
-  const referralCode = searchParams.get('referralCode') || '';
-  const position = parseInt(searchParams.get('position') || '0', 10);
-  const points = parseInt(searchParams.get('points') || '100', 10); 
-  const statusId = searchParams.get('statusId') || '';
-  const variant = searchParams.get('variant') || 'speed';
+  const referralCode = searchParams.get('referralCode') || sessionStorage.getItem('waitlist_referralCode') || '';
+  const position = parseInt(searchParams.get('position') || sessionStorage.getItem('waitlist_position') || '0', 10);
+  const points = parseInt(searchParams.get('points') || sessionStorage.getItem('waitlist_points') || '100', 10); 
+  const statusId = searchParams.get('statusId') || sessionStorage.getItem('waitlist_statusId') || '';
+  const variant = searchParams.get('variant') || sessionStorage.getItem('waitlist_variant') || 'speed';
 
   // Get the variant from the URL if available
   const getVariantFromUrl = () => {
@@ -41,34 +45,48 @@ const Confirmation = () => {
   
   const currentVariant = getVariantFromUrl();
 
-  // Set up page and hide loading indicator after a short delay
+  // Force a refresh if translations aren't ready
   useEffect(() => {
-    // Log page initialization
+    // Log confirmation page initalization for debugging
     console.log('[Confirmation] Page initializing');
     console.log('[Confirmation] Current language:', language);
-    console.log('[Confirmation] Page parameters:', { referralCode, position, points, variant });
-
-    // Short timeout to ensure translations are ready
+    console.log('[Confirmation] Forcefully preloading translations');
+    
+    // Refresh translations 
+    refreshTranslations();
+    
+    // Store data in session in case of refresh
+    if (referralCode) sessionStorage.setItem('waitlist_referralCode', referralCode);
+    if (position) sessionStorage.setItem('waitlist_position', position.toString());
+    if (points) sessionStorage.setItem('waitlist_points', points.toString());
+    if (statusId) sessionStorage.setItem('waitlist_statusId', statusId);
+    if (variant) sessionStorage.setItem('waitlist_variant', variant);
+    
+    // Short delay to ensure translations are loaded
     const timer = setTimeout(() => {
+      console.log('[Confirmation] Finished loading. Displaying content.');
       setIsLoading(false);
       
-      // Fire confetti when ready
+      // Fire confetti after loading
       confetti({
         particleCount: 100,
         spread: 70,
         origin: { y: 0.6 }
       });
-    }, 500);
-
-    // Track page view with variant info
-    Analytics.trackPageViewed({
-      page_name: 'waitlist_confirmation',
-      language,
-      variant: currentVariant
-    });
+      
+      // Track page view
+      Analytics.trackPageViewed({
+        page_name: 'waitlist_confirmation',
+        language,
+        variant: currentVariant
+      });
+      
+      // Force another refresh of translations just to be sure
+      refreshTranslations();
+    }, 1000);
 
     return () => clearTimeout(timer);
-  }, [language, currentVariant, referralCode, position, points, variant]);
+  }, [language, currentVariant, refreshTranslations]);
 
   // Function to copy referral code to clipboard
   const handleCopyClick = () => {
@@ -144,6 +162,18 @@ const Confirmation = () => {
                 : 'Loading translations...'}
           </p>
         </div>
+      </div>
+    );
+  }
+
+  // Check if the translation for title is properly loaded
+  if (!t('confirmation.title') || t('confirmation.title') === 'confirmation.title') {
+    console.error('[Confirmation] Title translation not loaded correctly, forcing refresh');
+    refreshTranslations();
+    window.location.reload();
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center">
+        <p>Loading translations failed, refreshing page...</p>
       </div>
     );
   }

@@ -23,6 +23,30 @@ const LOADING_STATUS = {
 let translationVersion = Date.now();
 
 /**
+ * Force preload translations early
+ * Call this as early as possible in the application lifecycle
+ */
+export const preloadAllTranslations = (): void => {
+  try {
+    console.log('[TranslationPreloader] Forced preload of all translations');
+    
+    // Log the number of translation keys loaded
+    console.log(`[TranslationPreloader] EN keys: ${Object.keys(enTranslations).length}`);
+    console.log(`[TranslationPreloader] AR keys: ${Object.keys(arTranslations).length}`);
+    
+    // Sample important keys to verify they're loaded
+    console.log(`[TranslationPreloader] Sample EN: ${enTranslations['confirmation.title']}`);
+    console.log(`[TranslationPreloader] Sample AR: ${arTranslations['confirmation.title']}`);
+    
+    LOADING_STATUS.initialized = true;
+    LOADING_STATUS.ready = true;
+    translationVersion = Date.now();
+  } catch (error) {
+    console.error('[TranslationPreloader] Error during forced preload:', error);
+  }
+};
+
+/**
  * Initialize translations synchronously
  * This should be called as early as possible in the application lifecycle
  */
@@ -30,8 +54,7 @@ export const initializeTranslations = (): void => {
   if (LOADING_STATUS.initialized) return;
   
   console.log('[TranslationPreloader] Initializing translations');
-  LOADING_STATUS.initialized = true;
-  LOADING_STATUS.ready = true;
+  preloadAllTranslations();
   
   // Force a version update to trigger re-renders
   translationVersion = Date.now();
@@ -105,6 +128,42 @@ export const getTranslationVersion = (): number => {
 export const refreshTranslationVersion = (): number => {
   translationVersion = Date.now();
   return translationVersion;
+};
+
+/**
+ * Store translations in sessionStorage to ensure they persist across page loads
+ * This is particularly important for the waitlist flow
+ */
+export const storeTranslationsInSession = (): void => {
+  try {
+    sessionStorage.setItem('en_translations', JSON.stringify(enTranslations));
+    sessionStorage.setItem('ar_translations', JSON.stringify(arTranslations));
+    sessionStorage.setItem('translations_timestamp', Date.now().toString());
+    console.log('[TranslationPreloader] Stored translations in sessionStorage');
+  } catch (error) {
+    console.error('[TranslationPreloader] Error storing translations in sessionStorage:', error);
+  }
+};
+
+/**
+ * Retrieve translations from sessionStorage if available
+ */
+export const getTranslationsFromSession = (): boolean => {
+  try {
+    const timestamp = sessionStorage.getItem('translations_timestamp');
+    if (!timestamp) return false;
+    
+    // Don't use translations that are older than 5 minutes
+    if (Date.now() - parseInt(timestamp, 10) > 5 * 60 * 1000) {
+      return false;
+    }
+    
+    console.log('[TranslationPreloader] Retrieved translations from sessionStorage');
+    return true;
+  } catch (error) {
+    console.error('[TranslationPreloader] Error retrieving translations from sessionStorage:', error);
+    return false;
+  }
 };
 
 // Export the translation data directly

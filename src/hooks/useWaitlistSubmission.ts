@@ -5,7 +5,11 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Analytics } from '@/services/analytics';
 import { useTranslation } from '@/hooks/useTranslation';
-import { initializeTranslations, refreshTranslationVersion } from '@/utils/translationPreloader';
+import { 
+  preloadAllTranslations, 
+  storeTranslationsInSession,
+  refreshTranslationVersion 
+} from '@/utils/translationPreloader';
 import type { Tables } from '@/integrations/supabase/types';
 
 interface FormData {
@@ -22,7 +26,7 @@ export const useWaitlistSubmission = () => {
   const location = useLocation();
   const params = useParams();
   const { toast } = useToast();
-  const { t, language } = useTranslation();
+  const { t, language, refreshTranslations } = useTranslation();
 
   // Extract variant from URL params or pathname
   const getVariant = () => {
@@ -44,12 +48,15 @@ export const useWaitlistSubmission = () => {
     setIsSubmitting(true);
     
     try {
+      // Ensure translations are loaded and stored in session storage
+      console.log('[useWaitlistSubmission] Preloading translations before submission');
+      preloadAllTranslations();
+      storeTranslationsInSession();
+      refreshTranslationVersion();
+      refreshTranslations();
+      
       // Get variant from the form data or extract from the URL
       const variant = formData.variant || getVariant();
-      
-      // Ensure translation version is refreshed before navigation
-      initializeTranslations();
-      refreshTranslationVersion();
       
       // Get initial alias for the user
       const { data: displayAlias, error: aliasError } = await supabase.rpc('generate_display_alias');
@@ -109,18 +116,28 @@ export const useWaitlistSubmission = () => {
         variant
       });
       
-      // Create a serialized state object to pass as query parameters
-      const stateParams = new URLSearchParams({
+      // Store necessary data in sessionStorage for confirmation page
+      sessionStorage.setItem('waitlist_referralCode', user?.referral_code || referralCodeData || '');
+      sessionStorage.setItem('waitlist_position', user?.position.toString() || positionData.toString());
+      sessionStorage.setItem('waitlist_points', user?.points?.toString() || '100');
+      sessionStorage.setItem('waitlist_statusId', user?.status_id || '');
+      sessionStorage.setItem('waitlist_variant', variant);
+      sessionStorage.setItem('waitlist_timestamp', Date.now().toString());
+      
+      // Create URL with query parameters
+      const confirmationUrl = `/${language}/${variant}/waitlist-signup/confirmation?` + new URLSearchParams({
         referralCode: user?.referral_code || referralCodeData || '',
         position: user?.position.toString() || positionData.toString(),
         points: user?.points?.toString() || '100',
         statusId: user?.status_id || '',
-        variant
-      });
+        variant,
+        refresh: Date.now().toString() // Force cache invalidation
+      }).toString();
       
-      // Use hard navigation to the confirmation page with query parameters
-      // This will trigger a full page reload which ensures all translations are loaded correctly
-      window.location.href = `/${language}/${variant}/waitlist-signup/confirmation?${stateParams.toString()}`;
+      console.log(`[useWaitlistSubmission] Redirecting to: ${confirmationUrl}`);
+      
+      // Use hard navigation to force a complete page reload
+      window.location.href = confirmationUrl;
       
     } catch (error: any) {
       console.error('[useWaitlistSubmission] Error joining waitlist:', error);
