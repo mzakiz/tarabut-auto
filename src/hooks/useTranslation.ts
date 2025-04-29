@@ -43,8 +43,10 @@ const DEFAULT_FALLBACKS: Record<string, string> = {
   'back.home': 'Return to Home Page'
 };
 
-// Force immediate translation initialization when this module loads
+// Immediately ensure translations are initialized
+initializeTranslations();
 preloadAllTranslations();
+storeTranslationsInSession();
 
 /**
  * Custom hook for translations with improved performance and reliability
@@ -52,12 +54,10 @@ preloadAllTranslations();
 export const useTranslation = () => {
   const { language, isChangingLanguage } = useLanguage();
   const [isReady, setIsReady] = useState(() => {
-    const ready = areTranslationsReady();
-    if (!ready) {
-      // Try to initialize translations immediately
-      initializeTranslations();
-    }
-    return ready;
+    // Force translations to be ready by preloading
+    preloadAllTranslations();
+    storeTranslationsInSession();
+    return true;
   });
   const [version, setVersion] = useState(() => getTranslationVersion());
   const missingKeys = useRef(new Set<string>());
@@ -65,82 +65,83 @@ export const useTranslation = () => {
   // Direct access to translation data
   const translationData = language === 'ar' ? arTranslationData : enTranslationData;
   
-  // Load translations as early as possible 
-  useEffect(() => {
-    if (!isReady) {
-      console.log('[useTranslation] Forcing translation initialization');
-      preloadAllTranslations();
-      storeTranslationsInSession();
-      setIsReady(true);
-      setVersion(getTranslationVersion());
-    }
-    
-    // Force preload on every language change
-    preloadAllTranslations();
-  }, [isReady]);
+  // Force preload translations on every render - this ensures they're always available
+  preloadAllTranslations();
   
-  // Store translations in session storage for persistence across page loads
+  // Store translations in session storage for persistence
   useEffect(() => {
+    // Always force preload and store in session
+    preloadAllTranslations();
     storeTranslationsInSession();
+    setVersion(refreshTranslationVersion());
   }, [language]);
   
-  // Force re-render when language changes
-  useEffect(() => {
-    // Reset missing keys tracker when language changes
-    missingKeys.current = new Set();
-    
-    // Update version to force re-render
-    setVersion(refreshTranslationVersion());
-    
-    // Preload translations again on language change
-    preloadAllTranslations();
-  }, [language, isChangingLanguage]);
-  
   /**
-   * Get translation for a key with improved error handling
+   * Get translation for a key with improved error handling and direct fallbacks
    */
   const t = useMemo(() => {
     return (key: string): string => {
       if (!key || typeof key !== 'string') {
-        console.error('[useTranslation] Invalid translation key:', key);
         return 'Invalid Key';
       }
 
       try {
-        // First try to get the translation from the main function
-        const translationValue = getTranslationValue(language as 'en' | 'ar', key, '');
+        // Check each source in order of preference
         
+        // 1. Try direct access to the translation data first (fastest)
+        if (translationData && translationData[key]) {
+          return translationData[key];
+        }
+        
+        // 2. Try the main translation function
+        const translationValue = getTranslationValue(language as 'en' | 'ar', key, '');
         if (translationValue) {
           return translationValue;
         }
         
-        // If that fails, try direct access to the translation data
-        if (translationData[key]) {
-          return translationData[key];
-        }
-        
-        // If no translation value was found, try to get a fallback
+        // 3. Try our hardcoded fallbacks for critical UI elements
         if (DEFAULT_FALLBACKS[key]) {
           return DEFAULT_FALLBACKS[key];
         }
         
-        // Log missing keys only once
+        // 4. Try English data as fallback for Arabic
+        if (language === 'ar' && enTranslationData && enTranslationData[key]) {
+          return enTranslationData[key];
+        }
+        
+        // Log missing key only once
         if (!missingKeys.current.has(key)) {
           console.warn(`[useTranslation] Missing translation for key: ${key} in language: ${language}`);
           missingKeys.current.add(key);
         }
         
-        // Return the key as fallback
+        // Last resort: return the key itself
         return key;
       } catch (error) {
         console.error(`[useTranslation] Error retrieving translation for key: ${key}`, error);
         return DEFAULT_FALLBACKS[key] || key;
       }
     };
-  }, [language, version, translationData]);
+  }, [language, translationData, version]);
   
-  // Force translations to load on every render
-  preloadAllTranslations();
+  // Force translations to refresh when language changes
+  useEffect(() => {
+    // Reset missing keys tracker when language changes
+    missingKeys.current = new Set();
+    
+    // Force preload multiple times with delays
+    preloadAllTranslations();
+    const timer1 = setTimeout(() => preloadAllTranslations(), 100);
+    const timer2 = setTimeout(() => preloadAllTranslations(), 500);
+    
+    // Force version update to trigger re-renders
+    setVersion(refreshTranslationVersion());
+    
+    return () => {
+      clearTimeout(timer1);
+      clearTimeout(timer2);
+    };
+  }, [language, isChangingLanguage]);
   
   return { 
     t, 

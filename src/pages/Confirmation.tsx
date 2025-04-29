@@ -10,7 +10,6 @@ import { Analytics } from '@/services/analytics';
 import { 
   preloadAllTranslations, 
   storeTranslationsInSession, 
-  getCriticalTranslation,
   enTranslationData,
   arTranslationData
 } from '@/utils/translationPreloader';
@@ -18,25 +17,56 @@ import confetti from 'canvas-confetti';
 
 // Force preload translations when this module loads
 preloadAllTranslations();
+storeTranslationsInSession();
+
+// Hardcoded fallbacks for critical text
+const CRITICAL_FALLBACKS = {
+  en: {
+    'confirmation.title': 'Congratulations!',
+    'confirmation.subtitle': 'You\'ve been added to our exclusive waitlist',
+    'confirmation.position_message': 'Your position in waitlist: #',
+    'confirmation.referral_title': 'Share Your Referral Code',
+    'confirmation.referral_description': 'Share with friends to move up the waitlist and get exclusive rewards',
+    'confirmation.copy': 'Copy',
+    'confirmation.share': 'Share',
+    'confirmation.points_title': 'Your Waitlist Points',
+    'confirmation.points_description': 'Earn more points by referring friends to increase your position on the waitlist',
+    'confirmation.points': 'Points',
+    'back.home': 'Return to Home Page'
+  },
+  ar: {
+    'confirmation.title': 'تهانينا!',
+    'confirmation.subtitle': 'تمت إضافتك إلى قائمة الانتظار الحصرية',
+    'confirmation.position_message': 'موقعك في قائمة الانتظار: #',
+    'confirmation.referral_title': 'شارك رمز الإحالة الخاص بك',
+    'confirmation.referral_description': 'شارك مع الأصدقاء للتقدم في قائمة الانتظار والحصول على مكافآت حصرية',
+    'confirmation.copy': 'نسخ',
+    'confirmation.share': 'مشاركة',
+    'confirmation.points_title': 'نقاط قائمة الانتظار الخاصة بك',
+    'confirmation.points_description': 'اكسب المزيد من النقاط عن طريق دعوة الأصدقاء لتحسين موقعك في قائمة الانتظار',
+    'confirmation.points': 'النقاط',
+    'back.home': 'العودة إلى الصفحة الرئيسية'
+  }
+};
 
 const Confirmation = () => {
-  // Immediately preload translations as early as possible
+  // Immediately preload translations
   preloadAllTranslations();
   storeTranslationsInSession();
 
-  // Custom hook to get language
   const { language } = useLanguage();
   const { t, refreshTranslations } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
-  const [confettiShown, setConfettiShown] = useState(false);
   const [searchParams] = useSearchParams();
+  const [confettiShown, setConfettiShown] = useState(false);
   
-  // For direct access to translations when hook fails
-  const translations = language === 'ar' ? arTranslationData : enTranslationData;
+  // Direct access to translations
+  const directTranslations = language === 'ar' ? arTranslationData : enTranslationData;
+  const fallbacks = language === 'ar' ? CRITICAL_FALLBACKS.ar : CRITICAL_FALLBACKS.en;
 
-  // Get parameters from URL query params
+  // Get parameters from URL query params or session storage
   const referralCode = searchParams.get('referralCode') || sessionStorage.getItem('waitlist_referralCode') || '';
   const position = parseInt(searchParams.get('position') || sessionStorage.getItem('waitlist_position') || '0', 10);
   const points = parseInt(searchParams.get('points') || sessionStorage.getItem('waitlist_points') || '100', 10); 
@@ -55,29 +85,31 @@ const Confirmation = () => {
   
   const currentVariant = getVariantFromUrl();
 
-  // Function to get translation, with direct access fallback
+  // Guaranteed translation function that never fails
   const getTranslation = useCallback((key: string): string => {
-    const translated = t(key);
-    
-    // If the translation hook returns the key, try direct access
-    if (translated === key || !translated) {
-      return translations[key] || key;
+    // First try the translation hook
+    const hookTranslation = t(key);
+    if (hookTranslation && hookTranslation !== key) {
+      return hookTranslation;
     }
     
-    return translated;
-  }, [t, translations]);
-
-  // Force a refresh if translations aren't ready
-  useEffect(() => {
-    // Log confirmation page initialization for debugging
-    console.log('[Confirmation] Page initializing');
-    console.log('[Confirmation] Current language:', language);
-    console.log('[Confirmation] Forcefully preloading translations');
+    // If hook failed, try direct access to translation data
+    if (directTranslations && directTranslations[key]) {
+      return directTranslations[key];
+    }
     
-    // Refresh translations multiple times to ensure they're loaded
-    refreshTranslations();
+    // If direct access failed, use hardcoded fallbacks
+    if (fallbacks && fallbacks[key]) {
+      return fallbacks[key];
+    }
+    
+    // Last resort, return a user-friendly version of the key
+    return key.split('.').pop()?.replace(/_/g, ' ') || key;
+  }, [t, directTranslations, fallbacks]);
+
+  useEffect(() => {
     preloadAllTranslations();
-    storeTranslationsInSession();
+    refreshTranslations();
     
     // Store data in session in case of refresh
     if (referralCode) sessionStorage.setItem('waitlist_referralCode', referralCode);
@@ -86,12 +118,11 @@ const Confirmation = () => {
     if (statusId) sessionStorage.setItem('waitlist_statusId', statusId);
     if (variant) sessionStorage.setItem('waitlist_variant', variant);
     
-    // Short delay to ensure translations are loaded
+    // Show loading for a short time to ensure translations are ready
     const timer = setTimeout(() => {
-      console.log('[Confirmation] Finished loading. Displaying content.');
       setIsLoading(false);
       
-      // Only fire confetti once when the component mounts
+      // Only fire confetti once when the page loads
       if (!confettiShown) {
         confetti({
           particleCount: 100,
@@ -107,13 +138,10 @@ const Confirmation = () => {
         language,
         variant: currentVariant
       });
-      
-      // Force another refresh of translations just to be sure
-      refreshTranslations();
     }, 1000);
 
     return () => clearTimeout(timer);
-  }, [language, currentVariant, refreshTranslations]);
+  }, [language, confettiShown, currentVariant, position, points, referralCode, statusId, variant, refreshTranslations]);
 
   // Function to copy referral code to clipboard
   const handleCopyClick = () => {
@@ -171,7 +199,7 @@ const Confirmation = () => {
     });
   };
 
-  // Show loading state if we're still loading translations
+  // Show loading state while translations are loading
   if (isLoading) {
     return (
       <div className="min-h-screen bg-white flex flex-col items-center justify-center" dir={language === 'ar' ? 'rtl' : 'ltr'}>
@@ -189,36 +217,23 @@ const Confirmation = () => {
     );
   }
 
-  // Get translations directly from the source if needed
-  const confirmationTitle = getTranslation('confirmation.title');
-  const confirmationSubtitle = getTranslation('confirmation.subtitle');
-  const positionMessage = getTranslation('confirmation.position_message');
-  const referralTitle = getTranslation('confirmation.referral_title');
-  const referralDescription = getTranslation('confirmation.referral_description');
-  const copyButtonText = getTranslation('confirmation.copy');
-  const shareButtonText = getTranslation('confirmation.share');
-  const pointsTitle = getTranslation('confirmation.points_title');
-  const pointsDescription = getTranslation('confirmation.points_description');
-  const pointsText = getTranslation('confirmation.points');
-  const backHome = getTranslation('back.home');
-
   return (
     <div className="min-h-screen bg-white flex flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Head 
-        title={confirmationTitle}
-        description={confirmationSubtitle}
+        title={getTranslation('confirmation.title')}
+        description={getTranslation('confirmation.subtitle')}
       />
       <header className="py-4 px-6">
         <Button variant="ghost" onClick={handleBackClick} className="flex items-center">
           {language === 'ar' ? (
             <>
-              {backHome}
+              {getTranslation('back.home')}
               <ArrowLeft className="ml-2 h-4 w-4 rtl:rotate-180" />
             </>
           ) : (
             <>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              {backHome}
+              {getTranslation('back.home')}
             </>
           )}
         </Button>
@@ -234,16 +249,16 @@ const Confirmation = () => {
             />
           </div>
           <h1 className="text-3xl font-bold mb-4 text-gray-800">
-            {confirmationTitle}
+            {getTranslation('confirmation.title')}
           </h1>
           <p className="text-lg text-gray-600 mb-6">
-            {confirmationSubtitle}
+            {getTranslation('confirmation.subtitle')}
           </p>
           
           {/* Enhanced waitlist position display */}
           <div className="bg-gray-50 py-6 px-4 rounded-lg shadow-sm mb-6">
             <p className="text-lg font-medium text-gray-700 mb-2">
-              {positionMessage}
+              {getTranslation('confirmation.position_message')}
             </p>
             <div className="flex justify-center items-center">
               <span className="text-5xl font-bold text-tarabut-dark">{position}</span>
@@ -253,10 +268,10 @@ const Confirmation = () => {
         
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
           <h2 className="text-xl font-semibold mb-4 text-center">
-            {referralTitle}
+            {getTranslation('confirmation.referral_title')}
           </h2>
           <p className="text-sm text-gray-600 mb-4 text-center">
-            {referralDescription}
+            {getTranslation('confirmation.referral_description')}
           </p>
           
           <div className="relative mb-6">
@@ -271,25 +286,25 @@ const Confirmation = () => {
               className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-tarabut-teal text-tarabut-dark hover:bg-tarabut-teal/80"
               size="sm"
             >
-              {copyButtonText}
+              {getTranslation('confirmation.copy')}
             </Button>
           </div>
           
           <Button onClick={handleShareClick} className="w-full bg-tarabut-dark hover:bg-tarabut-dark/80 text-white">
-            {shareButtonText}
+            {getTranslation('confirmation.share')}
           </Button>
         </div>
         
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
           <h2 className="text-xl font-semibold mb-2 text-center">
-            {pointsTitle}
+            {getTranslation('confirmation.points_title')}
           </h2>
           <div className="flex justify-center items-center space-x-2 mb-4">
             <span className="text-3xl font-bold text-tarabut-dark">{points}</span>
-            <span className="text-gray-600">{pointsText}</span>
+            <span className="text-gray-600">{getTranslation('confirmation.points')}</span>
           </div>
           <p className="text-sm text-gray-600 text-center">
-            {pointsDescription}
+            {getTranslation('confirmation.points_description')}
           </p>
         </div>
       </div>
