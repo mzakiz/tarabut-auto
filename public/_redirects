@@ -5,6 +5,7 @@
 
 # Handle confirmation page directly with no cache
 /*/waitlist-signup/confirmation  /index.html  200!
+/*/waitlist-signup/confirmation*  /index.html  200!
 
 # Base language redirects
 /ar    /ar/speed    301
@@ -16,6 +17,9 @@ auto.tarabut.com/en/speed    /en/speed    200
 
 # Default language redirect for root
 /      /en/speed    302
+
+# Special handling for waitlist paths - force browser refresh
+/*/waitlist-signup/confirmation*  /index.html  200!
 
 # Catch all for SPA routing
 /*     /index.html  200

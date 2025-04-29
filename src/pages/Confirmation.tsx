@@ -1,5 +1,5 @@
 
-import React, { useEffect, useState } from 'react';
+import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -7,7 +7,13 @@ import { Head } from '@/components/Head';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Analytics } from '@/services/analytics';
-import { preloadAllTranslations, storeTranslationsInSession } from '@/utils/translationPreloader';
+import { 
+  preloadAllTranslations, 
+  storeTranslationsInSession, 
+  getCriticalTranslation,
+  enTranslationData,
+  arTranslationData
+} from '@/utils/translationPreloader';
 import confetti from 'canvas-confetti';
 
 // Force preload translations when this module loads
@@ -26,6 +32,9 @@ const Confirmation = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [confettiShown, setConfettiShown] = useState(false);
   const [searchParams] = useSearchParams();
+  
+  // For direct access to translations when hook fails
+  const translations = language === 'ar' ? arTranslationData : enTranslationData;
 
   // Get parameters from URL query params
   const referralCode = searchParams.get('referralCode') || sessionStorage.getItem('waitlist_referralCode') || '';
@@ -46,15 +55,29 @@ const Confirmation = () => {
   
   const currentVariant = getVariantFromUrl();
 
+  // Function to get translation, with direct access fallback
+  const getTranslation = useCallback((key: string): string => {
+    const translated = t(key);
+    
+    // If the translation hook returns the key, try direct access
+    if (translated === key || !translated) {
+      return translations[key] || key;
+    }
+    
+    return translated;
+  }, [t, translations]);
+
   // Force a refresh if translations aren't ready
   useEffect(() => {
-    // Log confirmation page initalization for debugging
+    // Log confirmation page initialization for debugging
     console.log('[Confirmation] Page initializing');
     console.log('[Confirmation] Current language:', language);
     console.log('[Confirmation] Forcefully preloading translations');
     
-    // Refresh translations 
+    // Refresh translations multiple times to ensure they're loaded
     refreshTranslations();
+    preloadAllTranslations();
+    storeTranslationsInSession();
     
     // Store data in session in case of refresh
     if (referralCode) sessionStorage.setItem('waitlist_referralCode', referralCode);
@@ -108,17 +131,17 @@ const Confirmation = () => {
   
   // Function to handle sharing referral code
   const handleShareClick = async () => {
-    const shareText = `${t('confirmation.share_message')} ${referralCode}`;
+    const shareMessage = `${getTranslation('confirmation.share_message')} ${referralCode}`;
     
     try {
       if (navigator.share) {
         await navigator.share({
           title: 'Tarabut Auto',
-          text: shareText,
+          text: shareMessage,
           url: window.location.origin
         });
       } else {
-        navigator.clipboard.writeText(shareText);
+        navigator.clipboard.writeText(shareMessage);
       }
       
       Analytics.trackCTAClicked({
@@ -166,35 +189,36 @@ const Confirmation = () => {
     );
   }
 
-  // Check if the translation for title is properly loaded
-  if (!t('confirmation.title') || t('confirmation.title') === 'confirmation.title') {
-    console.error('[Confirmation] Title translation not loaded correctly, forcing refresh');
-    refreshTranslations();
-    window.location.reload();
-    return (
-      <div className="min-h-screen bg-white flex flex-col items-center justify-center">
-        <p>Loading translations failed, refreshing page...</p>
-      </div>
-    );
-  }
+  // Get translations directly from the source if needed
+  const confirmationTitle = getTranslation('confirmation.title');
+  const confirmationSubtitle = getTranslation('confirmation.subtitle');
+  const positionMessage = getTranslation('confirmation.position_message');
+  const referralTitle = getTranslation('confirmation.referral_title');
+  const referralDescription = getTranslation('confirmation.referral_description');
+  const copyButtonText = getTranslation('confirmation.copy');
+  const shareButtonText = getTranslation('confirmation.share');
+  const pointsTitle = getTranslation('confirmation.points_title');
+  const pointsDescription = getTranslation('confirmation.points_description');
+  const pointsText = getTranslation('confirmation.points');
+  const backHome = getTranslation('back.home');
 
   return (
     <div className="min-h-screen bg-white flex flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Head 
-        title={t('confirmation.title')}
-        description={t('confirmation.subtitle')}
+        title={confirmationTitle}
+        description={confirmationSubtitle}
       />
       <header className="py-4 px-6">
         <Button variant="ghost" onClick={handleBackClick} className="flex items-center">
           {language === 'ar' ? (
             <>
-              {t('back.home')}
+              {backHome}
               <ArrowLeft className="ml-2 h-4 w-4 rtl:rotate-180" />
             </>
           ) : (
             <>
               <ArrowLeft className="mr-2 h-4 w-4" />
-              {t('back.home')}
+              {backHome}
             </>
           )}
         </Button>
@@ -210,16 +234,16 @@ const Confirmation = () => {
             />
           </div>
           <h1 className="text-3xl font-bold mb-4 text-gray-800">
-            {t('confirmation.title')}
+            {confirmationTitle}
           </h1>
           <p className="text-lg text-gray-600 mb-6">
-            {t('confirmation.subtitle')}
+            {confirmationSubtitle}
           </p>
           
           {/* Enhanced waitlist position display */}
           <div className="bg-gray-50 py-6 px-4 rounded-lg shadow-sm mb-6">
             <p className="text-lg font-medium text-gray-700 mb-2">
-              {t('confirmation.position_message')}
+              {positionMessage}
             </p>
             <div className="flex justify-center items-center">
               <span className="text-5xl font-bold text-tarabut-dark">{position}</span>
@@ -229,10 +253,10 @@ const Confirmation = () => {
         
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
           <h2 className="text-xl font-semibold mb-4 text-center">
-            {t('confirmation.referral_title')}
+            {referralTitle}
           </h2>
           <p className="text-sm text-gray-600 mb-4 text-center">
-            {t('confirmation.referral_description')}
+            {referralDescription}
           </p>
           
           <div className="relative mb-6">
@@ -247,25 +271,25 @@ const Confirmation = () => {
               className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-tarabut-teal text-tarabut-dark hover:bg-tarabut-teal/80"
               size="sm"
             >
-              {t('confirmation.copy')}
+              {copyButtonText}
             </Button>
           </div>
           
           <Button onClick={handleShareClick} className="w-full bg-tarabut-dark hover:bg-tarabut-dark/80 text-white">
-            {t('confirmation.share')}
+            {shareButtonText}
           </Button>
         </div>
         
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
           <h2 className="text-xl font-semibold mb-2 text-center">
-            {t('confirmation.points_title')}
+            {pointsTitle}
           </h2>
           <div className="flex justify-center items-center space-x-2 mb-4">
             <span className="text-3xl font-bold text-tarabut-dark">{points}</span>
-            <span className="text-gray-600">{t('confirmation.points')}</span>
+            <span className="text-gray-600">{pointsText}</span>
           </div>
           <p className="text-sm text-gray-600 text-center">
-            {t('confirmation.points_description')}
+            {pointsDescription}
           </p>
         </div>
       </div>

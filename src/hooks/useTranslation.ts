@@ -9,11 +9,12 @@ import {
   areTranslationsReady,
   preloadAllTranslations,
   storeTranslationsInSession,
-  getTranslationsFromSession
+  getTranslationsFromSession,
+  enTranslationData,
+  arTranslationData
 } from '@/utils/translationPreloader';
 
 // Enhanced default fallbacks for common UI elements to prevent showing raw keys
-// Note: This is a subset - the full fallbacks array remains the same
 const DEFAULT_FALLBACKS: Record<string, string> = {
   // Waitlist related
   'waitlist.title': 'Join the Waitlist',
@@ -27,22 +28,6 @@ const DEFAULT_FALLBACKS: Record<string, string> = {
   'form.placeholder.phone': '5XXXXXXXX',
   'form.placeholder.referral': 'Enter referral code',
   
-  // Dealership related
-  'dealership.registration': 'Dealership Registration',
-  'dealership.registration.subtitle': 'Register your dealership with Tarabut Auto',
-  'dealership.contact.name': 'Contact Person',
-  'dealership.name': 'Dealership Name',
-  'dealership.email': 'Email Address',
-  'dealership.phone': 'Phone Number',
-  'dealership.submit': 'Register Dealership',
-  'form.placeholder.contact': 'Full Name',
-  'form.placeholder.dealership': 'Dealership Name',
-  'form.placeholder.business.email': 'Work Email Address',
-  'form.validation.work.email': 'Please use your work email address',
-  'form.validation.phone': 'Phone number must be 9 digits',
-  'back': 'Back',
-  'back.home': 'Return to Home Page',
-  
   // Confirmation page specific fallbacks
   'confirmation.title': 'Congratulations!',
   'confirmation.subtitle': 'You\'ve been added to our exclusive waitlist',
@@ -55,7 +40,7 @@ const DEFAULT_FALLBACKS: Record<string, string> = {
   'confirmation.points_title': 'Your Waitlist Points',
   'confirmation.points_description': 'Earn more points by referring friends to increase your position on the waitlist',
   'confirmation.points': 'Points',
-  'loading': 'Loading...'
+  'back.home': 'Return to Home Page'
 };
 
 // Force immediate translation initialization when this module loads
@@ -77,6 +62,9 @@ export const useTranslation = () => {
   const [version, setVersion] = useState(() => getTranslationVersion());
   const missingKeys = useRef(new Set<string>());
   
+  // Direct access to translation data
+  const translationData = language === 'ar' ? arTranslationData : enTranslationData;
+  
   // Load translations as early as possible 
   useEffect(() => {
     if (!isReady) {
@@ -86,6 +74,9 @@ export const useTranslation = () => {
       setIsReady(true);
       setVersion(getTranslationVersion());
     }
+    
+    // Force preload on every language change
+    preloadAllTranslations();
   }, [isReady]);
   
   // Store translations in session storage for persistence across page loads
@@ -100,6 +91,9 @@ export const useTranslation = () => {
     
     // Update version to force re-render
     setVersion(refreshTranslationVersion());
+    
+    // Preload translations again on language change
+    preloadAllTranslations();
   }, [language, isChangingLanguage]);
   
   /**
@@ -113,10 +107,16 @@ export const useTranslation = () => {
       }
 
       try {
+        // First try to get the translation from the main function
         const translationValue = getTranslationValue(language as 'en' | 'ar', key, '');
         
         if (translationValue) {
           return translationValue;
+        }
+        
+        // If that fails, try direct access to the translation data
+        if (translationData[key]) {
+          return translationData[key];
         }
         
         // If no translation value was found, try to get a fallback
@@ -137,7 +137,7 @@ export const useTranslation = () => {
         return DEFAULT_FALLBACKS[key] || key;
       }
     };
-  }, [language, version]);
+  }, [language, version, translationData]);
   
   // Force translations to load on every render
   preloadAllTranslations();

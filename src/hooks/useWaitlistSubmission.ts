@@ -48,12 +48,14 @@ export const useWaitlistSubmission = () => {
     setIsSubmitting(true);
     
     try {
-      // Ensure translations are loaded and stored in session storage
+      // Aggressively ensure translations are loaded and stored for confirmation page
       console.log('[useWaitlistSubmission] Preloading translations before submission');
-      preloadAllTranslations();
-      storeTranslationsInSession();
-      refreshTranslationVersion();
-      refreshTranslations();
+      for (let i = 0; i < 3; i++) {
+        preloadAllTranslations();
+        storeTranslationsInSession();
+        refreshTranslationVersion();
+        refreshTranslations();
+      }
       
       // Get variant from the form data or extract from the URL
       const variant = formData.variant || getVariant();
@@ -116,6 +118,11 @@ export const useWaitlistSubmission = () => {
         variant
       });
       
+      // Double-check translations are loaded and stored before proceeding
+      console.log('[useWaitlistSubmission] Final translation pre-load before redirect');
+      preloadAllTranslations();
+      storeTranslationsInSession();
+      
       // Store necessary data in sessionStorage for confirmation page
       sessionStorage.setItem('waitlist_referralCode', user?.referral_code || referralCodeData || '');
       sessionStorage.setItem('waitlist_position', user?.position.toString() || positionData.toString());
@@ -124,8 +131,10 @@ export const useWaitlistSubmission = () => {
       sessionStorage.setItem('waitlist_variant', variant);
       sessionStorage.setItem('waitlist_timestamp', Date.now().toString());
       
-      // Create URL with query parameters
-      const confirmationUrl = `/${language}/${variant}/waitlist-signup/confirmation?` + new URLSearchParams({
+      // Create URL with query parameters - use full absolute URL
+      const baseUrl = window.location.origin;
+      const confirmationPath = `/${language}/${variant}/waitlist-signup/confirmation`;
+      const confirmationUrl = `${baseUrl}${confirmationPath}?` + new URLSearchParams({
         referralCode: user?.referral_code || referralCodeData || '',
         position: user?.position.toString() || positionData.toString(),
         points: user?.points?.toString() || '100',
@@ -136,7 +145,7 @@ export const useWaitlistSubmission = () => {
       
       console.log(`[useWaitlistSubmission] Redirecting to: ${confirmationUrl}`);
       
-      // Use hard navigation to force a complete page reload
+      // Use hard navigation to force a complete page reload with translations
       window.location.href = confirmationUrl;
       
     } catch (error: any) {
