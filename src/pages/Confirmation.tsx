@@ -69,7 +69,8 @@ const Confirmation = () => {
   
   // Function to handle sharing referral code
   const handleShareClick = async () => {
-    const shareText = t('confirmation.share_message', { referralCode });
+    // Fix: Use string interpolation instead of t() with parameters
+    const shareText = `${t('confirmation.share_message')} ${referralCode}`;
     
     try {
       if (navigator.share) {
@@ -147,7 +148,8 @@ const Confirmation = () => {
             {t('confirmation.subtitle')}
           </p>
           <p className="text-sm text-gray-500">
-            {t('confirmation.position_message', { position })}
+            {/* Fix: Use string interpolation instead of t() with parameters */}
+            {`${t('confirmation.position_message')} ${position}`}
           </p>
         </div>
         
