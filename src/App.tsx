@@ -40,34 +40,60 @@ const App = () => (
               <Route path="/en/offer" element={<Index variant="personal" lang="en" />} />
               <Route path="/en/budget" element={<Index variant="budget" lang="en" />} />
               
-              {/* Waitlist and dealership routes for all variants in English */}
+              {/* Waitlist routes for all variants in English */}
+              <Route path="/en/speed/waitlist-signup" element={<WaitlistSignup />} />
+              <Route path="/en/offer/waitlist-signup" element={<WaitlistSignup />} />
+              <Route path="/en/budget/waitlist-signup" element={<WaitlistSignup />} />
+              
+              {/* Confirmation routes for all variants in English */}
+              <Route path="/en/speed/waitlist-signup/confirmation" element={<Confirmation />} />
+              <Route path="/en/offer/waitlist-signup/confirmation" element={<Confirmation />} />
+              <Route path="/en/budget/waitlist-signup/confirmation" element={<Confirmation />} />
+              
+              {/* Dealership routes for all variants in English */}
+              <Route path="/en/speed/dealership" element={<DealershipSignup />} />
+              <Route path="/en/offer/dealership" element={<DealershipSignup />} />
+              <Route path="/en/budget/dealership" element={<DealershipSignup />} />
+              
+              <Route path="/en/speed/dealership/confirmation" element={<DealershipConfirmation />} />
+              <Route path="/en/offer/dealership/confirmation" element={<DealershipConfirmation />} />
+              <Route path="/en/budget/dealership/confirmation" element={<DealershipConfirmation />} />
+              
+              {/* Generic routes using path parameters (kept for backward compatibility) */}
               <Route path="/en/:variant/waitlist-signup" element={<WaitlistSignup />} />
               <Route path="/en/:variant/waitlist-signup/confirmation" element={<Confirmation />} />
               <Route path="/en/:variant/dealership" element={<DealershipSignup />} />
               <Route path="/en/:variant/dealership/confirmation" element={<DealershipConfirmation />} />
-              
-              {/* Legacy English routes for backward compatibility */}
-              <Route path="/en/speed/waitlist-signup" element={<WaitlistSignup />} />
-              <Route path="/en/speed/waitlist-signup/confirmation" element={<Confirmation />} />
-              <Route path="/en/speed/dealership" element={<DealershipSignup />} />
-              <Route path="/en/speed/dealership/confirmation" element={<DealershipConfirmation />} />
               
               {/* Arabic routes */}
               <Route path="/ar/speed" element={<Index variant="speed" lang="ar" />} />
               <Route path="/ar/offer" element={<Index variant="personal" lang="ar" />} />
               <Route path="/ar/budget" element={<Index variant="budget" lang="ar" />} />
               
-              {/* Waitlist and dealership routes for all variants in Arabic */}
+              {/* Explicit Arabic waitlist routes */}
+              <Route path="/ar/speed/waitlist-signup" element={<WaitlistSignup />} />
+              <Route path="/ar/offer/waitlist-signup" element={<WaitlistSignup />} />
+              <Route path="/ar/budget/waitlist-signup" element={<WaitlistSignup />} />
+              
+              {/* Explicit Arabic confirmation routes */}
+              <Route path="/ar/speed/waitlist-signup/confirmation" element={<Confirmation />} />
+              <Route path="/ar/offer/waitlist-signup/confirmation" element={<Confirmation />} />
+              <Route path="/ar/budget/waitlist-signup/confirmation" element={<Confirmation />} />
+              
+              {/* Explicit Arabic dealership routes */}
+              <Route path="/ar/speed/dealership" element={<DealershipSignup />} />
+              <Route path="/ar/offer/dealership" element={<DealershipSignup />} />
+              <Route path="/ar/budget/dealership" element={<DealershipSignup />} />
+              
+              <Route path="/ar/speed/dealership/confirmation" element={<DealershipConfirmation />} />
+              <Route path="/ar/offer/dealership/confirmation" element={<DealershipConfirmation />} />
+              <Route path="/ar/budget/dealership/confirmation" element={<DealershipConfirmation />} />
+              
+              {/* Generic routes using path parameters (kept for backward compatibility) */}
               <Route path="/ar/:variant/waitlist-signup" element={<WaitlistSignup />} />
               <Route path="/ar/:variant/waitlist-signup/confirmation" element={<Confirmation />} />
               <Route path="/ar/:variant/dealership" element={<DealershipSignup />} />
               <Route path="/ar/:variant/dealership/confirmation" element={<DealershipConfirmation />} />
-              
-              {/* Legacy Arabic routes for backward compatibility */}
-              <Route path="/ar/speed/waitlist-signup" element={<WaitlistSignup />} />
-              <Route path="/ar/speed/waitlist-signup/confirmation" element={<Confirmation />} />
-              <Route path="/ar/speed/dealership" element={<DealershipSignup />} />
-              <Route path="/ar/speed/dealership/confirmation" element={<DealershipConfirmation />} />
               
               {/* Language root routes */}
               <Route path="/en" element={<Navigate to="/en/speed" replace />} />

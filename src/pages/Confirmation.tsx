@@ -2,7 +2,7 @@
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
-import { ArrowLeft } from '@/components/ui/arrow-left';
+import { ArrowLeft } from 'lucide-react';
 import ReferralLeaderboard from '@/components/waitlist/ReferralLeaderboard';
 import { Head } from '@/components/Head';
 import { useLanguage } from '@/contexts/LanguageContext';
