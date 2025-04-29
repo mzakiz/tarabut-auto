@@ -2,87 +2,65 @@
 import enTranslations from '@/locales/en.json';
 import arTranslations from '@/locales/ar.json';
 
-// Cache the translations to prevent repeated imports
-let cachedTranslations: {
-  en: Record<string, string>;
-  ar: Record<string, string>;
-} | null = null;
-
-// Track if we've already preloaded translations
-let translationsPreloaded = false;
-
-// Force preload translations immediately on import
-export const preloadTranslations = () => {
-  // If we already have cached translations, return them
-  if (cachedTranslations) {
-    console.log('Using cached translations');
-    return cachedTranslations;
-  }
-  
-  console.log('Preloading translations - Initial load');
-  
-  // Cache the translations
-  cachedTranslations = {
-    en: enTranslations,
-    ar: arTranslations
-  };
-  
-  // Log the number of translation keys to ensure they're loaded
-  console.log(`Translation keys loaded - EN: ${Object.keys(cachedTranslations.en).length} keys, AR: ${Object.keys(cachedTranslations.ar).length} keys`);
-  
-  // Mark as preloaded
-  translationsPreloaded = true;
-  
-  return cachedTranslations;
+// Global translation store - this ensures translations are loaded once and stay available
+const GLOBAL_TRANSLATIONS = {
+  en: enTranslations,
+  ar: arTranslations
 };
 
-// Special function to forcibly refresh translations
-export const forceRefreshTranslations = () => {
-  console.log('Forcing translation refresh');
-  cachedTranslations = null;
-  translationsPreloaded = false;
-  return preloadTranslations();
+// Store version to track changes
+let translationVersion = Date.now();
+
+/**
+ * Get the cached translations without any additional loading
+ * This always returns immediately with the translations
+ */
+export const getTranslations = () => {
+  return GLOBAL_TRANSLATIONS;
 };
 
-// Check if translations are already preloaded
-export const areTranslationsPreloaded = () => {
-  return translationsPreloaded;
-};
-
-// Export a function to get a translation value directly with improved logging for missing keys
+/**
+ * Get a specific translation value with fallbacks
+ */
 export const getTranslationValue = (
-  language: 'en' | 'ar',
+  language: 'en' | 'ar', 
   key: string,
   fallback: string = key
 ): string => {
-  // Ensure translations are loaded
-  const translations = preloadTranslations();
+  // Get the translated value
+  const value = GLOBAL_TRANSLATIONS[language][key];
   
-  // Get the translation value
-  const value = translations[language][key];
-  
-  // If we have a value, return it
+  // Return the value if found
   if (value) {
     return value;
   }
   
-  // If we're in Arabic and missing the key, try English
-  if (language === 'ar' && translations.en[key]) {
-    console.log(`Using English fallback for Arabic key: ${key}`);
-    return translations.en[key];
+  // Try English as fallback for Arabic
+  if (language === 'ar' && GLOBAL_TRANSLATIONS.en[key]) {
+    return GLOBAL_TRANSLATIONS.en[key];
   }
   
-  // Log missing translation keys
+  // Return fallback if no translation found
   console.warn(`Missing translation key: ${key} in language: ${language}`);
-  
-  // Return fallback
   return fallback;
 };
 
-// Export the raw translation objects for direct access
-export const getTranslations = () => {
-  return preloadTranslations();
+/**
+ * Get the current translation version
+ * Useful for forcing re-renders when translations change
+ */
+export const getTranslationVersion = (): number => {
+  return translationVersion;
 };
 
-// Preload translations immediately when this file is imported
-preloadTranslations();
+/**
+ * Force a refresh of the translation version to trigger re-renders
+ */
+export const refreshTranslationVersion = (): number => {
+  translationVersion = Date.now();
+  return translationVersion;
+};
+
+// Export the translation data directly
+export const enTranslationData = enTranslations;
+export const arTranslationData = arTranslations;

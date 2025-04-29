@@ -1,30 +1,29 @@
+
 import React, { useEffect, useState } from 'react';
-import { useLocation, useNavigate } from 'react-router-dom';
+import { useLocation, useNavigate, useSearchParams } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
 import { Head } from '@/components/Head';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Analytics } from '@/services/analytics';
-import { preloadTranslations, forceRefreshTranslations } from '@/utils/translationPreloader';
 import confetti from 'canvas-confetti';
 
 const Confirmation = () => {
   // Custom hook to get language
   const { language } = useLanguage();
-  const { t, translationsLoaded, refreshTranslations } = useTranslation();
+  const { t } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
+  const [searchParams] = useSearchParams();
 
-  // Get the referral code and position from location state
-  const { 
-    referralCode = '', 
-    position = 0, 
-    points = 100,
-    variant = 'speed', // Default to speed if not provided
-    forceTranslationRefresh = false // New flag to force translation refresh
-  } = location.state || {};
+  // Get parameters from URL query params instead of location state
+  const referralCode = searchParams.get('referralCode') || '';
+  const position = parseInt(searchParams.get('position') || '0', 10);
+  const points = parseInt(searchParams.get('points') || '100', 10); 
+  const statusId = searchParams.get('statusId') || '';
+  const variant = searchParams.get('variant') || 'speed';
 
   // Get the variant from the URL if available
   const getVariantFromUrl = () => {
@@ -37,78 +36,24 @@ const Confirmation = () => {
   };
   
   const currentVariant = getVariantFromUrl();
-  
-  // Preload translations and check if they're ready
-  useEffect(() => {
-    console.log("[Confirmation] Component mounting, checking translations");
-    
-    const loadAndVerifyTranslations = async () => {
-      // If flag is set, force refresh translations
-      if (forceTranslationRefresh) {
-        console.log("[Confirmation] Force refreshing translations");
-        forceRefreshTranslations();
-      } else {
-        // Otherwise ensure translations are preloaded
-        console.log("[Confirmation] Ensuring translations are preloaded");
-        preloadTranslations();
-      }
-      
-      // Force translation preloading
-      console.log("[Confirmation] Translation status:", translationsLoaded ? "loaded" : "not loaded");
-      
-      // Log translation debugging info
-      console.log("[Confirmation] Current language:", language);
-      console.log("[Confirmation] Translation test - title:", t('confirmation.title'));
-      console.log("[Confirmation] Translation test - subtitle:", t('confirmation.subtitle'));
-      console.log("[Confirmation] Translation test - referral_title:", t('confirmation.referral_title'));
-      console.log("[Confirmation] Translation test - points_title:", t('confirmation.points_title'));
-      
-      // Check for missing translations
-      const checkTranslationKeys = [
-        'confirmation.title',
-        'confirmation.subtitle', 
-        'confirmation.position_message',
-        'confirmation.referral_title',
-        'confirmation.referral_description',
-        'confirmation.copy',
-        'confirmation.share',
-        'confirmation.points_title',
-        'confirmation.points_description',
-        'confirmation.points',
-        'back.home'
-      ];
-      
-      let missingTranslations = false;
-      
-      checkTranslationKeys.forEach(key => {
-        const value = t(key);
-        if (value === key) {
-          console.error(`[Confirmation] Missing translation for key: ${key}`);
-          missingTranslations = true;
-        }
-      });
-      
-      if (missingTranslations) {
-        console.log("[Confirmation] Refreshing translations due to missing keys");
-        refreshTranslations();
-      }
-      
-      // Set loading state to false after translations are verified
-      setTimeout(() => {
-        setIsLoading(false);
-      }, 100);
-    };
-    
-    loadAndVerifyTranslations();
-  }, [language, t, currentVariant, position, translationsLoaded, forceTranslationRefresh, refreshTranslations]);
 
+  // Set up page and hide loading indicator after a short delay
   useEffect(() => {
-    // Fire confetti when the component mounts
-    confetti({
-      particleCount: 100,
-      spread: 70,
-      origin: { y: 0.6 }
-    });
+    // Log page initialization
+    console.log('[Confirmation] Page initializing');
+    console.log('[Confirmation] Current language:', language);
+
+    // Short timeout to ensure translations are ready
+    const timer = setTimeout(() => {
+      setIsLoading(false);
+      
+      // Fire confetti when ready
+      confetti({
+        particleCount: 100,
+        spread: 70,
+        origin: { y: 0.6 }
+      });
+    }, 300);
 
     // Track page view with variant info
     Analytics.trackPageViewed({
@@ -116,6 +61,8 @@ const Confirmation = () => {
       language,
       variant: currentVariant
     });
+
+    return () => clearTimeout(timer);
   }, [language, currentVariant]);
 
   // Function to copy referral code to clipboard
@@ -184,7 +131,7 @@ const Confirmation = () => {
           className="h-16 mb-6"
         />
         <div className="text-center">
-          <p className="text-gray-600">{t('loading') || 'Loading...'}</p>
+          <p className="text-gray-600">{t('loading')}</p>
         </div>
       </div>
     );

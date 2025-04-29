@@ -1,12 +1,7 @@
+
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useEffect, useRef, useState } from 'react';
-// Import the improved translation utilities
-import { 
-  preloadTranslations, 
-  getTranslationValue, 
-  areTranslationsPreloaded,
-  forceRefreshTranslations 
-} from '@/utils/translationPreloader';
+import { useState, useEffect, useRef } from 'react';
+import { getTranslationValue, getTranslationVersion, refreshTranslationVersion } from '@/utils/translationPreloader';
 
 // Enhanced default fallbacks for common UI elements to prevent showing raw keys
 const DEFAULT_FALLBACKS: Record<string, string> = {
@@ -49,77 +44,29 @@ const DEFAULT_FALLBACKS: Record<string, string> = {
   'confirmation.points_title': 'Your Waitlist Points',
   'confirmation.points_description': 'Earn more points by referring friends to increase your position on the waitlist',
   'confirmation.points': 'Points',
-  
-  // Features section
-  'features.title': 'Exceptional Features',
-  'features.subtitle': 'Toyota Camry combines luxury, performance, and efficiency in a perfect package for Saudi roads',
-  'feature.fuel.title': 'Fuel Efficiency',
-  'feature.fuel.description': 'Best-in-class fuel economy of 18.3 km/liter for fewer stops at the pump',
-  'feature.safety.title': 'Safety First',
-  'feature.safety.description': 'Toyota Safety System with pre-collision and lane departure alert',
-  'feature.performance.title': 'Dynamic Performance',
-  'feature.performance.description': 'Powerful 2.5L engine delivers 203 horsepower for quick acceleration',
-  'feature.tech.title': 'Smart Technology',
-  'feature.tech.description': '9" touchscreen with Apple CarPlay and Android Auto support',
-  'feature.interior.title': 'Luxurious Interior',
-  'feature.interior.description': 'Leather seats with heating and ventilation for year-round comfort',
-  'feature.transmission.title': 'Smooth Transmission',
-  'feature.transmission.description': '8-speed automatic transmission for a smooth driving experience',
-
-  // Specifications
-  'specs.title': 'Technical Specifications',
-  'specs.subtitle': 'Toyota Camry is equipped with advanced technology and engineering excellence',
-  
-  // Car categories
-  'car.specs': 'Technical Specifications',
-  'car.specs.description': 'Toyota Camry is equipped with advanced technology and engineering excellence',
-  'car.engine': 'Engine Specifications',
-  'car.dimensions': 'Dimensions',
-  'car.comfort': 'Comfort & Technology',
-  'car.safety': 'Safety Features',
-
-  // Footer
-  'footer.brand': 'Tarabut Auto',
-  'footer.experience': 'Experience Shariah-compliant car financing in Saudi Arabia with options tailored to your needs.',
-  'footer.copyright': 'All Rights Reserved.',
-  'footer.home': 'Home',
-  'footer.about': 'About Tarabut'
+  'loading': 'Loading...'
 };
 
+/**
+ * Custom hook for translations with improved performance
+ */
 export const useTranslation = () => {
   const { language, isChangingLanguage } = useLanguage();
-  const translationVersion = useRef(Date.now());
-  const [missingKeys, setMissingKeys] = useState<Set<string>>(new Set());
-  const [translationsLoaded, setTranslationsLoaded] = useState(areTranslationsPreloaded());
+  const [version, setVersion] = useState(() => getTranslationVersion());
+  const missingKeys = useRef(new Set<string>());
   
-  // Ensure translations are preloaded on mount and when language changes
+  // Force re-render when language changes
   useEffect(() => {
-    const loadTranslations = async () => {
-      try {
-        console.log(`[useTranslation] Loading translations for ${language}`);
-        
-        // Force refresh translations if language changes
-        const translations = isChangingLanguage 
-          ? forceRefreshTranslations() 
-          : preloadTranslations();
-          
-        console.log(`[useTranslation] Translations loaded for ${language}: ${Object.keys(translations[language as 'en' | 'ar']).length} keys`);
-        
-        // Test a few critical confirmation page keys to ensure they're loaded
-        console.log(`Test key 'confirmation.title' = ${getTranslationValue(language as 'en' | 'ar', 'confirmation.title')}`);
-        console.log(`Test key 'confirmation.subtitle' = ${getTranslationValue(language as 'en' | 'ar', 'confirmation.subtitle')}`);
-        
-        setTranslationsLoaded(true);
-        translationVersion.current = Date.now();
-        setMissingKeys(new Set());
-      } catch (error) {
-        console.error('[useTranslation] Error loading translations:', error);
-      }
-    };
+    // Reset missing keys tracker when language changes
+    missingKeys.current = new Set();
     
-    loadTranslations();
+    // Update version to force re-render
+    setVersion(refreshTranslationVersion());
   }, [language, isChangingLanguage]);
   
+  /**
+   * Get translation for a key
+   */
   const t = (key: string): string => {
     if (!key || typeof key !== 'string') {
       console.error('[useTranslation] Invalid translation key:', key);
@@ -127,7 +74,6 @@ export const useTranslation = () => {
     }
 
     try {
-      // Use direct access to get translation value for better performance
       const translationValue = getTranslationValue(language as 'en' | 'ar', key, '');
       
       if (translationValue) {
@@ -139,10 +85,10 @@ export const useTranslation = () => {
         return DEFAULT_FALLBACKS[key];
       }
       
-      // Log missing keys
-      if (!missingKeys.has(key)) {
+      // Log missing keys only once
+      if (!missingKeys.current.has(key)) {
         console.warn(`[useTranslation] Missing translation for key: ${key} in language: ${language}`);
-        setMissingKeys(prev => new Set([...prev, key]));
+        missingKeys.current.add(key);
       }
       
       // Return the key as fallback
@@ -155,12 +101,8 @@ export const useTranslation = () => {
   
   return { 
     t, 
-    language, 
+    language,
     isChangingLanguage,
-    translationsLoaded,
-    refreshTranslations: () => {
-      forceRefreshTranslations();
-      translationVersion.current = Date.now();
-    }
+    refreshTranslations: () => setVersion(refreshTranslationVersion())
   };
 };
