@@ -1,4 +1,3 @@
-
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEffect, useRef, useState } from 'react';
 // Dynamic imports to force reloading of translation files
@@ -125,7 +124,20 @@ const DEFAULT_FALLBACKS: Record<string, string> = {
   'tier.fast_track.points': '250-399 points',
   'tier.standard.points': '100-249 points',
   'waitlist.position': 'Position',
-  'waitlist.points': 'Points'
+  'waitlist.points': 'Points',
+
+  // Additional fallbacks specifically for confirmation page
+  'confirmation.title': 'Congratulations!',
+  'confirmation.subtitle': 'You\'ve been added to our exclusive waitlist',
+  'confirmation.position_message': 'Your position in waitlist: #',
+  'confirmation.referral_title': 'Share Your Referral Code',
+  'confirmation.referral_description': 'Share with friends to move up the waitlist and get exclusive rewards',
+  'confirmation.copy': 'Copy',
+  'confirmation.share': 'Share',
+  'confirmation.points_title': 'Your Waitlist Points',
+  'confirmation.points_description': 'Earn more points by referring friends to increase your position on the waitlist',
+  'confirmation.points': 'Points',
+  'back.home': 'Return to Home Page'
 };
 
 export const useTranslation = () => {
@@ -168,33 +180,39 @@ export const useTranslation = () => {
       return 'Invalid Key';
     }
 
-    // Make sure we have translations for this language
-    if (!translations[language]) {
-      if (!missingKeys.has(`language_${language}`)) {
-        console.error(`No translations found for language: ${language}`);
-        setMissingKeys(prev => new Set([...prev, `language_${language}`]));
-      }
-      // Fall back to English if language not found
-      return translations['en'][key] || DEFAULT_FALLBACKS[key] || key;
-    }
-    
-    // Check if the key exists in the translations
-    if (!translations[language][key]) {
-      // Try to get fallback translation
-      const fallbackTranslation = getFallbackTranslation(key);
-      if (fallbackTranslation) return fallbackTranslation;
-
-      if (!missingKeys.has(key)) {
-        console.warn(`Translation key not found: ${key} in language: ${language}`);
-        setMissingKeys(prev => new Set([...prev, key]));
+    try {
+      // Make sure we have translations for this language
+      if (!translations[language]) {
+        if (!missingKeys.has(`language_${language}`)) {
+          console.error(`No translations found for language: ${language}`);
+          setMissingKeys(prev => new Set([...prev, `language_${language}`]));
+        }
+        // Fall back to English if language not found
+        const fallback = translations['en'][key] || DEFAULT_FALLBACKS[key] || key;
+        return fallback;
       }
       
-      // Return the key as fallback
+      // Check if the key exists in the translations
+      if (!translations[language][key]) {
+        // Try to get fallback translation
+        const fallbackTranslation = getFallbackTranslation(key);
+        if (fallbackTranslation) return fallbackTranslation;
+
+        if (!missingKeys.has(key)) {
+          console.warn(`Translation key not found: ${key} in language: ${language}`);
+          setMissingKeys(prev => new Set([...prev, key]));
+        }
+        
+        // Return the key as fallback
+        return DEFAULT_FALLBACKS[key] || key;
+      }
+      
+      // Return the translation value
+      return translations[language][key];
+    } catch (error) {
+      console.error(`Error retrieving translation for key: ${key}`, error);
       return DEFAULT_FALLBACKS[key] || key;
     }
-    
-    // Return the translation value
-    return translations[language][key];
   };
   
   return { t, language, isChangingLanguage };

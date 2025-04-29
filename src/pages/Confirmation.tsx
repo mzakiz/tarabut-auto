@@ -35,6 +35,17 @@ const Confirmation = () => {
   };
   
   const currentVariant = getVariantFromUrl();
+  
+  // Log translation debugging info
+  React.useEffect(() => {
+    console.log("Current language:", language);
+    console.log("Translation test - title:", t('confirmation.title'));
+    console.log("Translation test - subtitle:", t('confirmation.subtitle'));
+    console.log("Translation test - referral_title:", t('confirmation.referral_title'));
+    console.log("Translation test - points_title:", t('confirmation.points_title'));
+    console.log("Variant from URL:", currentVariant);
+    console.log("Position value:", position);
+  }, [language, t, currentVariant, position]);
 
   React.useEffect(() => {
     // Fire confetti when the component mounts
@@ -149,7 +160,7 @@ const Confirmation = () => {
           {/* Enhanced waitlist position display */}
           <div className="bg-gray-50 py-6 px-4 rounded-lg shadow-sm mb-6">
             <p className="text-lg font-medium text-gray-700 mb-2">
-              {t('confirmation.position_message').split('#')[0]}
+              {t('confirmation.position_message')}
             </p>
             <div className="flex justify-center items-center">
               <span className="text-5xl font-bold text-tarabut-dark">{position}</span>
