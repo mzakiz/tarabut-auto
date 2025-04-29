@@ -69,7 +69,6 @@ const Confirmation = () => {
   
   // Function to handle sharing referral code
   const handleShareClick = async () => {
-    // Fix: Use string interpolation instead of t() with parameters
     const shareText = `${t('confirmation.share_message')} ${referralCode}`;
     
     try {
@@ -113,8 +112,8 @@ const Confirmation = () => {
   return (
     <div className="min-h-screen bg-white flex flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
       <Head 
-        title={t('confirmation.page_title')}
-        description={t('confirmation.meta_description')}
+        title={t('confirmation.title')}
+        description={t('confirmation.subtitle')}
       />
       <header className="py-4 px-6">
         <Button variant="ghost" onClick={handleBackClick} className="flex items-center">
@@ -148,7 +147,6 @@ const Confirmation = () => {
             {t('confirmation.subtitle')}
           </p>
           <p className="text-sm text-gray-500">
-            {/* Fix: Use string interpolation instead of t() with parameters */}
             {`${t('confirmation.position_message')} ${position}`}
           </p>
         </div>
@@ -195,7 +193,7 @@ const Confirmation = () => {
           </p>
         </div>
         
-        <ReferralLeaderboard users={[]} />
+        <ReferralLeaderboard users={[]} variant={currentVariant} />
       </div>
     </div>
   );
