@@ -1,6 +1,8 @@
+
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEffect, useRef, useState } from 'react';
-// Dynamic imports to force reloading of translation files
+// Import the preloadTranslations utility to ensure translations are loaded
+import { preloadTranslations, getTranslationValue } from '@/utils/translationPreloader';
 import enTranslations from '@/locales/en.json';
 import arTranslations from '@/locales/ar.json';
 
@@ -34,6 +36,18 @@ const DEFAULT_FALLBACKS: Record<string, string> = {
   'back': 'Back',
   'back.home': 'Return to Home Page',
   
+  // Confirmation page specific fallbacks
+  'confirmation.title': 'Congratulations!',
+  'confirmation.subtitle': 'You\'ve been added to our exclusive waitlist',
+  'confirmation.position_message': 'Your position in waitlist: #',
+  'confirmation.referral_title': 'Share Your Referral Code',
+  'confirmation.referral_description': 'Share with friends to move up the waitlist and get exclusive rewards',
+  'confirmation.copy': 'Copy',
+  'confirmation.share': 'Share',
+  'confirmation.points_title': 'Your Waitlist Points',
+  'confirmation.points_description': 'Earn more points by referring friends to increase your position on the waitlist',
+  'confirmation.points': 'Points',
+  
   // Features section
   'features.title': 'Exceptional Features',
   'features.subtitle': 'Toyota Camry combines luxury, performance, and efficiency in a perfect package for Saudi roads',
@@ -53,47 +67,7 @@ const DEFAULT_FALLBACKS: Record<string, string> = {
   // Specifications
   'specs.title': 'Technical Specifications',
   'specs.subtitle': 'Toyota Camry is equipped with advanced technology and engineering excellence',
-  'specs.engine.type': 'Engine Type',
-  'specs.engine.type.value': '2.5L 4-Cylinder',
-  'specs.horsepower': 'Horsepower',
-  'specs.horsepower.value': '203 HP @ 6,600 rpm',
-  'specs.torque': 'Torque',
-  'specs.torque.value': '249 Nm @ 5,000 rpm',
-  'specs.transmission': 'Transmission',
-  'specs.transmission.value': '8-Speed Automatic',
-  'specs.acceleration': 'Acceleration',
-  'specs.acceleration.value': '8.3 seconds',
-  'specs.length': 'Length',
-  'specs.length.value': '4,880 mm',
-  'specs.width': 'Width',
-  'specs.width.value': '1,840 mm',
-  'specs.height': 'Height',
-  'specs.height.value': '1,445 mm',
-  'specs.wheelbase': 'Wheelbase',
-  'specs.wheelbase.value': '2,825 mm',
-  'specs.fuel.tank': 'Fuel Tank',
-  'specs.fuel.tank.value': '60 Liters',
-  'specs.infotainment': 'Infotainment',
-  'specs.infotainment.value': '9" Touchscreen',
-  'specs.climate': 'Climate Control',
-  'specs.climate.value': 'Dual-Zone Auto',
-  'specs.seating': 'Seating',
-  'specs.seating.value': 'Leather, Heated',
-  'specs.sound': 'Sound System',
-  'specs.sound.value': 'JBL 9 Speakers',
-  'specs.charging': 'Wireless Charging',
-  'specs.charging.value': 'Yes',
-  'specs.airbags': 'Airbags',
-  'specs.airbags.value': '7 Total',
-  'specs.safety': 'Advanced Safety',
-  'specs.safety.value': 'Toyota Safety Sense™',
-  'specs.parking': 'Parking Assist',
-  'specs.parking.value': '360° Camera',
-  'specs.blindspot': 'Blind Spot',
-  'specs.blindspot.value': 'With Cross-Traffic Alert',
-  'specs.stability': 'Stability',
-  'specs.stability.value': 'VSC',
-
+  
   // Car categories
   'car.specs': 'Technical Specifications',
   'car.specs.description': 'Toyota Camry is equipped with advanced technology and engineering excellence',
@@ -107,48 +81,35 @@ const DEFAULT_FALLBACKS: Record<string, string> = {
   'footer.experience': 'Experience Shariah-compliant car financing in Saudi Arabia with options tailored to your needs.',
   'footer.copyright': 'All Rights Reserved.',
   'footer.home': 'Home',
-  'footer.about': 'About Tarabut',
-
-  // General fallbacks
-  'confirmation.position.subtitle': 'Refer your friends to move up in the waitlist',
-  'confirmation.your.tier': 'Your Current Tier',
-  'confirmation.share.code': 'Share your referral code:',
-  'confirmation.points': 'Points',
-  'waitlist.tiers.title': 'Waitlist Tier Benefits',
-  'tier.vip_access': 'VIP Access',
-  'tier.early_access': 'Early Access',
-  'tier.fast_track': 'Fast Track',
-  'tier.standard': 'Standard',
-  'tier.vip_access.points': '600+ points',
-  'tier.early_access.points': '400-599 points',
-  'tier.fast_track.points': '250-399 points',
-  'tier.standard.points': '100-249 points',
-  'waitlist.position': 'Position',
-  'waitlist.points': 'Points',
-
-  // Additional fallbacks specifically for confirmation page
-  'confirmation.title': 'Congratulations!',
-  'confirmation.subtitle': 'You\'ve been added to our exclusive waitlist',
-  'confirmation.position_message': 'Your position in waitlist: #',
-  'confirmation.referral_title': 'Share Your Referral Code',
-  'confirmation.referral_description': 'Share with friends to move up the waitlist and get exclusive rewards',
-  'confirmation.copy': 'Copy',
-  'confirmation.share': 'Share',
-  'confirmation.points_title': 'Your Waitlist Points',
-  'confirmation.points_description': 'Earn more points by referring friends to increase your position on the waitlist',
-  'confirmation.points': 'Points',
-  'back.home': 'Return to Home Page'
+  'footer.about': 'About Tarabut'
 };
 
 export const useTranslation = () => {
   const { language, isChangingLanguage } = useLanguage();
   const translationVersion = useRef(Date.now());
   const [missingKeys, setMissingKeys] = useState<Set<string>>(new Set());
+  const [translationsLoaded, setTranslationsLoaded] = useState(false);
   
-  // Update translation version when language changes
+  // Ensure translations are preloaded on mount and when language changes
   useEffect(() => {
-    translationVersion.current = Date.now();
-    setMissingKeys(new Set());
+    const loadTranslations = async () => {
+      try {
+        // Force preloading of translations
+        const translations = preloadTranslations();
+        console.log(`Translations preloaded for ${language}: ${Object.keys(translations[language as 'en' | 'ar']).length} keys`);
+        setTranslationsLoaded(true);
+        translationVersion.current = Date.now();
+        setMissingKeys(new Set());
+      } catch (error) {
+        console.error('Error preloading translations:', error);
+      }
+    };
+    
+    loadTranslations();
+    
+    return () => {
+      // Clean up if needed
+    };
   }, [language]);
   
   // Create a new translations object each time to prevent caching
@@ -161,14 +122,14 @@ export const useTranslation = () => {
   const getFallbackTranslation = (key: string): string | null => {
     // First check if we have a default fallback
     if (DEFAULT_FALLBACKS[key]) {
-      console.warn(`Using default fallback for missing translation: ${key}`);
+      console.log(`Using default fallback for missing translation: ${key}`);
       return DEFAULT_FALLBACKS[key];
     }
     
     // Then check if we can fall back to English for Arabic
-    if (language === 'ar' && translations['en'][key]) {
-      console.warn(`Using English fallback for missing Arabic translation: ${key}`);
-      return translations['en'][key];
+    if (language === 'ar' && translations['en'][key as keyof typeof enTranslations]) {
+      console.log(`Using English fallback for missing Arabic translation: ${key}`);
+      return translations['en'][key as keyof typeof enTranslations];
     }
     
     return null;
@@ -188,12 +149,19 @@ export const useTranslation = () => {
           setMissingKeys(prev => new Set([...prev, `language_${language}`]));
         }
         // Fall back to English if language not found
-        const fallback = translations['en'][key] || DEFAULT_FALLBACKS[key] || key;
+        const fallback = translations['en'][key as keyof typeof enTranslations] || DEFAULT_FALLBACKS[key] || key;
         return fallback;
       }
       
+      // Use direct access to get translation value for better performance
+      const translationValue = getTranslationValue(language as 'en' | 'ar', key, '');
+      
+      if (translationValue) {
+        return translationValue;
+      }
+      
       // Check if the key exists in the translations
-      if (!translations[language][key]) {
+      if (!translations[language][key as keyof typeof translations[typeof language]]) {
         // Try to get fallback translation
         const fallbackTranslation = getFallbackTranslation(key);
         if (fallbackTranslation) return fallbackTranslation;
@@ -208,12 +176,17 @@ export const useTranslation = () => {
       }
       
       // Return the translation value
-      return translations[language][key];
+      return translations[language][key as keyof typeof translations[typeof language]];
     } catch (error) {
       console.error(`Error retrieving translation for key: ${key}`, error);
       return DEFAULT_FALLBACKS[key] || key;
     }
   };
   
-  return { t, language, isChangingLanguage };
+  return { 
+    t, 
+    language, 
+    isChangingLanguage,
+    translationsLoaded
+  };
 };

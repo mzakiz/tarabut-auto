@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from 'lucide-react';
@@ -7,14 +7,16 @@ import { Head } from '@/components/Head';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Analytics } from '@/services/analytics';
+import { preloadTranslations } from '@/utils/translationPreloader';
 import confetti from 'canvas-confetti';
 
 const Confirmation = () => {
   // Custom hook to get language
   const { language } = useLanguage();
-  const { t } = useTranslation();
+  const { t, translationsLoaded } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
+  const [isLoading, setIsLoading] = useState(true);
 
   // Get the referral code and position from location state
   const { 
@@ -36,8 +38,13 @@ const Confirmation = () => {
   
   const currentVariant = getVariantFromUrl();
   
-  // Log translation debugging info
-  React.useEffect(() => {
+  // Preload translations and check if they're ready
+  useEffect(() => {
+    // Force translation preloading
+    const translations = preloadTranslations();
+    console.log("Preloaded translations on Confirmation page mount");
+    
+    // Log translation debugging info
     console.log("Current language:", language);
     console.log("Translation test - title:", t('confirmation.title'));
     console.log("Translation test - subtitle:", t('confirmation.subtitle'));
@@ -45,9 +52,14 @@ const Confirmation = () => {
     console.log("Translation test - points_title:", t('confirmation.points_title'));
     console.log("Variant from URL:", currentVariant);
     console.log("Position value:", position);
-  }, [language, t, currentVariant, position]);
+    
+    // Set loading state to false after translations are loaded
+    setTimeout(() => {
+      setIsLoading(false);
+    }, 100);
+  }, [language, t, currentVariant, position, translationsLoaded]);
 
-  React.useEffect(() => {
+  useEffect(() => {
     // Fire confetti when the component mounts
     confetti({
       particleCount: 100,
@@ -118,6 +130,22 @@ const Confirmation = () => {
       variant: currentVariant
     });
   };
+
+  // Show loading state if we're still loading translations
+  if (isLoading) {
+    return (
+      <div className="min-h-screen bg-white flex flex-col items-center justify-center" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+        <img 
+          src="/Logos/Tarabut_Auto-2.png" 
+          alt="Tarabut Auto Logo" 
+          className="h-16 mb-6"
+        />
+        <div className="text-center">
+          <p className="text-gray-600">Loading...</p>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="min-h-screen bg-white flex flex-col" dir={language === 'ar' ? 'rtl' : 'ltr'}>
