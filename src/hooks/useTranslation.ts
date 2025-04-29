@@ -1,10 +1,12 @@
-
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useEffect, useRef, useState } from 'react';
-// Import the preloadTranslations utility to ensure translations are loaded
-import { preloadTranslations, getTranslationValue } from '@/utils/translationPreloader';
-import enTranslations from '@/locales/en.json';
-import arTranslations from '@/locales/ar.json';
+// Import the improved translation utilities
+import { 
+  preloadTranslations, 
+  getTranslationValue, 
+  areTranslationsPreloaded,
+  forceRefreshTranslations 
+} from '@/utils/translationPreloader';
 
 // Enhanced default fallbacks for common UI elements to prevent showing raw keys
 const DEFAULT_FALLBACKS: Record<string, string> = {
@@ -88,71 +90,43 @@ export const useTranslation = () => {
   const { language, isChangingLanguage } = useLanguage();
   const translationVersion = useRef(Date.now());
   const [missingKeys, setMissingKeys] = useState<Set<string>>(new Set());
-  const [translationsLoaded, setTranslationsLoaded] = useState(false);
+  const [translationsLoaded, setTranslationsLoaded] = useState(areTranslationsPreloaded());
   
   // Ensure translations are preloaded on mount and when language changes
   useEffect(() => {
     const loadTranslations = async () => {
       try {
-        // Force preloading of translations
-        const translations = preloadTranslations();
-        console.log(`Translations preloaded for ${language}: ${Object.keys(translations[language as 'en' | 'ar']).length} keys`);
+        console.log(`[useTranslation] Loading translations for ${language}`);
+        
+        // Force refresh translations if language changes
+        const translations = isChangingLanguage 
+          ? forceRefreshTranslations() 
+          : preloadTranslations();
+          
+        console.log(`[useTranslation] Translations loaded for ${language}: ${Object.keys(translations[language as 'en' | 'ar']).length} keys`);
+        
+        // Test a few critical confirmation page keys to ensure they're loaded
+        console.log(`Test key 'confirmation.title' = ${getTranslationValue(language as 'en' | 'ar', 'confirmation.title')}`);
+        console.log(`Test key 'confirmation.subtitle' = ${getTranslationValue(language as 'en' | 'ar', 'confirmation.subtitle')}`);
+        
         setTranslationsLoaded(true);
         translationVersion.current = Date.now();
         setMissingKeys(new Set());
       } catch (error) {
-        console.error('Error preloading translations:', error);
+        console.error('[useTranslation] Error loading translations:', error);
       }
     };
     
     loadTranslations();
-    
-    return () => {
-      // Clean up if needed
-    };
-  }, [language]);
-  
-  // Create a new translations object each time to prevent caching
-  const translations = {
-    en: enTranslations,
-    ar: arTranslations
-  };
-
-  // Add fallback to English if Arabic translation is missing
-  const getFallbackTranslation = (key: string): string | null => {
-    // First check if we have a default fallback
-    if (DEFAULT_FALLBACKS[key]) {
-      console.log(`Using default fallback for missing translation: ${key}`);
-      return DEFAULT_FALLBACKS[key];
-    }
-    
-    // Then check if we can fall back to English for Arabic
-    if (language === 'ar' && translations['en'][key as keyof typeof enTranslations]) {
-      console.log(`Using English fallback for missing Arabic translation: ${key}`);
-      return translations['en'][key as keyof typeof enTranslations];
-    }
-    
-    return null;
-  };
+  }, [language, isChangingLanguage]);
   
   const t = (key: string): string => {
     if (!key || typeof key !== 'string') {
-      console.error('Invalid translation key:', key);
+      console.error('[useTranslation] Invalid translation key:', key);
       return 'Invalid Key';
     }
 
     try {
-      // Make sure we have translations for this language
-      if (!translations[language]) {
-        if (!missingKeys.has(`language_${language}`)) {
-          console.error(`No translations found for language: ${language}`);
-          setMissingKeys(prev => new Set([...prev, `language_${language}`]));
-        }
-        // Fall back to English if language not found
-        const fallback = translations['en'][key as keyof typeof enTranslations] || DEFAULT_FALLBACKS[key] || key;
-        return fallback;
-      }
-      
       // Use direct access to get translation value for better performance
       const translationValue = getTranslationValue(language as 'en' | 'ar', key, '');
       
@@ -160,25 +134,21 @@ export const useTranslation = () => {
         return translationValue;
       }
       
-      // Check if the key exists in the translations
-      if (!translations[language][key as keyof typeof translations[typeof language]]) {
-        // Try to get fallback translation
-        const fallbackTranslation = getFallbackTranslation(key);
-        if (fallbackTranslation) return fallbackTranslation;
-
-        if (!missingKeys.has(key)) {
-          console.warn(`Translation key not found: ${key} in language: ${language}`);
-          setMissingKeys(prev => new Set([...prev, key]));
-        }
-        
-        // Return the key as fallback
-        return DEFAULT_FALLBACKS[key] || key;
+      // If no translation value was found, try to get a fallback
+      if (DEFAULT_FALLBACKS[key]) {
+        return DEFAULT_FALLBACKS[key];
       }
       
-      // Return the translation value
-      return translations[language][key as keyof typeof translations[typeof language]];
+      // Log missing keys
+      if (!missingKeys.has(key)) {
+        console.warn(`[useTranslation] Missing translation for key: ${key} in language: ${language}`);
+        setMissingKeys(prev => new Set([...prev, key]));
+      }
+      
+      // Return the key as fallback
+      return key;
     } catch (error) {
-      console.error(`Error retrieving translation for key: ${key}`, error);
+      console.error(`[useTranslation] Error retrieving translation for key: ${key}`, error);
       return DEFAULT_FALLBACKS[key] || key;
     }
   };
@@ -187,6 +157,10 @@ export const useTranslation = () => {
     t, 
     language, 
     isChangingLanguage,
-    translationsLoaded
+    translationsLoaded,
+    refreshTranslations: () => {
+      forceRefreshTranslations();
+      translationVersion.current = Date.now();
+    }
   };
 };

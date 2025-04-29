@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState } from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
@@ -7,13 +6,13 @@ import { Head } from '@/components/Head';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Analytics } from '@/services/analytics';
-import { preloadTranslations } from '@/utils/translationPreloader';
+import { preloadTranslations, forceRefreshTranslations } from '@/utils/translationPreloader';
 import confetti from 'canvas-confetti';
 
 const Confirmation = () => {
   // Custom hook to get language
   const { language } = useLanguage();
-  const { t, translationsLoaded } = useTranslation();
+  const { t, translationsLoaded, refreshTranslations } = useTranslation();
   const location = useLocation();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
@@ -23,7 +22,8 @@ const Confirmation = () => {
     referralCode = '', 
     position = 0, 
     points = 100,
-    variant = 'speed' // Default to speed if not provided
+    variant = 'speed', // Default to speed if not provided
+    forceTranslationRefresh = false // New flag to force translation refresh
   } = location.state || {};
 
   // Get the variant from the URL if available
@@ -40,24 +40,67 @@ const Confirmation = () => {
   
   // Preload translations and check if they're ready
   useEffect(() => {
-    // Force translation preloading
-    const translations = preloadTranslations();
-    console.log("Preloaded translations on Confirmation page mount");
+    console.log("[Confirmation] Component mounting, checking translations");
     
-    // Log translation debugging info
-    console.log("Current language:", language);
-    console.log("Translation test - title:", t('confirmation.title'));
-    console.log("Translation test - subtitle:", t('confirmation.subtitle'));
-    console.log("Translation test - referral_title:", t('confirmation.referral_title'));
-    console.log("Translation test - points_title:", t('confirmation.points_title'));
-    console.log("Variant from URL:", currentVariant);
-    console.log("Position value:", position);
+    const loadAndVerifyTranslations = async () => {
+      // If flag is set, force refresh translations
+      if (forceTranslationRefresh) {
+        console.log("[Confirmation] Force refreshing translations");
+        forceRefreshTranslations();
+      } else {
+        // Otherwise ensure translations are preloaded
+        console.log("[Confirmation] Ensuring translations are preloaded");
+        preloadTranslations();
+      }
+      
+      // Force translation preloading
+      console.log("[Confirmation] Translation status:", translationsLoaded ? "loaded" : "not loaded");
+      
+      // Log translation debugging info
+      console.log("[Confirmation] Current language:", language);
+      console.log("[Confirmation] Translation test - title:", t('confirmation.title'));
+      console.log("[Confirmation] Translation test - subtitle:", t('confirmation.subtitle'));
+      console.log("[Confirmation] Translation test - referral_title:", t('confirmation.referral_title'));
+      console.log("[Confirmation] Translation test - points_title:", t('confirmation.points_title'));
+      
+      // Check for missing translations
+      const checkTranslationKeys = [
+        'confirmation.title',
+        'confirmation.subtitle', 
+        'confirmation.position_message',
+        'confirmation.referral_title',
+        'confirmation.referral_description',
+        'confirmation.copy',
+        'confirmation.share',
+        'confirmation.points_title',
+        'confirmation.points_description',
+        'confirmation.points',
+        'back.home'
+      ];
+      
+      let missingTranslations = false;
+      
+      checkTranslationKeys.forEach(key => {
+        const value = t(key);
+        if (value === key) {
+          console.error(`[Confirmation] Missing translation for key: ${key}`);
+          missingTranslations = true;
+        }
+      });
+      
+      if (missingTranslations) {
+        console.log("[Confirmation] Refreshing translations due to missing keys");
+        refreshTranslations();
+      }
+      
+      // Set loading state to false after translations are verified
+      setTimeout(() => {
+        setIsLoading(false);
+      }, 100);
+    };
     
-    // Set loading state to false after translations are loaded
-    setTimeout(() => {
-      setIsLoading(false);
-    }, 100);
-  }, [language, t, currentVariant, position, translationsLoaded]);
+    loadAndVerifyTranslations();
+  }, [language, t, currentVariant, position, translationsLoaded, forceTranslationRefresh, refreshTranslations]);
 
   useEffect(() => {
     // Fire confetti when the component mounts
@@ -141,7 +184,7 @@ const Confirmation = () => {
           className="h-16 mb-6"
         />
         <div className="text-center">
-          <p className="text-gray-600">Loading...</p>
+          <p className="text-gray-600">{t('loading') || 'Loading...'}</p>
         </div>
       </div>
     );

@@ -8,7 +8,10 @@ let cachedTranslations: {
   ar: Record<string, string>;
 } | null = null;
 
-// This function forces webpack/vite to load the translation files
+// Track if we've already preloaded translations
+let translationsPreloaded = false;
+
+// Force preload translations immediately on import
 export const preloadTranslations = () => {
   // If we already have cached translations, return them
   if (cachedTranslations) {
@@ -16,40 +19,7 @@ export const preloadTranslations = () => {
     return cachedTranslations;
   }
   
-  // Log the number of translation keys to ensure they're loaded
-  console.log(`Preloading translations - EN: ${Object.keys(enTranslations).length} keys, AR: ${Object.keys(arTranslations).length} keys`);
-  
-  // Force access to critical confirmation page keys
-  const criticalKeys = [
-    'confirmation.title',
-    'confirmation.subtitle',
-    'confirmation.position_message',
-    'confirmation.referral_title',
-    'confirmation.referral_description',
-    'confirmation.copy',
-    'confirmation.share',
-    'confirmation.points_title',
-    'confirmation.points_description',
-    'confirmation.points',
-    'back.home'
-  ];
-  
-  // Log each critical key for debugging
-  criticalKeys.forEach(key => {
-    // Check if the key exists in English translations
-    const enValue = (enTranslations as Record<string, string>)[key];
-    const arValue = (arTranslations as Record<string, string>)[key];
-    
-    console.log(`EN '${key}' = ${enValue || 'MISSING!'}`);
-    console.log(`AR '${key}' = ${arValue || 'MISSING!'}`);
-    
-    if (!enValue) {
-      console.error(`Missing critical English translation key: ${key}`);
-    }
-    if (!arValue) {
-      console.error(`Missing critical Arabic translation key: ${key}`);
-    }
-  });
+  console.log('Preloading translations - Initial load');
   
   // Cache the translations
   cachedTranslations = {
@@ -57,13 +27,29 @@ export const preloadTranslations = () => {
     ar: arTranslations
   };
   
+  // Log the number of translation keys to ensure they're loaded
+  console.log(`Translation keys loaded - EN: ${Object.keys(cachedTranslations.en).length} keys, AR: ${Object.keys(cachedTranslations.ar).length} keys`);
+  
+  // Mark as preloaded
+  translationsPreloaded = true;
+  
   return cachedTranslations;
 };
 
-// Preload translations immediately when this file is imported
-preloadTranslations();
+// Special function to forcibly refresh translations
+export const forceRefreshTranslations = () => {
+  console.log('Forcing translation refresh');
+  cachedTranslations = null;
+  translationsPreloaded = false;
+  return preloadTranslations();
+};
 
-// Export a function to get a translation value directly
+// Check if translations are already preloaded
+export const areTranslationsPreloaded = () => {
+  return translationsPreloaded;
+};
+
+// Export a function to get a translation value directly with improved logging for missing keys
 export const getTranslationValue = (
   language: 'en' | 'ar',
   key: string,
@@ -73,7 +59,7 @@ export const getTranslationValue = (
   const translations = preloadTranslations();
   
   // Get the translation value
-  const value = (translations[language] as Record<string, string>)[key];
+  const value = translations[language][key];
   
   // If we have a value, return it
   if (value) {
@@ -86,6 +72,9 @@ export const getTranslationValue = (
     return translations.en[key];
   }
   
+  // Log missing translation keys
+  console.warn(`Missing translation key: ${key} in language: ${language}`);
+  
   // Return fallback
   return fallback;
 };
@@ -94,3 +83,6 @@ export const getTranslationValue = (
 export const getTranslations = () => {
   return preloadTranslations();
 };
+
+// Preload translations immediately when this file is imported
+preloadTranslations();

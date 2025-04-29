@@ -1,10 +1,10 @@
-
 import { useState } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Analytics } from '@/services/analytics';
 import { useTranslation } from '@/hooks/useTranslation';
+import { preloadTranslations } from '@/utils/translationPreloader';
 import type { Tables } from '@/integrations/supabase/types';
 
 interface FormData {
@@ -45,6 +45,10 @@ export const useWaitlistSubmission = () => {
     try {
       // Get variant from the form data or extract from the URL
       const variant = formData.variant || getVariant();
+      
+      // Preload translations before submitting to ensure they're available on confirmation page
+      console.log('[useWaitlistSubmission] Preloading translations before form submission');
+      preloadTranslations();
       
       // Get initial alias for the user
       const { data: displayAlias, error: aliasError } = await supabase.rpc('generate_display_alias');
@@ -104,20 +108,29 @@ export const useWaitlistSubmission = () => {
         variant
       });
       
+      // Force preload translations again before navigation
+      console.log('[useWaitlistSubmission] Force preloading translations before navigation');
+      preloadTranslations();
+      
       // Get the current path and append /confirmation to it
       const confirmationPath = `/${language}/${variant}/waitlist-signup/confirmation`;
       
+      // Pre-verify key translation availability
+      console.log(`[useWaitlistSubmission] Pre-navigation translation check: confirmation.title = ${t('confirmation.title')}`);
+      
+      // Navigate to confirmation page with state
       navigate(confirmationPath, { 
         state: { 
           referralCode: referralCodeData,
           position: positionData,
           points: 100, // Pass initial points to confirmation page
           statusId: user?.status_id, // Use optional chaining to handle possibly null user
-          variant // Pass the variant to the confirmation page
+          variant, // Pass the variant to the confirmation page
+          forceTranslationRefresh: true // Add flag to force translation refresh on the confirmation page
         }
       });
     } catch (error: any) {
-      console.error('Error joining waitlist:', error);
+      console.error('[useWaitlistSubmission] Error joining waitlist:', error);
       toast({
         title: "Error",
         description: error.message || "Failed to join waitlist. Please try again.",

@@ -40,6 +40,7 @@
     "select.bank": "Select your preferred bank for financing",
     "continue.bank": "Continue with Selected Bank",
     "security.message": "Your information is secure and will only be used to process your financing application",
+    "loading": "Loading translations...",
     
     "waitlist.title": "Join the Waitlist",
     "waitlist.description": "Be the first to access Shariah-compliant auto financing",
