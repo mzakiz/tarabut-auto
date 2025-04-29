@@ -1,3 +1,4 @@
+
 import type {
   BaseAnalyticsProperties,
   ViewEventProperties,
@@ -137,6 +138,13 @@ export const Analytics = {
     if (window.analytics) {
       window.analytics.track('Encountered: Error', props);
       console.log('Encountered: Error', props);
+    }
+  },
+  
+  // Alias for page method to maintain compatibility with existing code
+  trackPageViewed: (props: ViewEventProperties) => {
+    if (window.analytics) {
+      Analytics.page(props.page || 'unknown_page', props);
     }
   }
 };

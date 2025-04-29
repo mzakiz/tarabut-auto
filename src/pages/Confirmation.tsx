@@ -1,8 +1,9 @@
+
 import React from 'react';
 import { useLocation, useNavigate } from 'react-router-dom';
 import { Button } from '@/components/ui/button';
 import { ArrowLeft } from '@/components/ui/arrow-left';
-import { ReferralLeaderboard } from '@/components/waitlist/ReferralLeaderboard';
+import ReferralLeaderboard from '@/components/waitlist/ReferralLeaderboard';
 import { Head } from '@/components/Head';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
@@ -45,8 +46,7 @@ const Confirmation = () => {
     });
 
     // Track page view with variant info
-    Analytics.trackPageViewed({
-      page: 'waitlist_confirmation',
+    Analytics.page('waitlist_confirmation', {
       language,
       variant: currentVariant
     });
@@ -192,7 +192,7 @@ const Confirmation = () => {
           </p>
         </div>
         
-        <ReferralLeaderboard />
+        <ReferralLeaderboard users={[]} />
       </div>
     </div>
   );

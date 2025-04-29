@@ -14,7 +14,7 @@ interface ReferralLeaderboardProps {
   users: LeaderboardUser[];
 }
 
-const ReferralLeaderboard = ({ users }: ReferralLeaderboardProps) => {
+const ReferralLeaderboard = ({ users = [] }: ReferralLeaderboardProps) => {
   const { t } = useTranslation();
   
   const getRankIcon = (index: number) => {
@@ -46,18 +46,26 @@ const ReferralLeaderboard = ({ users }: ReferralLeaderboardProps) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.map((user, index) => (
-              <TableRow key={user.display_alias}>
-                <TableCell className="font-medium">
-                  <div className="flex items-center justify-center">
-                    {getRankIcon(index)}
-                  </div>
+            {users.length > 0 ? (
+              users.map((user, index) => (
+                <TableRow key={user.display_alias}>
+                  <TableCell className="font-medium">
+                    <div className="flex items-center justify-center">
+                      {getRankIcon(index)}
+                    </div>
+                  </TableCell>
+                  <TableCell>{user.display_alias}</TableCell>
+                  <TableCell className="text-right">{user.points}</TableCell>
+                  <TableCell className="text-right">{t(`tier.${user.tier.toLowerCase().replace(' ', '_')}`)}</TableCell>
+                </TableRow>
+              ))
+            ) : (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-4 text-gray-500">
+                  {t('leaderboard.no_data') || 'No leaderboard data available yet'}
                 </TableCell>
-                <TableCell>{user.display_alias}</TableCell>
-                <TableCell className="text-right">{user.points}</TableCell>
-                <TableCell className="text-right">{t(`tier.${user.tier.toLowerCase().replace(' ', '_')}`)}</TableCell>
               </TableRow>
-            ))}
+            )}
           </TableBody>
         </Table>
       </div>

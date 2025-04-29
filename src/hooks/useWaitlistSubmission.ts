@@ -56,19 +56,22 @@ export const useWaitlistSubmission = () => {
       const { data: referralCodeData, error: referralCodeError } = await supabase.rpc('generate_referral_code');
       if (referralCodeError) throw referralCodeError;
       
+      // Create the user data object with proper typing
+      const userData = {
+        name: formData.name,
+        email: formData.email,
+        phone: `+966${formData.phoneNumber}`,
+        referral_code: referralCodeData,
+        referrer_code: formData.referralCode || null,
+        position: positionData,
+        display_alias: displayAlias,
+        points: 100, // Initial points
+        variant: variant // Store which variant the user signed up from
+      } as unknown as Tables<'waitlist_users'>;
+      
       const { data: user, error } = await supabase
         .from('waitlist_users')
-        .insert({
-          name: formData.name,
-          email: formData.email,
-          phone: `+966${formData.phoneNumber}`,
-          referral_code: referralCodeData,
-          referrer_code: formData.referralCode || null,
-          position: positionData,
-          display_alias: displayAlias,
-          points: 100, // Initial points
-          variant: variant // Store which variant the user signed up from
-        } as Tables<'waitlist_users'>)
+        .insert(userData)
         .select('position, points, referral_code, status_id')
         .single();
       
