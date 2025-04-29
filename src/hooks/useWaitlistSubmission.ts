@@ -1,6 +1,6 @@
 
 import { useState } from 'react';
-import { useNavigate, useLocation } from 'react-router-dom';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Analytics } from '@/services/analytics';
@@ -12,19 +12,40 @@ interface FormData {
   email: string;
   phoneNumber: string;
   referralCode: string;
+  variant?: string; // Add variant as an optional parameter
 }
 
 export const useWaitlistSubmission = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
   const location = useLocation();
+  const params = useParams();
   const { toast } = useToast();
   const { t, language } = useTranslation();
+
+  // Extract variant from URL params or pathname
+  const getVariant = () => {
+    // First try to get it from the URL parameters
+    if (params.variant) {
+      return params.variant;
+    }
+    
+    // If not available in params, extract from pathname
+    const pathParts = location.pathname.split('/');
+    const variantIndex = pathParts.findIndex(part => 
+      part === 'speed' || part === 'offer' || part === 'budget'
+    );
+    
+    return variantIndex !== -1 ? pathParts[variantIndex] : 'speed';
+  };
 
   const handleSubmit = async (formData: FormData) => {
     setIsSubmitting(true);
     
     try {
+      // Get variant from the form data or extract from the URL
+      const variant = formData.variant || getVariant();
+      
       // Get initial alias for the user
       const { data: displayAlias, error: aliasError } = await supabase.rpc('generate_display_alias');
       if (aliasError) throw aliasError;
@@ -45,7 +66,8 @@ export const useWaitlistSubmission = () => {
           referrer_code: formData.referralCode || null,
           position: positionData,
           display_alias: displayAlias,
-          points: 100 // Initial points
+          points: 100, // Initial points
+          variant: variant // Store which variant the user signed up from
         } as Tables<'waitlist_users'>)
         .select('position, points, referral_code, status_id')
         .single();
@@ -75,19 +97,20 @@ export const useWaitlistSubmission = () => {
       Analytics.trackWaitlistFormSubmitted({
         success: true,
         language,
-        screen: 'waitlist_form'
+        screen: 'waitlist_form',
+        variant
       });
       
       // Get the current path and append /confirmation to it
-      const currentPath = location.pathname;
-      const confirmationPath = `${currentPath}/confirmation`;
+      const confirmationPath = `/${language}/${variant}/waitlist-signup/confirmation`;
       
       navigate(confirmationPath, { 
         state: { 
           referralCode: referralCodeData,
           position: positionData,
           points: 100, // Pass initial points to confirmation page
-          statusId: user?.status_id // Use optional chaining to handle possibly null user
+          statusId: user?.status_id, // Use optional chaining to handle possibly null user
+          variant // Pass the variant to the confirmation page
         }
       });
     } catch (error: any) {
@@ -101,7 +124,8 @@ export const useWaitlistSubmission = () => {
       Analytics.trackFormSubmissionFailed({
         reason: 'server_error',
         screen: 'waitlist_form',
-        language
+        language,
+        variant: formData.variant || getVariant()
       });
     } finally {
       setIsSubmitting(false);

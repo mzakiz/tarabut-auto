@@ -1,6 +1,6 @@
 
-import React, { useState } from 'react';
-import { useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/waitlist/FormField';
@@ -18,18 +18,39 @@ const WaitlistSignup: React.FC = () => {
   const [formTouched, setFormTouched] = useState<Record<string, boolean>>({});
   
   const navigate = useNavigate();
+  const location = useLocation();
+  const params = useParams();
   const { language } = useLanguage();
   const { t } = useTranslation();
   const { validationErrors, validateField } = useWaitlistValidation();
   const { isSubmitting, handleSubmit } = useWaitlistSubmission();
+  
+  // Extract variant from URL params or pathname
+  const getVariant = () => {
+    // First try to get it from the URL parameters
+    if (params.variant) {
+      return params.variant;
+    }
+    
+    // If not available in params, extract from pathname
+    const pathParts = location.pathname.split('/');
+    const variantIndex = pathParts.findIndex(part => 
+      part === 'speed' || part === 'offer' || part === 'budget'
+    );
+    
+    return variantIndex !== -1 ? pathParts[variantIndex] : 'speed';
+  };
+  
+  const variant = getVariant();
 
-  useAnalyticsPage('Waitlist Form', { language });
+  useAnalyticsPage('Waitlist Form', { language, variant });
 
   const handleFieldFocus = (fieldName: string) => {
     Analytics.trackFormFieldEntered({
       field_name: fieldName,
       screen: 'waitlist_form',
-      language
+      language,
+      variant
     });
   };
   
@@ -40,7 +61,8 @@ const WaitlistSignup: React.FC = () => {
       Analytics.trackFormFieldLeftBlank({
         field_name: fieldName,
         screen: 'waitlist_form',
-        language
+        language,
+        variant
       });
     }
 
@@ -49,7 +71,13 @@ const WaitlistSignup: React.FC = () => {
   
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    await handleSubmit({ name, email, phoneNumber, referralCode });
+    await handleSubmit({ 
+      name, 
+      email, 
+      phoneNumber, 
+      referralCode,
+      variant // Pass the variant to the submission handler
+    });
   };
   
   const handleBack = () => {
@@ -58,9 +86,12 @@ const WaitlistSignup: React.FC = () => {
       element_location: 'waitlist_form',
       element_context: 'back_to_home',
       screen: 'waitlist_form',
-      language
+      language,
+      variant
     });
-    navigate('/');
+    
+    // Navigate back to the variant-specific home page
+    navigate(`/${language}/${variant}`);
   };
 
   return (

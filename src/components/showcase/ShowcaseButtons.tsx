@@ -16,6 +16,7 @@ const ShowcaseButtons: React.FC<ShowcaseButtonsProps> = ({ onWaitlistCTAClick })
   const location = useLocation();
   const { language } = useLanguage();
 
+  // Get current path details including language and variant
   const getPathDetails = () => {
     const pathParts = location.pathname.split('/');
     return {
