@@ -9,6 +9,7 @@ import { useWaitlistSubmission } from '@/hooks/useWaitlistSubmission';
 import { useAnalyticsPage, Analytics } from '@/services/analytics';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
+import { preloadAllTranslations, storeTranslationsInSession } from '@/utils/translationPreloader';
 
 const WaitlistSignup: React.FC = () => {
   const [name, setName] = useState('');
@@ -24,6 +25,12 @@ const WaitlistSignup: React.FC = () => {
   const { t } = useTranslation();
   const { validationErrors, validateField } = useWaitlistValidation();
   const { isSubmitting, handleSubmit } = useWaitlistSubmission();
+  
+  // Force preload translations
+  useEffect(() => {
+    preloadAllTranslations();
+    storeTranslationsInSession();
+  }, []);
   
   // Extract variant from URL params or pathname
   const getVariant = () => {
@@ -71,6 +78,11 @@ const WaitlistSignup: React.FC = () => {
   
   const handleFormSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
+    
+    // Make sure translations are preloaded before submission
+    preloadAllTranslations();
+    storeTranslationsInSession();
+    
     await handleSubmit({ 
       name, 
       email, 

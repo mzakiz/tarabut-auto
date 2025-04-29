@@ -15,8 +15,8 @@ const GLOBAL_TRANSLATIONS: TranslationsStore = {
 
 // Load status tracking to prevent repeated loading attempts
 const LOADING_STATUS = {
-  initialized: false,
-  ready: false
+  initialized: true, // Set to true by default to prevent initialization issues
+  ready: true // Also set to true to indicate translations are always ready
 };
 
 // Store version to track changes for component re-renders
@@ -41,6 +41,9 @@ export const preloadAllTranslations = (): void => {
     LOADING_STATUS.initialized = true;
     LOADING_STATUS.ready = true;
     translationVersion = Date.now();
+    
+    // Always store in session storage for persistence
+    storeTranslationsInSession();
   } catch (error) {
     console.error('[TranslationPreloader] Error during forced preload:', error);
   }

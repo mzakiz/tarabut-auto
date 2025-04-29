@@ -24,6 +24,7 @@ const Confirmation = () => {
   const location = useLocation();
   const navigate = useNavigate();
   const [isLoading, setIsLoading] = useState(true);
+  const [confettiShown, setConfettiShown] = useState(false);
   const [searchParams] = useSearchParams();
 
   // Get parameters from URL query params
@@ -67,12 +68,15 @@ const Confirmation = () => {
       console.log('[Confirmation] Finished loading. Displaying content.');
       setIsLoading(false);
       
-      // Fire confetti after loading
-      confetti({
-        particleCount: 100,
-        spread: 70,
-        origin: { y: 0.6 }
-      });
+      // Only fire confetti once when the component mounts
+      if (!confettiShown) {
+        confetti({
+          particleCount: 100,
+          spread: 70,
+          origin: { y: 0.6 }
+        });
+        setConfettiShown(true);
+      }
       
       // Track page view
       Analytics.trackPageViewed({
@@ -155,11 +159,7 @@ const Confirmation = () => {
         />
         <div className="text-center">
           <p className="text-gray-600">
-            {typeof t('loading') === 'string' && t('loading') !== 'loading' 
-              ? t('loading') 
-              : language === 'ar' 
-                ? 'جاري تحميل الترجمات...' 
-                : 'Loading translations...'}
+            {language === 'ar' ? 'جاري التقديم...' : 'Submitting...'}
           </p>
         </div>
       </div>
