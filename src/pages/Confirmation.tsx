@@ -46,7 +46,8 @@ const Confirmation = () => {
     });
 
     // Track page view with variant info
-    Analytics.page('waitlist_confirmation', {
+    Analytics.trackPageViewed({
+      page_name: 'waitlist_confirmation',
       language,
       variant: currentVariant
     });

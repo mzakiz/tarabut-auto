@@ -141,10 +141,10 @@ export const Analytics = {
     }
   },
   
-  // Alias for page method to maintain compatibility with existing code
+  // Page view tracking (alias for page method)
   trackPageViewed: (props: ViewEventProperties) => {
     if (window.analytics) {
-      Analytics.page(props.page || 'unknown_page', props);
+      Analytics.page(props.page_name || 'unknown_page', props);
     }
   }
 };
