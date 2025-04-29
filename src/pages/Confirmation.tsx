@@ -143,12 +143,19 @@ const Confirmation = () => {
           <h1 className="text-3xl font-bold mb-4 text-gray-800">
             {t('confirmation.title')}
           </h1>
-          <p className="text-lg text-gray-600 mb-2">
+          <p className="text-lg text-gray-600 mb-6">
             {t('confirmation.subtitle')}
           </p>
-          <p className="text-sm text-gray-500">
-            {`${t('confirmation.position_message')} ${position}`}
-          </p>
+          
+          {/* Enhanced waitlist position display */}
+          <div className="bg-gray-50 py-6 px-4 rounded-lg shadow-sm mb-6">
+            <p className="text-lg font-medium text-gray-700 mb-2">
+              {t('confirmation.position_message').split('#')[0]}
+            </p>
+            <div className="flex justify-center items-center">
+              <span className="text-5xl font-bold text-tarabut-dark">{position}</span>
+            </div>
+          </div>
         </div>
         
         <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
