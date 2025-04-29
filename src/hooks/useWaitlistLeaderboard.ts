@@ -8,17 +8,25 @@ interface WaitlistUser {
   display_alias: string | null;
   points: number;
   tier?: string;
+  variant?: string;
 }
 
-export const useWaitlistLeaderboard = () => {
+export const useWaitlistLeaderboard = (variant?: string) => {
   return useQuery({
-    queryKey: ['waitlist-leaderboard'],
+    queryKey: ['waitlist-leaderboard', variant],
     queryFn: async () => {
-      const { data, error } = await supabase
+      let query = supabase
         .from('waitlist_users')
-        .select('display_alias, points')
+        .select('display_alias, points, variant')
         .order('points', { ascending: false })
         .limit(10);
+      
+      // Filter by variant if provided
+      if (variant) {
+        query = query.eq('variant', variant);
+      }
+
+      const { data, error } = await query;
 
       if (error) throw error;
       

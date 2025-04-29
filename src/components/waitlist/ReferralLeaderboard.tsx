@@ -1,21 +1,44 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Table, TableHeader, TableRow, TableHead, TableBody, TableCell } from '@/components/ui/table';
 import { Trophy, Crown, Medal } from 'lucide-react';
+import { useWaitlistLeaderboard } from '@/hooks/useWaitlistLeaderboard';
+import { useLocation } from 'react-router-dom';
 
 interface LeaderboardUser {
   display_alias: string;
   points: number;
   tier: string;
+  variant?: string;
 }
 
 interface ReferralLeaderboardProps {
-  users: LeaderboardUser[];
+  users?: LeaderboardUser[];
+  variant?: string;
 }
 
-const ReferralLeaderboard = ({ users = [] }: ReferralLeaderboardProps) => {
+const ReferralLeaderboard = ({ users = [], variant: propVariant }: ReferralLeaderboardProps) => {
   const { t } = useTranslation();
+  const location = useLocation();
+  
+  // Get variant from URL if not provided as prop
+  const getVariantFromUrl = () => {
+    const pathParts = location.pathname.split('/');
+    const variantIndex = pathParts.findIndex(part => 
+      part === 'speed' || part === 'offer' || part === 'budget'
+    );
+    
+    return variantIndex !== -1 ? pathParts[variantIndex] : 'speed';
+  };
+  
+  const variant = propVariant || getVariantFromUrl();
+  
+  // Use the hook if no users are provided
+  const { data: leaderboardData, isLoading } = useWaitlistLeaderboard(variant);
+  
+  // Use provided users or data from the hook
+  const displayUsers = users.length > 0 ? users : (leaderboardData || []);
   
   const getRankIcon = (index: number) => {
     switch(index) {
@@ -46,9 +69,15 @@ const ReferralLeaderboard = ({ users = [] }: ReferralLeaderboardProps) => {
             </TableRow>
           </TableHeader>
           <TableBody>
-            {users.length > 0 ? (
-              users.map((user, index) => (
-                <TableRow key={user.display_alias}>
+            {isLoading ? (
+              <TableRow>
+                <TableCell colSpan={4} className="text-center py-4">
+                  {t('leaderboard.loading') || 'Loading...'}
+                </TableCell>
+              </TableRow>
+            ) : displayUsers.length > 0 ? (
+              displayUsers.map((user, index) => (
+                <TableRow key={`${user.display_alias}-${index}`}>
                   <TableCell className="font-medium">
                     <div className="flex items-center justify-center">
                       {getRankIcon(index)}

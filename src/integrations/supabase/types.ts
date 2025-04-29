@@ -50,6 +50,7 @@ export type Database = {
           referrer_code: string | null
           status_id: string
           updated_at: string | null
+          variant: string | null
         }
         Insert: {
           created_at?: string | null
@@ -64,6 +65,7 @@ export type Database = {
           referrer_code?: string | null
           status_id?: string
           updated_at?: string | null
+          variant?: string | null
         }
         Update: {
           created_at?: string | null
@@ -78,6 +80,7 @@ export type Database = {
           referrer_code?: string | null
           status_id?: string
           updated_at?: string | null
+          variant?: string | null
         }
         Relationships: []
       }
