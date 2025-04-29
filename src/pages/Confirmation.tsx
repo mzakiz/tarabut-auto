@@ -7,9 +7,13 @@ import { Head } from '@/components/Head';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Analytics } from '@/services/analytics';
+import { initializeTranslations } from '@/utils/translationPreloader';
 import confetti from 'canvas-confetti';
 
 const Confirmation = () => {
+  // Initialize translations immediately
+  initializeTranslations();
+  
   // Custom hook to get language
   const { language } = useLanguage();
   const { t } = useTranslation();
@@ -18,7 +22,7 @@ const Confirmation = () => {
   const [isLoading, setIsLoading] = useState(true);
   const [searchParams] = useSearchParams();
 
-  // Get parameters from URL query params instead of location state
+  // Get parameters from URL query params
   const referralCode = searchParams.get('referralCode') || '';
   const position = parseInt(searchParams.get('position') || '0', 10);
   const points = parseInt(searchParams.get('points') || '100', 10); 
@@ -42,6 +46,7 @@ const Confirmation = () => {
     // Log page initialization
     console.log('[Confirmation] Page initializing');
     console.log('[Confirmation] Current language:', language);
+    console.log('[Confirmation] Page parameters:', { referralCode, position, points, variant });
 
     // Short timeout to ensure translations are ready
     const timer = setTimeout(() => {
@@ -53,7 +58,7 @@ const Confirmation = () => {
         spread: 70,
         origin: { y: 0.6 }
       });
-    }, 300);
+    }, 500);
 
     // Track page view with variant info
     Analytics.trackPageViewed({
@@ -63,7 +68,7 @@ const Confirmation = () => {
     });
 
     return () => clearTimeout(timer);
-  }, [language, currentVariant]);
+  }, [language, currentVariant, referralCode, position, points, variant]);
 
   // Function to copy referral code to clipboard
   const handleCopyClick = () => {
@@ -131,7 +136,13 @@ const Confirmation = () => {
           className="h-16 mb-6"
         />
         <div className="text-center">
-          <p className="text-gray-600">{t('loading')}</p>
+          <p className="text-gray-600">
+            {typeof t('loading') === 'string' && t('loading') !== 'loading' 
+              ? t('loading') 
+              : language === 'ar' 
+                ? 'جاري تحميل الترجمات...' 
+                : 'Loading translations...'}
+          </p>
         </div>
       </div>
     );

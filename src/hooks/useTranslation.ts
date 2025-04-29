@@ -1,9 +1,15 @@
-
 import { useLanguage } from '@/contexts/LanguageContext';
-import { useState, useEffect, useRef } from 'react';
-import { getTranslationValue, getTranslationVersion, refreshTranslationVersion } from '@/utils/translationPreloader';
+import { useState, useEffect, useRef, useMemo } from 'react';
+import {
+  getTranslationValue,
+  getTranslationVersion,
+  refreshTranslationVersion,
+  initializeTranslations,
+  areTranslationsReady
+} from '@/utils/translationPreloader';
 
 // Enhanced default fallbacks for common UI elements to prevent showing raw keys
+// Note: This is a subset - the full fallbacks array remains the same
 const DEFAULT_FALLBACKS: Record<string, string> = {
   // Waitlist related
   'waitlist.title': 'Join the Waitlist',
@@ -39,6 +45,7 @@ const DEFAULT_FALLBACKS: Record<string, string> = {
   'confirmation.position_message': 'Your position in waitlist: #',
   'confirmation.referral_title': 'Share Your Referral Code',
   'confirmation.referral_description': 'Share with friends to move up the waitlist and get exclusive rewards',
+  'confirmation.share_message': 'Join Tarabut Auto\'s waitlist using my referral code:',
   'confirmation.copy': 'Copy',
   'confirmation.share': 'Share',
   'confirmation.points_title': 'Your Waitlist Points',
@@ -48,12 +55,22 @@ const DEFAULT_FALLBACKS: Record<string, string> = {
 };
 
 /**
- * Custom hook for translations with improved performance
+ * Custom hook for translations with improved performance and reliability
  */
 export const useTranslation = () => {
   const { language, isChangingLanguage } = useLanguage();
+  const [isReady, setIsReady] = useState(() => areTranslationsReady());
   const [version, setVersion] = useState(() => getTranslationVersion());
   const missingKeys = useRef(new Set<string>());
+  
+  // Initialize translations on mount
+  useEffect(() => {
+    if (!isReady) {
+      initializeTranslations();
+      setIsReady(true);
+      setVersion(getTranslationVersion());
+    }
+  }, [isReady]);
   
   // Force re-render when language changes
   useEffect(() => {
@@ -65,44 +82,47 @@ export const useTranslation = () => {
   }, [language, isChangingLanguage]);
   
   /**
-   * Get translation for a key
+   * Get translation for a key with improved error handling
    */
-  const t = (key: string): string => {
-    if (!key || typeof key !== 'string') {
-      console.error('[useTranslation] Invalid translation key:', key);
-      return 'Invalid Key';
-    }
+  const t = useMemo(() => {
+    return (key: string): string => {
+      if (!key || typeof key !== 'string') {
+        console.error('[useTranslation] Invalid translation key:', key);
+        return 'Invalid Key';
+      }
 
-    try {
-      const translationValue = getTranslationValue(language as 'en' | 'ar', key, '');
-      
-      if (translationValue) {
-        return translationValue;
+      try {
+        const translationValue = getTranslationValue(language as 'en' | 'ar', key, '');
+        
+        if (translationValue) {
+          return translationValue;
+        }
+        
+        // If no translation value was found, try to get a fallback
+        if (DEFAULT_FALLBACKS[key]) {
+          return DEFAULT_FALLBACKS[key];
+        }
+        
+        // Log missing keys only once
+        if (!missingKeys.current.has(key)) {
+          console.warn(`[useTranslation] Missing translation for key: ${key} in language: ${language}`);
+          missingKeys.current.add(key);
+        }
+        
+        // Return the key as fallback
+        return key;
+      } catch (error) {
+        console.error(`[useTranslation] Error retrieving translation for key: ${key}`, error);
+        return DEFAULT_FALLBACKS[key] || key;
       }
-      
-      // If no translation value was found, try to get a fallback
-      if (DEFAULT_FALLBACKS[key]) {
-        return DEFAULT_FALLBACKS[key];
-      }
-      
-      // Log missing keys only once
-      if (!missingKeys.current.has(key)) {
-        console.warn(`[useTranslation] Missing translation for key: ${key} in language: ${language}`);
-        missingKeys.current.add(key);
-      }
-      
-      // Return the key as fallback
-      return key;
-    } catch (error) {
-      console.error(`[useTranslation] Error retrieving translation for key: ${key}`, error);
-      return DEFAULT_FALLBACKS[key] || key;
-    }
-  };
+    };
+  }, [language, version]);
   
   return { 
     t, 
     language,
     isChangingLanguage,
+    isTranslationReady: isReady,
     refreshTranslations: () => setVersion(refreshTranslationVersion())
   };
 };

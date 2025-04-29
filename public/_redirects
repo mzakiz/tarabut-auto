@@ -3,6 +3,9 @@
 /ar/*  /index.html  200
 /en/*  /index.html  200
 
+# Handle confirmation page directly
+/*/waitlist-signup/confirmation  /index.html  200
+
 # Base language redirects
 /ar    /ar/speed    301
 /en    /en/speed    301

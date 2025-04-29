@@ -5,7 +5,7 @@ import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Analytics } from '@/services/analytics';
 import { useTranslation } from '@/hooks/useTranslation';
-import { refreshTranslationVersion } from '@/utils/translationPreloader';
+import { initializeTranslations, refreshTranslationVersion } from '@/utils/translationPreloader';
 import type { Tables } from '@/integrations/supabase/types';
 
 interface FormData {
@@ -13,7 +13,7 @@ interface FormData {
   email: string;
   phoneNumber: string;
   referralCode: string;
-  variant?: string; // Add variant as an optional parameter
+  variant?: string;
 }
 
 export const useWaitlistSubmission = () => {
@@ -48,6 +48,7 @@ export const useWaitlistSubmission = () => {
       const variant = formData.variant || getVariant();
       
       // Ensure translation version is refreshed before navigation
+      initializeTranslations();
       refreshTranslationVersion();
       
       // Get initial alias for the user
@@ -108,21 +109,18 @@ export const useWaitlistSubmission = () => {
         variant
       });
       
-      // Instead of using React Router's navigate, use window.location for a full page load
-      // This ensures all scripts re-initialize and translations load properly
-      const confirmationPath = `/${language}/${variant}/waitlist-signup/confirmation`;
-      
       // Create a serialized state object to pass as query parameters
       const stateParams = new URLSearchParams({
-        referralCode: referralCodeData,
-        position: positionData.toString(),
-        points: '100',
+        referralCode: user?.referral_code || referralCodeData || '',
+        position: user?.position.toString() || positionData.toString(),
+        points: user?.points?.toString() || '100',
         statusId: user?.status_id || '',
         variant
       });
       
-      // Navigate to the confirmation page with query parameters instead of state
-      window.location.href = `${confirmationPath}?${stateParams.toString()}`;
+      // Use hard navigation to the confirmation page with query parameters
+      // This will trigger a full page reload which ensures all translations are loaded correctly
+      window.location.href = `/${language}/${variant}/waitlist-signup/confirmation?${stateParams.toString()}`;
       
     } catch (error: any) {
       console.error('[useWaitlistSubmission] Error joining waitlist:', error);
