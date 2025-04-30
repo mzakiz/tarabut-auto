@@ -152,9 +152,12 @@ export const useWaitlistSubmission = () => {
       
       // If the user was referred, track a successful referral conversion
       if (formData.referralCode) {
-        Analytics.track('Converted: Referral', {
+        // Fix: Replace the generic track method with a proper analytics method
+        // Analytics.track('Converted: Referral', {
+        Analytics.trackPageViewed({
+          page_name: 'Converted: Referral',
           referral_code: formData.referralCode,
-          new_user_email: formData.email,
+          screen: 'waitlist_form',
           language,
           variant
         });
