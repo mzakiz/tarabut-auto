@@ -43,6 +43,18 @@ export const useWaitlistSubmission = () => {
     
     return variantIndex !== -1 ? pathParts[variantIndex] : 'speed';
   };
+  
+  // Extract UTM parameters from URL
+  const getUtmParams = () => {
+    const urlParams = new URLSearchParams(window.location.search);
+    return {
+      utm_source: urlParams.get('utm_source') || undefined,
+      utm_medium: urlParams.get('utm_medium') || undefined,
+      utm_campaign: urlParams.get('utm_campaign') || undefined,
+      utm_content: urlParams.get('utm_content') || undefined,
+      utm_term: urlParams.get('utm_term') || undefined,
+    };
+  };
 
   const handleSubmit = async (formData: FormData) => {
     setIsSubmitting(true);
@@ -58,6 +70,10 @@ export const useWaitlistSubmission = () => {
       
       // Get variant from the form data or extract from the URL
       const variant = formData.variant || getVariant();
+      
+      // Get UTM parameters for attribution
+      const utmParams = getUtmParams();
+      const sessionId = sessionStorage.getItem('analytics_session_id');
       
       // Get initial alias for the user
       const { data: displayAlias, error: aliasError } = await supabase.rpc('generate_display_alias');
@@ -79,7 +95,13 @@ export const useWaitlistSubmission = () => {
         position: positionData,
         display_alias: displayAlias,
         points: 100, // Initial points
-        variant: variant // Store which variant the user signed up from
+        variant: variant, // Store which variant the user signed up from
+        utm_source: utmParams.utm_source,
+        utm_medium: utmParams.utm_medium, 
+        utm_campaign: utmParams.utm_campaign,
+        utm_content: utmParams.utm_content,
+        utm_term: utmParams.utm_term,
+        session_id: sessionId
       } as unknown as Tables<'waitlist_users'>;
       
       const { data: user, error } = await supabase
@@ -97,6 +119,14 @@ export const useWaitlistSubmission = () => {
             .maybeSingle();
 
           if (existingUser) {
+            // Track existing user attempt
+            Analytics.trackFormSubmissionFailed({
+              reason: 'email_already_exists',
+              screen: 'waitlist_form',
+              language,
+              variant
+            });
+            
             // Redirect to waitlist status page instead of showing a toast
             navigate(`/waitlist-status/${existingUser.status_id}`);
             return;
@@ -110,12 +140,25 @@ export const useWaitlistSubmission = () => {
         description: t('form.added')
       });
       
+      // Track successful waitlist submission
       Analytics.trackWaitlistFormSubmitted({
         success: true,
         language,
         screen: 'waitlist_form',
-        variant
+        variant,
+        has_referral: !!formData.referralCode,
+        form_name: 'waitlist'
       });
+      
+      // If the user was referred, track a successful referral conversion
+      if (formData.referralCode) {
+        Analytics.track('Converted: Referral', {
+          referral_code: formData.referralCode,
+          new_user_email: formData.email,
+          language,
+          variant
+        });
+      }
       
       // Store necessary data in sessionStorage for confirmation page
       sessionStorage.setItem('waitlist_referralCode', user?.referral_code || referralCodeData || '');
@@ -152,6 +195,7 @@ export const useWaitlistSubmission = () => {
         variant: "destructive"
       });
       
+      // Track form submission failure
       Analytics.trackFormSubmissionFailed({
         reason: 'server_error',
         screen: 'waitlist_form',

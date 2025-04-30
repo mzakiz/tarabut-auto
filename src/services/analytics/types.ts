@@ -6,6 +6,15 @@ export interface BaseAnalyticsProperties {
   screen?: string;
   waitlist_position?: number;
   has_referral?: boolean;
+  session_id?: string;
+  user_id?: string;
+  timestamp?: number;
+  utm_source?: string;
+  utm_medium?: string;
+  utm_campaign?: string;
+  utm_content?: string;
+  utm_term?: string;
+  referrer?: string;
 }
 
 export interface CTAClickedProperties extends BaseAnalyticsProperties {
@@ -19,6 +28,7 @@ export interface LanguageSwitchedProperties extends BaseAnalyticsProperties {
 
 export interface SectionScrolledProperties extends BaseAnalyticsProperties {
   section: string;
+  scroll_depth?: number; // Percentage of section scrolled
 }
 
 export interface FormFieldProperties extends BaseAnalyticsProperties {
@@ -32,6 +42,8 @@ export interface FormDropdownProperties extends BaseAnalyticsProperties {
 
 export interface FormSubmittedProperties extends BaseAnalyticsProperties {
   success: boolean;
+  form_name?: string;
+  time_to_complete?: number; // Time from form_start to form_submit in seconds
 }
 
 export interface FormSubmissionFailedProperties extends BaseAnalyticsProperties {
@@ -41,6 +53,12 @@ export interface FormSubmissionFailedProperties extends BaseAnalyticsProperties 
 
 export interface ReferralSharedProperties extends BaseAnalyticsProperties {
   method: string;
+  referral_code: string;
+}
+
+export interface ReferralClickedProperties extends BaseAnalyticsProperties {
+  referral_code: string;
+  referring_user_id?: string;
 }
 
 export interface DeviceDetectedProperties extends BaseAnalyticsProperties {
@@ -72,6 +90,28 @@ export interface ErrorProperties extends BaseAnalyticsProperties {
   error_type: string;
   error_message: string;
   component?: string;
+}
+
+export interface ScrollDepthProperties extends BaseAnalyticsProperties {
+  depth: number; // 25, 50, 75, or 100 percent
+  page_path: string;
+}
+
+export interface SessionProperties extends BaseAnalyticsProperties {
+  duration_seconds?: number;
+  pages_viewed?: number;
+  is_bounce?: boolean;
+  landing_page?: string;
+  exit_page?: string;
+}
+
+export interface FormViewProperties extends BaseAnalyticsProperties {
+  form_name: string;
+}
+
+export interface FormStartProperties extends BaseAnalyticsProperties {
+  form_name: string;
+  first_field: string;
 }
 
 // View events properties

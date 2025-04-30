@@ -6,7 +6,7 @@ import { Button } from '@/components/ui/button';
 import { FormField } from '@/components/waitlist/FormField';
 import { useWaitlistValidation } from '@/hooks/useWaitlistValidation';
 import { useWaitlistSubmission } from '@/hooks/useWaitlistSubmission';
-import { useAnalyticsPage, Analytics } from '@/services/analytics';
+import { useAnalyticsPage, Analytics, useFormAnalytics, useScrollDepthTracking } from '@/services/analytics';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { preloadAllTranslations, storeTranslationsInSession } from '@/utils/translationPreloader';
@@ -26,12 +26,6 @@ const WaitlistSignup: React.FC = () => {
   const { validationErrors, validateField } = useWaitlistValidation();
   const { isSubmitting, handleSubmit } = useWaitlistSubmission();
   
-  // Force preload translations
-  useEffect(() => {
-    preloadAllTranslations();
-    storeTranslationsInSession();
-  }, []);
-  
   // Extract variant from URL params or pathname
   const getVariant = () => {
     // First try to get it from the URL parameters
@@ -49,31 +43,53 @@ const WaitlistSignup: React.FC = () => {
   };
   
   const variant = getVariant();
-
-  useAnalyticsPage('Waitlist Form', { language, variant });
+  
+  // Initialize referral code from URL parameters if available
+  useEffect(() => {
+    const urlParams = new URLSearchParams(window.location.search);
+    const refCode = urlParams.get('ref');
+    if (refCode) {
+      setReferralCode(refCode);
+    }
+  }, []);
+  
+  // Force preload translations
+  useEffect(() => {
+    preloadAllTranslations();
+    storeTranslationsInSession();
+  }, []);
+  
+  // Track page view
+  useAnalyticsPage('Waitlist Form', { 
+    language, 
+    variant,
+    screen: 'waitlist_form' 
+  });
+  
+  // Track scroll depth
+  useScrollDepthTracking();
+  
+  // Use form analytics hook
+  const { 
+    trackFieldFocus,
+    trackFieldBlur,
+    trackFormSubmit,
+    trackFormError
+  } = useFormAnalytics('waitlist_form');
 
   const handleFieldFocus = (fieldName: string) => {
-    Analytics.trackFormFieldEntered({
-      field_name: fieldName,
-      screen: 'waitlist_form',
-      language,
-      variant
-    });
+    trackFieldFocus(fieldName);
   };
   
   const handleFieldBlur = async (fieldName: string, value: string) => {
     setFormTouched(prev => ({ ...prev, [fieldName]: true }));
     
-    if (!value && fieldName !== 'referralCode') {
-      Analytics.trackFormFieldLeftBlank({
-        field_name: fieldName,
-        screen: 'waitlist_form',
-        language,
-        variant
-      });
+    trackFieldBlur(fieldName, value);
+    
+    const error = await validateField(fieldName, value);
+    if (error) {
+      trackFormError(`validation_error_${fieldName}`, fieldName);
     }
-
-    await validateField(fieldName, value);
   };
   
   const handleFormSubmit = async (e: React.FormEvent) => {
@@ -83,13 +99,35 @@ const WaitlistSignup: React.FC = () => {
     preloadAllTranslations();
     storeTranslationsInSession();
     
-    await handleSubmit({ 
-      name, 
-      email, 
-      phoneNumber, 
-      referralCode,
-      variant // Pass the variant to the submission handler
-    });
+    try {
+      await handleSubmit({ 
+        name, 
+        email, 
+        phoneNumber, 
+        referralCode,
+        variant // Pass the variant to the submission handler
+      });
+      
+      // Track successful form submission
+      trackFormSubmit(true, { 
+        variant,
+        language,
+        has_referral: !!referralCode
+      });
+    } catch (error) {
+      // Track failed form submission
+      trackFormSubmit(false, {
+        variant,
+        language,
+        has_referral: !!referralCode
+      });
+      
+      if (error instanceof Error) {
+        trackFormError(error.message, '');
+      } else {
+        trackFormError('unknown_error', '');
+      }
+    }
   };
   
   const handleBack = () => {

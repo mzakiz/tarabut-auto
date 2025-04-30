@@ -3,6 +3,7 @@ import React from 'react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Analytics } from '@/services/analytics';
+import { useReferralAnalytics } from '@/services/analytics/hooks';
 
 interface ReferralSectionProps {
   getTranslation: (key: string) => string;
@@ -16,10 +17,14 @@ export const ReferralSection: React.FC<ReferralSectionProps> = ({
   currentVariant
 }) => {
   const { language } = useLanguage();
+  const { trackReferralCopy, trackReferralShare } = useReferralAnalytics(referralCode);
 
   // Function to copy referral code to clipboard
   const handleCopyClick = () => {
     navigator.clipboard.writeText(referralCode);
+    
+    // Track the copy event
+    trackReferralCopy();
     
     Analytics.trackCTAClicked({
       element_type: 'button',
@@ -42,8 +47,14 @@ export const ReferralSection: React.FC<ReferralSectionProps> = ({
           text: shareMessage,
           url: window.location.origin
         });
+        
+        // Track share using Web Share API
+        trackReferralShare('web_share_api');
       } else {
         navigator.clipboard.writeText(shareMessage);
+        
+        // Track share via clipboard fallback
+        trackReferralShare('clipboard_fallback');
       }
       
       Analytics.trackCTAClicked({
@@ -56,6 +67,13 @@ export const ReferralSection: React.FC<ReferralSectionProps> = ({
       });
     } catch (error) {
       console.error('Error sharing:', error);
+      
+      // Track share error
+      Analytics.trackError({
+        error_type: 'share_error',
+        error_message: error instanceof Error ? error.message : 'Unknown sharing error',
+        component: 'ReferralSection'
+      });
     }
   };
 
