@@ -1,14 +1,14 @@
+
 import { useState } from 'react';
-import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import { useNavigate } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
-import { Analytics } from '@/services/analytics';
 import { useTranslation } from '@/hooks/useTranslation';
-import { 
-  preloadAllTranslations, 
-  storeTranslationsInSession,
-  refreshTranslationVersion 
-} from '@/utils/translationPreloader';
+import { useWaitlistAnalytics } from '@/hooks/useWaitlistAnalytics';
+import { useWaitlistUtils } from '@/hooks/useWaitlistUtils';
+import { useReferralCodeGeneration } from '@/hooks/useReferralCodeGeneration';
+import { useSessionStorage } from '@/hooks/useSessionStorage';
+import { useTranslationPreloading } from '@/hooks/useTranslationPreloading';
 import type { Tables } from '@/integrations/supabase/types';
 
 interface FormData {
@@ -22,50 +22,20 @@ interface FormData {
 export const useWaitlistSubmission = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
   const navigate = useNavigate();
-  const location = useLocation();
-  const params = useParams();
   const { toast } = useToast();
-  const { t, language, refreshTranslations } = useTranslation();
-
-  // Extract variant from URL params or pathname
-  const getVariant = () => {
-    // First try to get it from the URL parameters
-    if (params.variant) {
-      return params.variant;
-    }
-    
-    // If not available in params, extract from pathname
-    const pathParts = location.pathname.split('/');
-    const variantIndex = pathParts.findIndex(part => 
-      part === 'speed' || part === 'offer' || part === 'budget'
-    );
-    
-    return variantIndex !== -1 ? pathParts[variantIndex] : 'speed';
-  };
-  
-  // Extract UTM parameters from URL
-  const getUtmParams = () => {
-    const urlParams = new URLSearchParams(window.location.search);
-    return {
-      utm_source: urlParams.get('utm_source') || undefined,
-      utm_medium: urlParams.get('utm_medium') || undefined,
-      utm_campaign: urlParams.get('utm_campaign') || undefined,
-      utm_content: urlParams.get('utm_content') || undefined,
-      utm_term: urlParams.get('utm_term') || undefined,
-    };
-  };
+  const { t, language } = useTranslation();
+  const { trackFormSubmission, trackFormSubmissionFailed, trackReferralConversion } = useWaitlistAnalytics();
+  const { getVariant, getUtmParams } = useWaitlistUtils();
+  const { generateReferralCodes } = useReferralCodeGeneration();
+  const { storeWaitlistData } = useSessionStorage();
+  const { preloadTranslations } = useTranslationPreloading();
 
   const handleSubmit = async (formData: FormData) => {
     setIsSubmitting(true);
     
     try {
       // Aggressively preload translations before submission
-      for (let i = 0; i < 3; i++) {
-        preloadAllTranslations();
-        storeTranslationsInSession();
-        refreshTranslationVersion();
-        refreshTranslations();
-      }
+      await preloadTranslations();
       
       // Get variant from the form data or extract from the URL
       const variant = formData.variant || getVariant();
@@ -74,22 +44,15 @@ export const useWaitlistSubmission = () => {
       const utmParams = getUtmParams();
       const sessionId = sessionStorage.getItem('analytics_session_id');
       
-      // Get initial alias for the user
-      const { data: displayAlias, error: aliasError } = await supabase.rpc('generate_display_alias');
-      if (aliasError) throw aliasError;
-      
-      const { data: positionData, error: positionError } = await supabase.rpc('get_next_waitlist_position');
-      if (positionError) throw positionError;
-      
-      const { data: referralCodeData, error: referralCodeError } = await supabase.rpc('generate_referral_code');
-      if (referralCodeError) throw referralCodeError;
+      // Generate all needed codes and position
+      const { displayAlias, position: positionData, referralCode: generatedReferralCode } = await generateReferralCodes();
       
       // Create the user data object with proper typing
       const userData = {
         name: formData.name,
         email: formData.email,
         phone: `+966${formData.phoneNumber}`,
-        referral_code: referralCodeData,
+        referral_code: generatedReferralCode,
         referrer_code: formData.referralCode || null,
         position: positionData,
         display_alias: displayAlias,
@@ -119,12 +82,7 @@ export const useWaitlistSubmission = () => {
 
           if (existingUser) {
             // Track existing user attempt
-            Analytics.trackFormSubmissionFailed({
-              reason: 'email_already_exists',
-              screen: 'waitlist_form',
-              language,
-              variant
-            });
+            trackFormSubmissionFailed('email_already_exists', variant);
             
             // Redirect to waitlist status page instead of showing a toast
             navigate(`/waitlist-status/${existingUser.status_id}`);
@@ -140,44 +98,30 @@ export const useWaitlistSubmission = () => {
       });
       
       // Track successful waitlist submission
-      Analytics.trackWaitlistFormSubmitted({
-        success: true,
-        language,
-        screen: 'waitlist_form',
-        variant,
-        has_referral: !!formData.referralCode,
-        form_name: 'waitlist'
-      });
+      trackFormSubmission(true, variant, !!formData.referralCode);
       
       // If the user was referred, track a successful referral conversion
       if (formData.referralCode) {
-        // Use trackPageViewed with properties supported by ViewEventProperties
-        Analytics.trackPageViewed({
-          page_name: 'Converted: Referral',
-          screen: 'waitlist_form',
-          language,
-          variant,
-          referral_code: formData.referralCode // Now this property is valid in ViewEventProperties
-        });
+        trackReferralConversion(formData.referralCode, variant);
       }
       
       // Store necessary data in sessionStorage for confirmation page
-      sessionStorage.setItem('waitlist_referralCode', user?.referral_code || referralCodeData || '');
-      sessionStorage.setItem('waitlist_position', user?.position.toString() || positionData.toString());
-      sessionStorage.setItem('waitlist_points', user?.points?.toString() || '100');
-      sessionStorage.setItem('waitlist_statusId', user?.status_id || '');
-      sessionStorage.setItem('waitlist_variant', variant);
-      sessionStorage.setItem('waitlist_timestamp', Date.now().toString());
+      storeWaitlistData({
+        referralCode: user?.referral_code || generatedReferralCode || '',
+        position: user?.position || positionData,
+        points: user?.points || 100,
+        statusId: user?.status_id || '',
+        variant
+      });
       
       // Force preload translations one more time
-      preloadAllTranslations();
-      storeTranslationsInSession();
+      await preloadTranslations();
       
       // Create URL with query parameters - use full absolute URL
       const baseUrl = window.location.origin;
       const confirmationPath = `/${language}/${variant}/waitlist-signup/confirmation`;
       const confirmationUrl = `${baseUrl}${confirmationPath}?` + new URLSearchParams({
-        referralCode: user?.referral_code || referralCodeData || '',
+        referralCode: user?.referral_code || generatedReferralCode || '',
         position: user?.position.toString() || positionData.toString(),
         points: user?.points?.toString() || '100',
         statusId: user?.status_id || '',
@@ -197,12 +141,7 @@ export const useWaitlistSubmission = () => {
       });
       
       // Track form submission failure
-      Analytics.trackFormSubmissionFailed({
-        reason: 'server_error',
-        screen: 'waitlist_form',
-        language,
-        variant: formData.variant || getVariant()
-      });
+      trackFormSubmissionFailed('server_error', formData.variant || getVariant());
     } finally {
       setIsSubmitting(false);
     }
