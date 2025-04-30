@@ -1,4 +1,3 @@
-
 // Analytics event property interfaces
 export interface BaseAnalyticsProperties {
   language?: string;
@@ -15,6 +14,7 @@ export interface BaseAnalyticsProperties {
   utm_content?: string;
   utm_term?: string;
   referrer?: string;
+  referral_code?: string;  // Added referral_code to BaseAnalyticsProperties
 }
 
 export interface CTAClickedProperties extends BaseAnalyticsProperties {

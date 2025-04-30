@@ -1,4 +1,3 @@
-
 import { useState } from 'react';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import { useToast } from '@/hooks/use-toast';
@@ -152,14 +151,13 @@ export const useWaitlistSubmission = () => {
       
       // If the user was referred, track a successful referral conversion
       if (formData.referralCode) {
-        // Fix: Replace the generic track method with a proper analytics method
-        // Analytics.track('Converted: Referral', {
+        // Use trackPageViewed with properties supported by ViewEventProperties
         Analytics.trackPageViewed({
           page_name: 'Converted: Referral',
-          referral_code: formData.referralCode,
           screen: 'waitlist_form',
           language,
-          variant
+          variant,
+          referral_code: formData.referralCode // Now this property is valid in ViewEventProperties
         });
       }
       
