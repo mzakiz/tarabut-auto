@@ -42,7 +42,7 @@ export const useWaitlistSubmission = () => {
       
       // Get UTM parameters for attribution
       const utmParams = getUtmParams();
-      const sessionId = sessionStorage.getItem('analytics_session_id');
+      // Remove session_id reference as it doesn't exist in the database
       
       // Generate all needed codes and position
       const { displayAlias, position: positionData, referralCode: generatedReferralCode } = await generateReferralCodes();
@@ -62,8 +62,8 @@ export const useWaitlistSubmission = () => {
         utm_medium: utmParams.utm_medium, 
         utm_campaign: utmParams.utm_campaign,
         utm_content: utmParams.utm_content,
-        utm_term: utmParams.utm_term,
-        session_id: sessionId
+        utm_term: utmParams.utm_term
+        // Removed session_id as it doesn't exist in the database schema
       } as unknown as Tables<'waitlist_users'>;
       
       const { data: user, error } = await supabase
