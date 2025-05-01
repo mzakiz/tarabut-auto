@@ -1,4 +1,3 @@
-
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import {
@@ -40,7 +39,23 @@ const DEFAULT_FALLBACKS: Record<string, string> = {
   'confirmation.points_title': 'Your Waitlist Points',
   'confirmation.points_description': 'Earn more points by referring friends to increase your position on the waitlist',
   'confirmation.points': 'Points',
-  'back.home': 'Return to Home Page'
+  'confirmation.your.tier': 'Your Current Tier',
+  'back.home': 'Return to Home Page',
+  
+  // Status URL fallbacks
+  'waitlist.status.check': 'Check Your Waitlist Status',
+  'confirmation.code.copied': 'Copied!',
+  'confirmation.code.share': 'Bookmark this link to check your status later',
+  
+  // Tier fallbacks
+  'tier.vip_access': 'VIP Access',
+  'tier.early_access': 'Early Access',
+  'tier.fast_track': 'Fast Track',
+  'tier.standard': 'Standard',
+  'tier.vip_access.points': '600+ points',
+  'tier.early_access.points': '400-599 points',
+  'tier.fast_track.points': '250-399 points',
+  'tier.standard.points': '100-249 points'
 };
 
 // Immediately ensure translations are initialized

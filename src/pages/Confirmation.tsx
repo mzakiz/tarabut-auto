@@ -1,4 +1,3 @@
-
 import React, { useEffect, useState, useCallback } from 'react';
 import { useLocation, useSearchParams } from 'react-router-dom';
 import { Head } from '@/components/Head';
@@ -16,6 +15,7 @@ import { ConfirmationHeader } from '@/components/confirmation/ConfirmationHeader
 import { PositionDetails } from '@/components/confirmation/PositionDetails';
 import { ReferralSection } from '@/components/confirmation/ReferralSection';
 import { PointsSection } from '@/components/confirmation/PointsSection';
+import { StatusURL } from '@/components/confirmation/StatusURL';
 import { LoadingScreen } from '@/components/confirmation/LoadingScreen';
 
 // Force preload translations when this module loads
@@ -178,6 +178,13 @@ const Confirmation = () => {
           getTranslation={getTranslation}
           points={points}
         />
+        
+        {statusId && (
+          <StatusURL 
+            getTranslation={getTranslation}
+            statusId={statusId}
+          />
+        )}
       </div>
     </div>
   );
