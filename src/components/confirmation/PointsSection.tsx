@@ -1,6 +1,6 @@
 
-import React, { useEffect, useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import React from 'react';
+import { useTierDetails } from '@/utils/tierUtils';
 
 interface PointsSectionProps {
   getTranslation: (key: string) => string;
@@ -11,68 +11,38 @@ export const PointsSection: React.FC<PointsSectionProps> = ({
   getTranslation,
   points 
 }) => {
-  const [tier, setTier] = useState<string>('');
-
-  // Get tier information based on points
-  useEffect(() => {
-    const fetchTier = async () => {
-      try {
-        const { data, error } = await supabase.rpc('get_user_tier', { user_points: points });
-        if (error) throw error;
-        setTier(data || '');
-      } catch (error) {
-        console.error('Error fetching tier:', error);
-        // Fallback tier calculation if RPC fails
-        if (points >= 600) setTier('VIP Access');
-        else if (points >= 400) setTier('Early Access');
-        else if (points >= 250) setTier('Fast Track');
-        else setTier('Standard');
-      }
-    };
-
-    fetchTier();
-  }, [points]);
-
-  // Get translation key for the tier
-  const getTierTranslationKey = () => {
-    const tierKey = tier?.toLowerCase().replace(' ', '_') || 'standard';
-    return `tier.${tierKey}`;
-  };
-
-  // Get translation key for points range
-  const getTierPointsRangeKey = () => {
-    const tierKey = tier?.toLowerCase().replace(' ', '_') || 'standard';
-    return `tier.${tierKey}.points`;
-  };
+  // Get detailed tier information
+  const tierDetails = useTierDetails(points);
 
   return (
     <div className="bg-white rounded-lg shadow-lg p-6 mb-8">
-      <h2 className="text-xl font-semibold mb-2 text-center">
+      <h2 className="text-xl font-semibold mb-3 text-center">
         {getTranslation('confirmation.points_title')}
       </h2>
-      <div className="flex justify-center items-center space-x-2 mb-4">
-        <span className="text-3xl font-bold text-tarabut-dark">{points}</span>
-        <span className="text-gray-600">{getTranslation('confirmation.points')}</span>
-      </div>
       
-      {/* Tier Information */}
-      {tier && (
-        <div className="mt-4 text-center">
-          <p className="text-sm text-gray-600 mb-2">
-            {getTranslation('confirmation.your.tier')}
-          </p>
-          <div className="inline-block bg-tarabut-light text-tarabut-dark px-4 py-2 rounded-full font-medium mb-2">
-            {getTranslation(getTierTranslationKey())}
-          </div>
-          <p className="text-xs text-gray-500">
-            {getTranslation(getTierPointsRangeKey())}
-          </p>
-        </div>
-      )}
-      
-      <p className="text-sm text-gray-600 text-center mt-4">
+      <p className="text-center text-gray-600 mb-4">
         {getTranslation('confirmation.points_description')}
       </p>
+      
+      <div className="flex items-center justify-center mb-4">
+        <div className="text-3xl font-bold">{points}</div>
+        <div className="text-lg ml-2">{getTranslation('confirmation.points')}</div>
+      </div>
+      
+      <div className="text-center mb-4">
+        <div className="text-lg font-semibold mb-1">
+          {getTranslation('confirmation.your.tier')}
+        </div>
+        
+        <div className="flex flex-col items-center">
+          <div className={`${tierDetails.color} w-16 h-16 rounded-full flex items-center justify-center mb-2`}>
+            <span className="text-2xl">{tierDetails.emoji}</span>
+          </div>
+          <div className="text-xl font-bold">{tierDetails.name}</div>
+          <div className="text-sm text-gray-500 mt-1">{tierDetails.points}</div>
+          <div className="text-md text-gray-700 mt-2 max-w-md">{tierDetails.description}</div>
+        </div>
+      </div>
     </div>
   );
 };

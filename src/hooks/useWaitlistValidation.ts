@@ -1,61 +1,87 @@
 
 import { useState } from 'react';
-import { supabase } from '@/integrations/supabase/client';
+import { useTranslation } from '@/hooks/useTranslation';
 
-export type ValidationErrors = Record<string, string>;
+// Server validation errors interface
+export interface ValidationErrors {
+  name: string;
+  email: string;
+  phone: string;
+  referralCode: string;
+}
 
 export const useWaitlistValidation = () => {
-  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({});
+  const [validationErrors, setValidationErrors] = useState<ValidationErrors>({
+    name: '',
+    email: '',
+    phone: '',
+    referralCode: ''
+  });
+  
+  const { t, language } = useTranslation();
 
-  const validateEmail = (email: string) => {
-    const emailRegex = /^[^\s@]+@[^\s@]+\.[^\s@]+$/;
-    return emailRegex.test(email);
-  };
-
-  const validatePhone = (phone: string) => {
-    const phoneRegex = /^\+966[0-9]{9}$/;
-    return phoneRegex.test(phone);
-  };
-
-  const validateReferralCode = async (code: string) => {
-    if (!code) return true;
+  const validateField = async (fieldName: string, value: string): Promise<string> => {
+    let errorMessage = '';
     
-    const { data } = await supabase
-      .from('waitlist_users')
-      .select('referral_code')
-      .eq('referral_code', code)
-      .maybeSingle();
-    
-    return !!data;
-  };
-
-  const validateField = async (fieldName: string, value: string) => {
-    let error = '';
-    if (fieldName === 'email' && value && !validateEmail(value)) {
-      error = 'Please enter a valid email address';
-    } else if (fieldName === 'phone') {
-      const fullPhone = `+966${value}`;
-      if (value && !validatePhone(fullPhone)) {
-        error = 'Phone number must be 9 digits after +966';
-      }
-    } else if (fieldName === 'referralCode' && value && !(await validateReferralCode(value))) {
-      error = 'Invalid referral code';
+    switch (fieldName) {
+      case 'full_name':
+        if (!value.trim()) {
+          errorMessage = t('validation.name.required') || 'Name is required';
+        } else if (value.trim().length < 3) {
+          errorMessage = t('validation.name.min_length') || 'Name must be at least 3 characters';
+        }
+        setValidationErrors(prev => ({ ...prev, name: errorMessage }));
+        break;
+        
+      case 'email':
+        if (!value.trim()) {
+          errorMessage = t('validation.email.required') || 'Email is required';
+        } else if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(value)) {
+          errorMessage = t('validation.email.invalid') || 'Invalid email format';
+        }
+        setValidationErrors(prev => ({ ...prev, email: errorMessage }));
+        break;
+        
+      case 'phone':
+        if (!value.trim()) {
+          errorMessage = t('validation.phone.required') || 'Phone number is required';
+        } else if (!/^5\d{8}$/.test(value)) {
+          errorMessage = t('validation.phone.invalid') || 'Phone number must start with 5 and be 9 digits';
+        }
+        setValidationErrors(prev => ({ ...prev, phone: errorMessage }));
+        break;
+        
+      case 'referral_code':
+        if (value && !/^[A-Za-z0-9]{6,12}$/.test(value)) {
+          errorMessage = t('validation.referral_code.invalid') || 'Invalid referral code format';
+        }
+        setValidationErrors(prev => ({ ...prev, referralCode: errorMessage }));
+        break;
+        
+      default:
+        break;
     }
-
-    setValidationErrors(prev => ({
-      ...prev,
-      [fieldName]: error
-    }));
-
-    return error;
+    
+    return errorMessage;
+  };
+  
+  const validateAllFields = async (fields: {
+    name: string;
+    email: string;
+    phoneNumber: string;
+    referralCode: string;
+  }): Promise<boolean> => {
+    const nameError = await validateField('full_name', fields.name);
+    const emailError = await validateField('email', fields.email);
+    const phoneError = await validateField('phone', fields.phoneNumber);
+    const referralError = await validateField('referral_code', fields.referralCode);
+    
+    return !nameError && !emailError && !phoneError && !referralError;
   };
 
   return {
     validationErrors,
-    setValidationErrors,
     validateField,
-    validateEmail,
-    validatePhone,
-    validateReferralCode
+    validateAllFields
   };
 };

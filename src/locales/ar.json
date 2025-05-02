@@ -1,4 +1,3 @@
-
 {
     "speed.tagline": "تخطى فترات انتظار البنوك لمدة 3 أسابيع للتمويل",
     "speed.subtitle": "احصل على وصول حصري للموافقات في دقيقة واحدة",
@@ -39,6 +38,21 @@
     "confirmation.points_title": "نقاط قائمة الانتظار الخاصة بك",
     "confirmation.points_description": "اكسب المزيد من النقاط عن طريق دعوة الأصدقاء لتحسين موقعك في قائمة الانتظار",
     "confirmation.your.tier": "مستواك الحالي",
+    
+    "tier.vip_access": "وصول VIP",
+    "tier.early_access": "وصول مبكر",
+    "tier.fast_track": "المسار السريع",
+    "tier.standard": "قياسي",
+    
+    "tier.vip_access.points": "٦٠٠+ نقطة",
+    "tier.early_access.points": "٤٠٠-٥٩٩ نقطة",
+    "tier.fast_track.points": "٢٥٠-٣٩٩ نقطة",
+    "tier.standard.points": "١٠٠-٢٤٩ نقطة",
+
+    "tier.vip_access.description": "وصول حصري مبكر مع مزايا متميزة",
+    "tier.early_access.description": "وصول قبل الجمهور العام",
+    "tier.fast_track.description": "وصول متسارع إلى منصتنا",
+    "tier.standard.description": "انضم إلى قائمة الانتظار في موضع قياسي",
     
     "features.title": "مميزات استثنائية",
     "features.subtitle": "تويوتا كامري تجمع بين الفخامة والأداء والكفاءة في حزمة مثالية للطرق السعودية",
@@ -144,5 +158,27 @@
     "calculator.loan.tenor": "مدة القرض: ",
     "calculator.monthly.payment": "القسط الشهري",
     "calculator.months": "شهر",
-    "calculator.customize": "خصص قسطك الشهري"
+    "calculator.customize": "خصص قسطك الشهري",
+
+    "waitlist.title": "الانضمام إلى قائمة الانتظار",
+    "waitlist.description": "كن أول من يصل إلى تمويل السيارات المتوافق مع الشريعة الإسلامية",
+    "form.name": "الاسم",
+    "form.email": "البريد الإلكتروني",
+    "form.phone": "رقم الجوال",
+    "form.referral": "رمز الإحالة (اختياري)",
+    "form.placeholder.name": "الاسم الكامل",
+    "form.placeholder.email": "عنوان البريد الإلكتروني",
+    "form.placeholder.phone": "5XXXXXXXX",
+    "form.placeholder.referral": "أدخل رمز الإحالة",
+    "form.success": "نجاح",
+    "form.added": "تمت إضافتك إلى قائمة الانتظار",
+    "form.submitting": "جاري الإرسال...",
+    
+    "validation.name.required": "الاسم مطلوب",
+    "validation.name.min_length": "يجب أن يتكون الاسم من 3 أحرف على الأقل",
+    "validation.email.required": "البريد الإلكتروني مطلوب",
+    "validation.email.invalid": "تنسيق البريد الإلكتروني غير صالح",
+    "validation.phone.required": "رقم الهاتف مطلوب",
+    "validation.phone.invalid": "يجب أن يبدأ رقم الهاتف بالرقم 5 ويتكون من 9 أرقام",
+    "validation.referral_code.invalid": "تنسيق رمز الإحالة غير صالح"
 }
