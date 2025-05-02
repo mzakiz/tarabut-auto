@@ -16,5 +16,17 @@
     "validation.referral_code.invalid": "Invalid referral code format",
     
     "form.submitting": "Submitting...",
-    "waitlist.join": "Join Waitlist"
+    "waitlist.join": "Join Waitlist",
+    
+    "form.name": "Name",
+    "form.email": "Email",
+    "form.phone": "Phone Number",
+    "form.referral": "Referral Code (Optional)",
+    "form.placeholder.name": "Full Name",
+    "form.placeholder.email": "Email Address",
+    "form.placeholder.phone": "5XXXXXXXX",
+    "form.placeholder.referral": "Enter referral code",
+    
+    "waitlist.title": "Join the Waitlist",
+    "waitlist.description": "Be the first to access Shariah-compliant auto financing"
 }

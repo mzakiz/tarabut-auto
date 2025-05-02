@@ -14,7 +14,7 @@ interface WaitlistFormProps {
 export const WaitlistForm: React.FC<WaitlistFormProps> = ({ variant }) => {
   const { t, language } = useTranslation();
   const { handleSubmit, isSubmitting } = useWaitlistSubmission();
-  const { validateField, validationErrors, setValidationErrors } = useWaitlistValidation();
+  const { validateField, validationErrors, setValidationErrors, validateAllFields } = useWaitlistValidation();
   
   const [formData, setFormData] = useState({
     name: '',
@@ -70,7 +70,7 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({ variant }) => {
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
-    // Validate all fields
+    // Validate all fields using the validateAllFields from useWaitlistValidation
     const isValid = await validateAllFields({
       name: formData.name,
       email: formData.email,
@@ -84,19 +84,6 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({ variant }) => {
     
     // Submit the form
     handleSubmit(formData);
-  };
-  
-  const validateAllFields = async (fields: {
-    name: string;
-    email: string;
-    phoneNumber: string;
-    referralCode: string;
-  }) => {
-    // Use the validateAllFields method from useWaitlistValidation hook
-    return validateField('name', fields.name) === '' &&
-           validateField('email', fields.email) === '' &&
-           validateField('phone', fields.phoneNumber) === '' &&
-           (fields.referralCode === '' || validateField('referralCode', fields.referralCode) === '');
   };
   
   // Show loading screen when submitting
@@ -170,3 +157,4 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({ variant }) => {
     </form>
   );
 };
+
