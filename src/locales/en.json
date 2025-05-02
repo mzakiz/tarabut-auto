@@ -13,5 +13,8 @@
     "validation.email.invalid": "Invalid email format",
     "validation.phone.required": "Phone number is required",
     "validation.phone.invalid": "Phone number must start with 5 and be 9 digits",
-    "validation.referral_code.invalid": "Invalid referral code format"
+    "validation.referral_code.invalid": "Invalid referral code format",
+    
+    "form.submitting": "Submitting...",
+    "waitlist.join": "Join Waitlist"
 }

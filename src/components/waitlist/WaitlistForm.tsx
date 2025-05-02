@@ -27,36 +27,76 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({ variant }) => {
   const handleChange = (field: string, value: string) => {
     setFormData(prev => ({ ...prev, [field]: value }));
     // Clear validation error when user starts typing
-    setValidationErrors(prev => ({ ...prev, [field]: '' }));
+    if (field === 'name') {
+      setValidationErrors(prev => ({ ...prev, name: '' }));
+    } else if (field === 'email') {
+      setValidationErrors(prev => ({ ...prev, email: '' }));
+    } else if (field === 'phoneNumber') {
+      setValidationErrors(prev => ({ ...prev, phone: '' }));
+    } else if (field === 'referralCode') {
+      setValidationErrors(prev => ({ ...prev, referralCode: '' }));
+    }
   };
 
   const handleBlur = async (field: string) => {
-    await validateField(field, formData[field as keyof typeof formData]);
+    let fieldName: string;
+    let value: string;
+    
+    switch (field) {
+      case 'name':
+        fieldName = 'name';
+        value = formData.name;
+        break;
+      case 'email':
+        fieldName = 'email';
+        value = formData.email;
+        break;
+      case 'phoneNumber':
+        fieldName = 'phone';
+        value = formData.phoneNumber;
+        break;
+      case 'referralCode':
+        fieldName = 'referralCode';
+        value = formData.referralCode;
+        break;
+      default:
+        fieldName = field;
+        value = formData[field as keyof typeof formData] || '';
+    }
+    
+    await validateField(fieldName, value);
   };
 
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
     // Validate all fields
-    const errors: ValidationErrors = {};
+    const isValid = await validateAllFields({
+      name: formData.name,
+      email: formData.email,
+      phoneNumber: formData.phoneNumber,
+      referralCode: formData.referralCode
+    });
     
-    for (const field of ['name', 'email', 'phoneNumber']) {
-      const error = await validateField(field, formData[field as keyof typeof formData]);
-      if (error) errors[field] = error;
-    }
-    
-    if (formData.referralCode) {
-      const error = await validateField('referralCode', formData.referralCode);
-      if (error) errors.referralCode = error;
-    }
-    
-    // If any errors, don't submit
-    if (Object.values(errors).some(error => !!error)) {
+    if (!isValid) {
       return;
     }
     
     // Submit the form
     handleSubmit(formData);
+  };
+  
+  const validateAllFields = async (fields: {
+    name: string;
+    email: string;
+    phoneNumber: string;
+    referralCode: string;
+  }) => {
+    // Use the validateAllFields method from useWaitlistValidation hook
+    return validateField('name', fields.name) === '' &&
+           validateField('email', fields.email) === '' &&
+           validateField('phone', fields.phoneNumber) === '' &&
+           (fields.referralCode === '' || validateField('referralCode', fields.referralCode) === '');
   };
   
   // Show loading screen when submitting
@@ -76,7 +116,7 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({ variant }) => {
         onBlur={() => handleBlur('name')}
         error={validationErrors.name}
         required
-        placeholder={t('form.namePlaceholder')}
+        placeholder={t('form.placeholder.name')}
         dir={dir}
       />
       
@@ -89,7 +129,7 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({ variant }) => {
         error={validationErrors.email}
         required
         type="email"
-        placeholder={t('form.emailPlaceholder')}
+        placeholder={t('form.placeholder.email')}
         dir={dir}
       />
       
@@ -99,10 +139,10 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({ variant }) => {
         value={formData.phoneNumber}
         onChange={value => handleChange('phoneNumber', value)}
         onBlur={() => handleBlur('phoneNumber')}
-        error={validationErrors.phoneNumber}
+        error={validationErrors.phone}
         required
         type="tel"
-        placeholder="50XXXXXXX"
+        placeholder={t('form.placeholder.phone')}
         prefix="+966"
         maxLength={9}
         inputMode="numeric"
@@ -111,12 +151,12 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({ variant }) => {
       
       <FormField
         id="referralCode"
-        label={t('form.referralCode')}
+        label={t('form.referral')}
         value={formData.referralCode}
         onChange={value => handleChange('referralCode', value)}
         onBlur={() => handleBlur('referralCode')}
         error={validationErrors.referralCode}
-        placeholder={t('form.referralCodePlaceholder')}
+        placeholder={t('form.placeholder.referral')}
         dir={dir}
       />
       
@@ -125,7 +165,7 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({ variant }) => {
         className="w-full"
         disabled={isSubmitting}
       >
-        {t('form.submit')}
+        {isSubmitting ? t('form.submitting') : t('waitlist.join')}
       </Button>
     </form>
   );

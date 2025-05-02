@@ -25,6 +25,7 @@ export const useWaitlistValidation = () => {
     
     switch (fieldName) {
       case 'full_name':
+      case 'name':
         if (!value.trim()) {
           errorMessage = t('validation.name.required') || 'Name is required';
         } else if (value.trim().length < 3) {
@@ -43,6 +44,7 @@ export const useWaitlistValidation = () => {
         break;
         
       case 'phone':
+      case 'phoneNumber':
         if (!value.trim()) {
           errorMessage = t('validation.phone.required') || 'Phone number is required';
         } else if (!/^5\d{8}$/.test(value)) {
@@ -52,6 +54,7 @@ export const useWaitlistValidation = () => {
         break;
         
       case 'referral_code':
+      case 'referralCode':
         if (value && !/^[A-Za-z0-9]{6,12}$/.test(value)) {
           errorMessage = t('validation.referral_code.invalid') || 'Invalid referral code format';
         }
@@ -71,16 +74,17 @@ export const useWaitlistValidation = () => {
     phoneNumber: string;
     referralCode: string;
   }): Promise<boolean> => {
-    const nameError = await validateField('full_name', fields.name);
+    const nameError = await validateField('name', fields.name);
     const emailError = await validateField('email', fields.email);
     const phoneError = await validateField('phone', fields.phoneNumber);
-    const referralError = await validateField('referral_code', fields.referralCode);
+    const referralError = await validateField('referralCode', fields.referralCode);
     
     return !nameError && !emailError && !phoneError && !referralError;
   };
 
   return {
     validationErrors,
+    setValidationErrors,
     validateField,
     validateAllFields
   };
