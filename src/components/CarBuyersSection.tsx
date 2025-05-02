@@ -10,6 +10,7 @@ const CarBuyersSection = () => {
   const { t, isChangingLanguage } = useTranslation();
   const { language } = useLanguage();
   const [visibleBenefits, setVisibleBenefits] = useState<number[]>([]);
+  const isRTL = language === 'ar';
   
   const benefits = [
     {
@@ -60,8 +61,6 @@ const CarBuyersSection = () => {
     }
   }, [inView, language]);
 
-  const benefitDelayBase = 100;
-
   return (
     <section id="car-buyers" className="py-16 md:py-24 bg-white">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -78,7 +77,7 @@ const CarBuyersSection = () => {
           {benefits.map((benefit, index) => (
             <div
               key={benefit.id}
-              className={`flex items-start space-x-6 transition-all duration-500 ease-out transform ${
+              className={`flex items-start ${isRTL ? 'space-x-reverse' : ''} space-x-6 transition-all duration-500 ease-out transform ${
                 visibleBenefits.includes(benefit.id) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
               } ${index % 2 === 0 ? 'lg:pr-12' : 'lg:pl-12'}`}
               style={{ transitionDelay: `${index * 100}ms` }}
@@ -86,7 +85,7 @@ const CarBuyersSection = () => {
               <div className="bg-ksa-secondary/10 p-4 rounded-full shrink-0">
                 <div className="text-ksa-secondary">{benefit.icon}</div>
               </div>
-              <div>
+              <div className={`text-${isRTL ? 'right' : 'left'}`}>
                 <h3 className="text-xl font-semibold mb-3 text-ksa-dark">
                   {isChangingLanguage ? '...' : t(benefit.titleKey)}
                 </h3>

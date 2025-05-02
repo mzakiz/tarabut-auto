@@ -1,3 +1,4 @@
+
 import React, { useEffect, useState } from 'react';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Zap, BarChart, Gauge, Users } from 'lucide-react';
@@ -74,8 +75,6 @@ const DealershipsSection = () => {
     navigate(`/${language}/speed/dealership`);
   };
 
-  const benefitDelayBase = 100;
-
   return (
     <section id="dealerships" className="py-16 md:py-24 bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -99,7 +98,7 @@ const DealershipsSection = () => {
                 <div className="bg-white/20 p-6 rounded-full shrink-0">
                   {benefits[0].icon}
                 </div>
-                <div className="text-center md:text-left">
+                <div className={`text-center md:text-${language === 'ar' ? 'right' : 'left'}`}>
                   <h3 className="text-2xl font-semibold mb-4">
                     {isChangingLanguage ? '...' : t(benefits[0].titleKey)}
                   </h3>
@@ -118,14 +117,14 @@ const DealershipsSection = () => {
                 }`}
                 style={{ transitionDelay: `${(index + 1) * 100}ms` }}
               >
-                <div className="flex flex-col items-center text-center">
+                <div className="flex flex-col items-center text-center h-full">
                   <div className="bg-tarabut-secondary/10 p-4 rounded-full mb-4">
                     <div className="text-tarabut-secondary">{benefit.icon}</div>
                   </div>
                   <h3 className="text-lg font-semibold mb-3 text-ksa-dark">
                     {isChangingLanguage ? '...' : t(benefit.titleKey)}
                   </h3>
-                  <p className="text-gray-600">
+                  <p className="text-gray-600 flex-grow">
                     {isChangingLanguage ? '...' : t(benefit.descriptionKey)}
                   </p>
                 </div>

@@ -72,5 +72,12 @@
     "dealership.success.description": "Our team will contact you soon to complete the process of joining Tarabut Auto partners",
     "dealership.back": "Return to Home Page",
 
-    "dealership.cta": "Are you a dealership?"
+    "dealership.cta": "Are you a dealership?",
+    
+    "nav.home": "Home",
+    "nav.how_it_works": "How It Works",
+    "nav.car_buyers": "For Car Buyers",
+    "nav.dealerships": "For Dealerships", 
+    "nav.affordability": "Affordability",
+    "nav.contact": "Contact Us"
 }
