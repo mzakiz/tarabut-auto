@@ -28,5 +28,44 @@
     "form.placeholder.referral": "Enter referral code",
     
     "waitlist.title": "Join the Waitlist",
-    "waitlist.description": "Be the first to access Shariah-compliant auto financing"
+    "waitlist.description": "Be the first to access Shariah-compliant auto financing",
+
+    "how_it_works.title": "How It Works",
+    "how_it_works.subtitle": "A simple process to get you on the road with Shariah-compliant financing",
+    "how_it_works.step1.title": "Join the Waitlist",
+    "how_it_works.step1.description": "Register for early access to the Tarabut Auto platform",
+    "how_it_works.step2.title": "Choose Your Car",
+    "how_it_works.step2.description": "Browse through a wide range of cars and select what suits your needs",
+    "how_it_works.step3.title": "Get Financing",
+    "how_it_works.step3.description": "Receive quick approval for Shariah-compliant financing",
+    "how_it_works.step4.title": "Receive Your Car",
+    "how_it_works.step4.description": "Take delivery of your new car hassle-free",
+
+    "car_buyers.title": "For Car Buyers",
+    "car_buyers.subtitle": "Exclusive benefits when buying your car through Tarabut Auto",
+    "car_buyers.benefit1.title": "Quick Financing",
+    "car_buyers.benefit1.description": "Get financing approval in minutes instead of weeks with traditional banks",
+    "car_buyers.benefit2.title": "Save Time",
+    "car_buyers.benefit2.description": "No need to visit multiple banks, we do that for you to get the best offers",
+    "car_buyers.benefit3.title": "Consumer Protection",
+    "car_buyers.benefit3.description": "Comprehensive guarantees and buyer protection at every step",
+    "car_buyers.benefit4.title": "Less Paperwork",
+    "car_buyers.benefit4.description": "Reduced documentation requirements and streamlined process through digital system",
+
+    "dealerships.title": "For Dealerships",
+    "dealerships.subtitle": "Join Tarabut Auto's dealership network and benefit from exclusive advantages",
+    "dealerships.benefit1.title": "Increase Sales",
+    "dealerships.benefit1.description": "Leverage our platform to boost your sales with quick financing that helps customers make faster buying decisions",
+    "dealerships.benefit2.title": "Advanced Analytics",
+    "dealerships.benefit2.description": "Gain valuable insights on sales performance and market trends to make better business decisions",
+    "dealerships.benefit3.title": "Fast Processing",
+    "dealerships.benefit3.description": "Enjoy quick approval process and faster disbursement to improve your dealership's cash flow",
+    "dealerships.benefit4.title": "Superior Customer Service",
+    "dealerships.benefit4.description": "Provide exceptional customer experience with multiple financing options and ongoing support",
+
+    "dealership.success": "Your request has been submitted successfully!",
+    "dealership.success.description": "Our team will contact you soon to complete the process of joining Tarabut Auto partners",
+    "dealership.back": "Return to Home Page",
+
+    "dealership.cta": "Are you a dealership?"
 }

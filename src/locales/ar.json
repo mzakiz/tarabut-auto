@@ -1,3 +1,4 @@
+
 {
     "speed.tagline": "تخطى فترات انتظار البنوك لمدة 3 أسابيع للتمويل",
     "speed.subtitle": "احصل على وصول حصري للموافقات في دقيقة واحدة",
@@ -125,16 +126,6 @@
     "waitlist.position": "المرتبة",
     "waitlist.points": "النقاط",
 
-    "tier.vip_access": "وصول VIP",
-    "tier.early_access": "وصول مبكر",
-    "tier.fast_track": "المسار السريع",
-    "tier.standard": "قياسي",
-    
-    "tier.vip_access.points": "٦٠٠+ نقطة",
-    "tier.early_access.points": "٤٠٠-٥٩٩ نقطة",
-    "tier.fast_track.points": "٢٥٠-٣٩٩ نقطة",
-    "tier.standard.points": "١٠٠-٢٤٩ نقطة",
-    
     "leaderboard.title": "لوحة صدارة الإحالات",
     "leaderboard.rank": "المرتبة",
     "leaderboard.player": "اللاعب",
@@ -180,5 +171,42 @@
     "validation.email.invalid": "تنسيق البريد الإلكتروني غير صالح",
     "validation.phone.required": "رقم الهاتف مطلوب",
     "validation.phone.invalid": "يجب أن يبدأ رقم الهاتف بالرقم 5 ويتكون من 9 أرقام",
-    "validation.referral_code.invalid": "تنسيق رمز الإحالة غير صالح"
+    "validation.referral_code.invalid": "تنسيق رمز الإحالة غير صالح",
+
+    "how_it_works.title": "كيف يعمل",
+    "how_it_works.subtitle": "عملية بسيطة تمكنك من الحصول على سيارتك بسهولة وبشكل متوافق مع الشريعة",
+    "how_it_works.step1.title": "التسجيل في قائمة الانتظار",
+    "how_it_works.step1.description": "سجل بياناتك للحصول على وصول مبكر إلى منصة ترابط أوتو",
+    "how_it_works.step2.title": "اختر سيارتك",
+    "how_it_works.step2.description": "تصفح مجموعة واسعة من السيارات واختر ما يناسب احتياجاتك",
+    "how_it_works.step3.title": "الحصول على التمويل",
+    "how_it_works.step3.description": "احصل على موافقة سريعة وتمويل متوافق مع الشريعة الإسلامية",
+    "how_it_works.step4.title": "استلام سيارتك",
+    "how_it_works.step4.description": "استلم سيارتك الجديدة بسهولة وبدون تعقيدات",
+
+    "car_buyers.title": "لمشتري السيارات",
+    "car_buyers.subtitle": "مزايا حصرية عند شراء سيارتك من خلال ترابط أوتو",
+    "car_buyers.benefit1.title": "تمويل سريع",
+    "car_buyers.benefit1.description": "احصل على الموافقة على التمويل في دقائق بدلاً من أسابيع مع البنوك التقليدية",
+    "car_buyers.benefit2.title": "توفير الوقت",
+    "car_buyers.benefit2.description": "لا حاجة لزيارة عدة بنوك، نحن نقوم بذلك نيابة عنك للحصول على أفضل العروض",
+    "car_buyers.benefit3.title": "حماية المستهلك",
+    "car_buyers.benefit3.description": "ضمانات شاملة وحماية المشتري في كل خطوة من عملية الشراء",
+    "car_buyers.benefit4.title": "مستندات أقل",
+    "car_buyers.benefit4.description": "تقليل الأوراق المطلوبة وتبسيط العملية بأكملها من خلال النظام الرقمي",
+
+    "dealerships.title": "للمعارض وشركاء السيارات",
+    "dealerships.subtitle": "انضم إلى شبكة معارض ترابط أوتو واستفد من مزايا حصرية لتنمية أعمالك",
+    "dealerships.benefit1.title": "زيادة المبيعات",
+    "dealerships.benefit1.description": "استفد من منصتنا لزيادة مبيعاتك مع تمويل سريع يساعد العملاء على اتخاذ قرارات شراء أسرع",
+    "dealerships.benefit2.title": "تحليلات متقدمة",
+    "dealerships.benefit2.description": "احصل على رؤى قيمة حول أداء المبيعات واتجاهات السوق لاتخاذ قرارات أعمال أفضل",
+    "dealerships.benefit3.title": "معالجة سريعة",
+    "dealerships.benefit3.description": "استمتع بعملية موافقة سريعة وصرف أسرع للأموال لتحسين تدفق النقد في معرضك",
+    "dealerships.benefit4.title": "خدمة العملاء المتميزة",
+    "dealerships.benefit4.description": "قدم تجربة استثنائية للعملاء مع خيارات تمويل متعددة ودعم مستمر",
+
+    "dealership.success": "تم تسجيل طلبك بنجاح!",
+    "dealership.success.description": "سيتواصل فريقنا معك قريباً لاستكمال عملية الانضمام إلى شركاء ترابط أوتو",
+    "dealership.back": "العودة إلى الصفحة الرئيسية"
 }
