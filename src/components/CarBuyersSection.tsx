@@ -77,15 +77,15 @@ const CarBuyersSection = () => {
           {benefits.map((benefit, index) => (
             <div
               key={benefit.id}
-              className={`flex items-start ${isRTL ? 'space-x-reverse' : ''} space-x-6 transition-all duration-500 ease-out transform ${
+              className={`flex ${isRTL ? 'flex-row-reverse' : ''} items-start transition-all duration-500 ease-out transform ${
                 visibleBenefits.includes(benefit.id) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-              } ${index % 2 === 0 ? 'lg:pr-12' : 'lg:pl-12'}`}
+              }`}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
               <div className="bg-ksa-secondary/10 p-4 rounded-full shrink-0">
                 <div className="text-ksa-secondary">{benefit.icon}</div>
               </div>
-              <div className={`text-${isRTL ? 'right' : 'left'}`}>
+              <div className={`${isRTL ? 'mr-6 text-right' : 'ml-6 text-left'}`}>
                 <h3 className="text-xl font-semibold mb-3 text-ksa-dark">
                   {isChangingLanguage ? '...' : t(benefit.titleKey)}
                 </h3>

@@ -13,6 +13,7 @@ const DealershipsSection = () => {
   const { language } = useLanguage();
   const navigate = useNavigate();
   const [visibleBenefits, setVisibleBenefits] = useState<number[]>([]);
+  const isRTL = language === 'ar';
   
   const benefits = [
     {
@@ -88,17 +89,17 @@ const DealershipsSection = () => {
         </div>
 
         <div ref={ref} className="max-w-6xl mx-auto mb-12">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+          <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 ${isRTL ? 'dir-rtl' : ''}`}>
             <div
-              className={`md:col-span-3 bg-gradient-to-r from-tarabut-purple to-tarabut-blue rounded-xl p-8 text-white transition-all duration-500 ease-out transform ${
+              className={`md:col-span-3 bg-gradient-to-r ${isRTL ? 'from-tarabut-blue to-tarabut-purple' : 'from-tarabut-purple to-tarabut-blue'} rounded-xl p-8 text-white transition-all duration-500 ease-out transform ${
                 visibleBenefits.includes(1) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
               }`}
             >
-              <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+              <div className={`flex flex-col md:flex-row ${isRTL ? 'md:flex-row-reverse' : ''} items-center md:items-start gap-6`}>
                 <div className="bg-white/20 p-6 rounded-full shrink-0">
                   {benefits[0].icon}
                 </div>
-                <div className={`text-center md:text-${language === 'ar' ? 'right' : 'left'}`}>
+                <div className={`text-center ${isRTL ? 'md:text-right' : 'md:text-left'}`}>
                   <h3 className="text-2xl font-semibold mb-4">
                     {isChangingLanguage ? '...' : t(benefits[0].titleKey)}
                   </h3>
@@ -136,7 +137,7 @@ const DealershipsSection = () => {
         <div className="text-center">
           <Button 
             onClick={handleDealershipClick}
-            className="bg-tarabut-secondary hover:bg-tarabut-secondary/90 text-white px-8 py-5 rounded-md text-md md:text-lg"
+            className={`bg-tarabut-secondary hover:bg-tarabut-secondary/90 text-white px-8 py-5 rounded-md text-md md:text-lg ${isRTL ? 'flex flex-row-reverse items-center' : ''}`}
           >
             {isChangingLanguage ? '...' : t('dealership.cta')}
           </Button>
