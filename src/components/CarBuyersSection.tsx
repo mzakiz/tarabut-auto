@@ -77,37 +77,37 @@ const CarBuyersSection = () => {
           {benefits.map((benefit, index) => (
             <div
               key={benefit.id}
-              className={`flex items-start transition-all duration-500 ease-out transform ${
+              className={`flex transition-all duration-500 ease-out transform ${
                 visibleBenefits.includes(benefit.id) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
               }`}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
-              {!isRTL ? (
+              {isRTL ? (
                 <>
-                  <div className="bg-ksa-secondary/10 p-4 rounded-full shrink-0">
-                    <div className="text-ksa-secondary">{benefit.icon}</div>
-                  </div>
-                  <div className="ml-6 text-left">
+                  <div className="text-right">
                     <h3 className="text-xl font-semibold mb-3 text-ksa-dark">
                       {isChangingLanguage ? '...' : t(benefit.titleKey)}
                     </h3>
                     <p className="text-gray-600 leading-relaxed">
                       {isChangingLanguage ? '...' : t(benefit.descriptionKey)}
                     </p>
+                  </div>
+                  <div className="bg-ksa-secondary/10 p-4 rounded-full shrink-0 mr-0 ml-6">
+                    <div className="text-ksa-secondary">{benefit.icon}</div>
                   </div>
                 </>
               ) : (
                 <>
-                  <div className="mr-6 text-right">
+                  <div className="bg-ksa-secondary/10 p-4 rounded-full shrink-0 mr-6 ml-0">
+                    <div className="text-ksa-secondary">{benefit.icon}</div>
+                  </div>
+                  <div className="text-left">
                     <h3 className="text-xl font-semibold mb-3 text-ksa-dark">
                       {isChangingLanguage ? '...' : t(benefit.titleKey)}
                     </h3>
                     <p className="text-gray-600 leading-relaxed">
                       {isChangingLanguage ? '...' : t(benefit.descriptionKey)}
                     </p>
-                  </div>
-                  <div className="bg-ksa-secondary/10 p-4 rounded-full shrink-0">
-                    <div className="text-ksa-secondary">{benefit.icon}</div>
                   </div>
                 </>
               )}

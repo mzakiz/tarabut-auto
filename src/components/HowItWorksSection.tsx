@@ -79,68 +79,61 @@ const HowItWorksSection = () => {
           
           {/* Steps */}
           {steps.map((step, index) => {
-            const isEven = index % 2 === 0;
+            // For Arabic, odd steps are on left and even steps on right (opposite of LTR)
+            const isLeftSideContent = isRTL ? index % 2 === 0 : index % 2 !== 0;
             
             return (
               <div
                 key={step.id}
-                className={`relative flex flex-col md:flex-row md:items-center mb-20 last:mb-0 transition-all duration-500 ease-out ${
+                className={`relative flex flex-col md:flex-row mb-20 last:mb-0 transition-all duration-500 ease-out ${
                   visibleSteps.includes(step.id) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
                 }`}
                 style={{ transitionDelay: `${index * 150}ms` }}
               >
-                {/* Left Side - For LTR: Even steps have content, For RTL: Odd steps have content */}
-                <div className={`hidden md:block md:w-1/2 ${
-                  (isRTL ? !isEven : isEven) ? 'text-right' : ''
-                }`}>
-                  {(isRTL ? !isEven : isEven) && (
-                    <div className={`${isRTL ? 'pr-8 text-right' : 'pl-8 text-left'}`}>
-                      <div className="flex items-center mb-4 gap-4">
-                        <div className={`order-${isRTL ? '2' : '1'} bg-tarabut-teal/20 p-4 rounded-full inline-flex`}>
+                {/* Left side content */}
+                <div className="md:w-1/2 text-right rtl:text-left">
+                  {!isLeftSideContent && (
+                    <div className="hidden md:block pr-8 rtl:pr-0 rtl:pl-8">
+                      <div className="flex items-center mb-4 justify-end rtl:justify-start rtl:flex-row-reverse gap-4">
+                        <h3 className="text-xl font-semibold text-white">{isChangingLanguage ? '...' : t(step.titleKey)}</h3>
+                        <div className="bg-tarabut-teal/20 p-4 rounded-full inline-flex">
                           <div className="text-tarabut-teal">{step.icon}</div>
                         </div>
-                        <h3 className={`order-${isRTL ? '1' : '2'} text-xl font-semibold text-white`}>
-                          {isChangingLanguage ? '...' : t(step.titleKey)}
-                        </h3>
                       </div>
-                      <p className="text-white/80">
+                      <p className="text-white/80 text-right rtl:text-left">
                         {isChangingLanguage ? '...' : t(step.descriptionKey)}
                       </p>
                     </div>
                   )}
                 </div>
-                
-                {/* Center Circle */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 md:static md:transform-none md:flex md:items-center md:justify-center md:w-0">
+
+                {/* Center number */}
+                <div className="absolute left-1/2 transform -translate-x-1/2 md:static md:flex md:items-center md:justify-center md:w-0">
                   <div className="w-10 h-10 rounded-full bg-tarabut-teal flex items-center justify-center text-tarabut-dark font-bold text-base z-10">
                     {step.id}
                   </div>
                 </div>
 
-                {/* Right Side - For LTR: Odd steps have content, For RTL: Even steps have content */}
-                <div className={`hidden md:block md:w-1/2 ${
-                  (isRTL ? isEven : !isEven) ? 'text-left' : ''
-                }`}>
-                  {(isRTL ? isEven : !isEven) && (
-                    <div className={`${isRTL ? 'pl-8 text-left' : 'pr-8 text-right'}`}>
-                      <div className={`flex items-center mb-4 ${isRTL ? 'justify-start' : 'justify-end'} gap-4`}>
-                        <div className={`order-${isRTL ? '1' : '2'} bg-tarabut-teal/20 p-4 rounded-full inline-flex`}>
+                {/* Right side content */}
+                <div className="md:w-1/2 text-left rtl:text-right">
+                  {isLeftSideContent && (
+                    <div className="hidden md:block pl-8 rtl:pl-0 rtl:pr-8">
+                      <div className="flex items-center mb-4 justify-start rtl:justify-end rtl:flex-row-reverse gap-4">
+                        <div className="bg-tarabut-teal/20 p-4 rounded-full inline-flex">
                           <div className="text-tarabut-teal">{step.icon}</div>
                         </div>
-                        <h3 className={`order-${isRTL ? '2' : '1'} text-xl font-semibold text-white`}>
-                          {isChangingLanguage ? '...' : t(step.titleKey)}
-                        </h3>
+                        <h3 className="text-xl font-semibold text-white">{isChangingLanguage ? '...' : t(step.titleKey)}</h3>
                       </div>
-                      <p className="text-white/80">
+                      <p className="text-white/80 text-left rtl:text-right">
                         {isChangingLanguage ? '...' : t(step.descriptionKey)}
                       </p>
                     </div>
                   )}
                 </div>
 
-                {/* Mobile content - centered below the number */}
+                {/* Mobile content (centered below number) */}
                 <div className="md:hidden mt-16 text-center">
-                  <div className={`flex flex-col items-center ${isRTL ? 'rtl' : ''}`}>
+                  <div className="flex flex-col items-center">
                     <div className="bg-tarabut-teal/20 p-4 rounded-full inline-flex mb-4">
                       <div className="text-tarabut-teal">{step.icon}</div>
                     </div>
