@@ -58,7 +58,7 @@ const DEFAULT_FALLBACKS: Record<string, string> = {
   'tier.fast_track.points': '250-399 points',
   'tier.standard.points': '100-249 points',
   
-  // Calculator fallbacks
+  // Calculator fallbacks - expanded with explicit values
   'calculator.title': 'Calculate Your Monthly Payment',
   'calculator.subtitle': 'See if your dream car fits your budget!',
   'calculator.customize': 'Customize Your Monthly Payment',
@@ -68,6 +68,20 @@ const DEFAULT_FALLBACKS: Record<string, string> = {
   'calculator.months': 'months',
   'calculator.cta.question': 'Like what you see?',
   'calculator.cta.action': 'Join the Waitlist'
+};
+
+// Arabic fallbacks for critical components
+const AR_FALLBACKS: Record<string, string> = {
+  // Calculator Arabic fallbacks
+  'calculator.title': "احسب قسطك الشهري",
+  'calculator.subtitle': "شوف إذا تقدر تدبر قسط سيارة أحلامك!",
+  'calculator.customize': "عدّل قسطك الشهري",
+  'calculator.monthly.payment': "القسط الشهري",
+  'calculator.loan.amount': "مبلغ التمويل: ",
+  'calculator.loan.tenor': "مدة التمويل: ",
+  'calculator.months': "شهر",
+  'calculator.cta.question': "عجبك العرض؟",
+  'calculator.cta.action': "انضم لقائمة الانتظار"
 };
 
 // Immediately ensure translations are initialized
@@ -115,44 +129,28 @@ export const useTranslation = () => {
       try {
         // Check each source in order of preference
         
-        // 0. Special handling for calculator keys that often show up as raw keys
-        if (key.startsWith('calculator.')) {
-          // Direct mapping for critical calculator keys
-          if (DEFAULT_FALLBACKS[key]) {
-            if (language === 'ar') {
-              // Arabic calculator fallbacks
-              if (key === 'calculator.title') return "احسب قسطك الشهري";
-              if (key === 'calculator.subtitle') return "شوف إذا تقدر تدبر قسط سيارة أحلامك!";
-              if (key === 'calculator.customize') return "عدّل قسطك الشهري";
-              if (key === 'calculator.monthly.payment') return "القسط الشهري";
-              if (key === 'calculator.loan.amount') return "مبلغ التمويل: ";
-              if (key === 'calculator.loan.tenor') return "مدة التمويل: ";
-              if (key === 'calculator.months') return "شهر";
-              if (key === 'calculator.cta.question') return "عجبك العرض؟";
-              if (key === 'calculator.cta.action') return "انضم لقائمة الانتظار";
-            } else {
-              return DEFAULT_FALLBACKS[key];
-            }
-          }
-        }
-        
         // 1. Try direct access to the translation data first (fastest)
         if (translationData && translationData[key]) {
           return translationData[key];
         }
         
-        // 2. Try the main translation function
+        // 2. Special handling for calculator keys and other critical UI elements
+        if (language === 'ar' && AR_FALLBACKS[key]) {
+          return AR_FALLBACKS[key];
+        }
+        
+        // 3. Try the main translation function
         const translationValue = getTranslationValue(language as 'en' | 'ar', key, '');
         if (translationValue) {
           return translationValue;
         }
         
-        // 3. Try our hardcoded fallbacks for critical UI elements
+        // 4. Try our hardcoded fallbacks for critical UI elements
         if (DEFAULT_FALLBACKS[key]) {
           return DEFAULT_FALLBACKS[key];
         }
         
-        // 4. Try English data as fallback for Arabic
+        // 5. Try English data as fallback for Arabic
         if (language === 'ar' && enTranslationData && enTranslationData[key]) {
           return enTranslationData[key];
         }

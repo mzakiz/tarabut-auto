@@ -61,6 +61,33 @@ const HowItWorksSection = () => {
     }
   }, [inView, language]);
 
+  // Improved rendering function for step content that correctly handles RTL
+  const renderStepContent = (step: typeof steps[0], isLeftSide: boolean) => {
+    return (
+      <div className={`flex items-center mb-4 ${isLeftSide ? 'justify-start' : 'justify-end'} gap-4`}>
+        {(isLeftSide && !isRTL) || (!isLeftSide && isRTL) ? (
+          <>
+            <div className="bg-tarabut-teal/20 p-4 rounded-full inline-flex items-center justify-center">
+              <div className="text-tarabut-teal">{step.icon}</div>
+            </div>
+            <h3 className="text-xl font-semibold text-white">
+              {isChangingLanguage ? '...' : t(step.titleKey)}
+            </h3>
+          </>
+        ) : (
+          <>
+            <h3 className="text-xl font-semibold text-white">
+              {isChangingLanguage ? '...' : t(step.titleKey)}
+            </h3>
+            <div className="bg-tarabut-teal/20 p-4 rounded-full inline-flex items-center justify-center">
+              <div className="text-tarabut-teal">{step.icon}</div>
+            </div>
+          </>
+        )}
+      </div>
+    );
+  };
+
   return (
     <section id="how-it-works" className="py-16 md:py-24 bg-gradient-to-b from-tarabut-dark to-tarabut-dark/90" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
@@ -79,8 +106,8 @@ const HowItWorksSection = () => {
           
           {/* Steps */}
           {steps.map((step, index) => {
-            // For Arabic, odd steps are on left and even steps on right (opposite of LTR)
-            const isLeftSideContent = isRTL ? index % 2 === 0 : index % 2 !== 0;
+            // For RTL or LTR, properly determine which side each step goes on
+            const isLeftSide = isRTL ? index % 2 !== 0 : index % 2 === 0;
             
             return (
               <div
@@ -91,27 +118,11 @@ const HowItWorksSection = () => {
                 style={{ transitionDelay: `${index * 150}ms` }}
               >
                 {/* Left side content */}
-                <div className="md:w-1/2 text-right rtl:text-left">
-                  {!isLeftSideContent && (
-                    <div className="hidden md:block pr-8 rtl:pr-0 rtl:pl-8">
-                      <div className="flex items-center mb-4 justify-end rtl:justify-start gap-4">
-                        {isRTL ? (
-                          <>
-                            <div className="bg-tarabut-teal/20 p-4 rounded-full inline-flex">
-                              <div className="text-tarabut-teal">{step.icon}</div>
-                            </div>
-                            <h3 className="text-xl font-semibold text-white">{isChangingLanguage ? '...' : t(step.titleKey)}</h3>
-                          </>
-                        ) : (
-                          <>
-                            <h3 className="text-xl font-semibold text-white">{isChangingLanguage ? '...' : t(step.titleKey)}</h3>
-                            <div className="bg-tarabut-teal/20 p-4 rounded-full inline-flex">
-                              <div className="text-tarabut-teal">{step.icon}</div>
-                            </div>
-                          </>
-                        )}
-                      </div>
-                      <p className="text-white/80 text-right rtl:text-left">
+                <div className={`md:w-1/2 ${isLeftSide ? 'md:text-left' : 'md:text-right'}`}>
+                  {isLeftSide && (
+                    <div className={`hidden md:block ${isRTL ? 'pr-8' : 'pl-8'}`}>
+                      {renderStepContent(step, true)}
+                      <p className={`text-white/80 ${isRTL ? 'text-right' : 'text-left'}`}>
                         {isChangingLanguage ? '...' : t(step.descriptionKey)}
                       </p>
                     </div>
@@ -119,34 +130,18 @@ const HowItWorksSection = () => {
                 </div>
 
                 {/* Center number */}
-                <div className="absolute left-1/2 transform -translate-x-1/2 md:static md:flex md:items-center md:justify-center md:w-0">
-                  <div className="w-10 h-10 rounded-full bg-tarabut-teal flex items-center justify-center text-tarabut-dark font-bold text-base z-10">
+                <div className="absolute left-1/2 transform -translate-x-1/2 z-10 md:static md:flex md:items-center md:justify-center md:w-0 md:z-auto">
+                  <div className="w-10 h-10 rounded-full bg-tarabut-teal flex items-center justify-center text-tarabut-dark font-bold text-base">
                     {step.id}
                   </div>
                 </div>
 
                 {/* Right side content */}
-                <div className="md:w-1/2 text-left rtl:text-right">
-                  {isLeftSideContent && (
-                    <div className="hidden md:block pl-8 rtl:pl-0 rtl:pr-8">
-                      <div className="flex items-center mb-4 justify-start rtl:justify-end gap-4">
-                        {isRTL ? (
-                          <>
-                            <div className="bg-tarabut-teal/20 p-4 rounded-full inline-flex">
-                              <div className="text-tarabut-teal">{step.icon}</div>
-                            </div>
-                            <h3 className="text-xl font-semibold text-white">{isChangingLanguage ? '...' : t(step.titleKey)}</h3>
-                          </>
-                        ) : (
-                          <>
-                            <div className="bg-tarabut-teal/20 p-4 rounded-full inline-flex">
-                              <div className="text-tarabut-teal">{step.icon}</div>
-                            </div>
-                            <h3 className="text-xl font-semibold text-white">{isChangingLanguage ? '...' : t(step.titleKey)}</h3>
-                          </>
-                        )}
-                      </div>
-                      <p className="text-white/80 text-left rtl:text-right">
+                <div className={`md:w-1/2 ${isLeftSide ? 'md:text-right' : 'md:text-left'}`}>
+                  {!isLeftSide && (
+                    <div className={`hidden md:block ${isRTL ? 'pl-8' : 'pr-8'}`}>
+                      {renderStepContent(step, false)}
+                      <p className={`text-white/80 ${isRTL ? 'text-left' : 'text-right'}`}>
                         {isChangingLanguage ? '...' : t(step.descriptionKey)}
                       </p>
                     </div>

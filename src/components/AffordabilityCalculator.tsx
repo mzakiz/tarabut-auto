@@ -88,12 +88,50 @@ const AffordabilityCalculator = () => {
   // Arrow icon based on language direction
   const ArrowIcon = isRTL ? ArrowLeft : ArrowRight;
 
+  // Force use of hardcoded translations if needed for calculator section
+  const getCalcTranslation = (key: string): string => {
+    // Try using the normal translation function first
+    let translation = t(key);
+    
+    // If we got back the key itself (missing translation), use hardcoded fallbacks
+    if (translation === key) {
+      const fallbacks: Record<string, Record<string, string>> = {
+        en: {
+          'calculator.title': 'Calculate Your Monthly Payment',
+          'calculator.subtitle': 'See if your dream car fits your budget!',
+          'calculator.customize': 'Customize Your Monthly Payment',
+          'calculator.monthly.payment': 'Monthly Payment',
+          'calculator.loan.amount': 'Loan Amount: ',
+          'calculator.loan.tenor': 'Loan Term: ',
+          'calculator.months': 'months',
+          'calculator.cta.question': 'Like what you see?',
+          'calculator.cta.action': 'Join the Waitlist'
+        },
+        ar: {
+          'calculator.title': 'احسب قسطك الشهري',
+          'calculator.subtitle': 'شوف إذا تقدر تدبر قسط سيارة أحلامك!',
+          'calculator.customize': 'عدّل قسطك الشهري',
+          'calculator.monthly.payment': 'القسط الشهري',
+          'calculator.loan.amount': 'مبلغ التمويل: ',
+          'calculator.loan.tenor': 'مدة التمويل: ',
+          'calculator.months': 'شهر',
+          'calculator.cta.question': 'عجبك العرض؟',
+          'calculator.cta.action': 'انضم لقائمة الانتظار'
+        }
+      };
+      
+      return fallbacks[language as 'en' | 'ar']?.[key] || key;
+    }
+    
+    return translation;
+  };
+
   return (
     <section id="calculator" className="py-20 bg-gray-50">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className={`text-center mb-12 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'} transition-all duration-1000`}>
-          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{t('calculator.title')}</h2>
-          <p className="text-xl text-gray-600">{t('calculator.subtitle')}</p>
+          <h2 className="text-3xl md:text-4xl font-bold text-gray-900 mb-4">{getCalcTranslation('calculator.title')}</h2>
+          <p className="text-xl text-gray-600">{getCalcTranslation('calculator.subtitle')}</p>
         </div>
 
         <div className={`transition-all duration-1000 ${isVisible ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-20'}`}>
@@ -103,12 +141,12 @@ const AffordabilityCalculator = () => {
               <div className={`bg-gradient-to-br from-ksa-primary to-ksa-secondary p-8 text-white ${isRTL ? 'md:order-last' : 'md:order-first'}`}>
                 <div className={`flex items-center mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}>
                   <Calculator className={`h-8 w-8 ${isRTL ? 'ml-3' : 'mr-3'}`} />
-                  <h2 className="text-2xl font-bold">{t('calculator.customize')}</h2>
+                  <h2 className="text-2xl font-bold">{getCalcTranslation('calculator.customize')}</h2>
                 </div>
                 
                 <div className="mb-8">
                   <div className={`flex justify-between mb-2 ${isRTL ? 'flex-row-reverse' : ''}`}>
-                    <span className="font-medium">{t('calculator.monthly.payment')}</span>
+                    <span className="font-medium">{getCalcTranslation('calculator.monthly.payment')}</span>
                     <span className="text-2xl font-bold">SAR {Math.round(monthlyPayment).toLocaleString()}</span>
                   </div>
                   <div className="w-full bg-white/20 h-2 rounded-full">
@@ -129,7 +167,7 @@ const AffordabilityCalculator = () => {
                 <div className="space-y-6">
                   <div className={isRTL ? 'text-right' : 'text-left'}>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {t('calculator.loan.amount')}: SAR {carPrice.toLocaleString()}
+                      {getCalcTranslation('calculator.loan.amount')}: SAR {carPrice.toLocaleString()}
                     </label>
                     <Slider
                       value={[carPrice]}
@@ -144,7 +182,7 @@ const AffordabilityCalculator = () => {
                   
                   <div className={isRTL ? 'text-right' : 'text-left'}>
                     <label className="block text-sm font-medium text-gray-700 mb-1">
-                      {t('calculator.loan.tenor')}: {loanTerm} {t('calculator.months')}
+                      {getCalcTranslation('calculator.loan.tenor')}: {loanTerm} {getCalcTranslation('calculator.months')}
                     </label>
                     <Slider
                       value={[loanTerm]}
@@ -162,12 +200,12 @@ const AffordabilityCalculator = () => {
           </div>
 
           <div className="mt-12 text-center">
-            <p className="text-xl font-medium text-gray-700 mb-4">{t('calculator.cta.question')}</p>
+            <p className="text-xl font-medium text-gray-700 mb-4">{getCalcTranslation('calculator.cta.question')}</p>
             <Button 
               onClick={() => navigate('waitlist-signup')}
               className="bg-ksa-primary hover:bg-ksa-primary/90 text-white px-8 py-6 text-lg"
             >
-              {t('calculator.cta.action')}
+              {getCalcTranslation('calculator.cta.action')}
               <ArrowIcon className={`${isRTL ? 'mr-2' : 'ml-2'} h-5 w-5`} />
             </Button>
           </div>
