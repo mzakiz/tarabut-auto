@@ -77,7 +77,7 @@ const DealershipsSection = () => {
   };
 
   return (
-    <section id="dealerships" className="py-16 md:py-24 bg-gray-50">
+    <section id="dealerships" className={`py-16 md:py-24 bg-gray-50 ${isRTL ? 'rtl' : ''}`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-ksa-dark mb-3 md:mb-4">
@@ -89,7 +89,7 @@ const DealershipsSection = () => {
         </div>
 
         <div ref={ref} className="max-w-6xl mx-auto mb-12">
-          <div className={`grid grid-cols-1 md:grid-cols-3 gap-8 ${isRTL ? 'dir-rtl' : ''}`}>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
             <div
               className={`md:col-span-3 bg-gradient-to-r ${isRTL ? 'from-tarabut-blue to-tarabut-purple' : 'from-tarabut-purple to-tarabut-blue'} rounded-xl p-8 text-white transition-all duration-500 ease-out transform ${
                 visibleBenefits.includes(1) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
@@ -118,7 +118,7 @@ const DealershipsSection = () => {
                 }`}
                 style={{ transitionDelay: `${(index + 1) * 100}ms` }}
               >
-                <div className="flex flex-col items-center text-center h-full">
+                <div className={`flex flex-col items-center ${isRTL ? 'text-right' : 'text-center'}`}>
                   <div className="bg-tarabut-secondary/10 p-4 rounded-full mb-4">
                     <div className="text-tarabut-secondary">{benefit.icon}</div>
                   </div>

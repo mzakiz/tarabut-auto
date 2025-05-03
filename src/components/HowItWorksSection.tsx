@@ -64,7 +64,7 @@ const HowItWorksSection = () => {
   return (
     <section id="how-it-works" className="py-16 md:py-24 bg-gradient-to-b from-tarabut-dark to-tarabut-dark/90">
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className="text-center mb-12 md:mb-16">
+        <div className={`text-center mb-12 md:mb-16 ${isRTL ? 'rtl' : ''}`}>
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-3 md:mb-4">
             {isChangingLanguage ? '...' : t('how_it_works.title')}
           </h2>
@@ -73,30 +73,30 @@ const HowItWorksSection = () => {
           </p>
         </div>
 
-        <div ref={ref} className="relative max-w-5xl mx-auto">
+        <div ref={ref} className={`relative max-w-5xl mx-auto ${isRTL ? 'rtl' : ''}`}>
           {/* Vertical line for desktop */}
           <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/10 transform -translate-x-1/2 hidden md:block" />
           
           {/* Steps */}
           {steps.map((step, index) => {
-            // Determine the layout direction based on language and step index
+            // In RTL mode, we reverse the positioning logic
             const isEvenStep = index % 2 === 0;
-            const shouldReverse = isRTL ? !isEvenStep : isEvenStep;
+            const shouldReverse = isRTL ? isEvenStep : !isEvenStep;
             
             return (
               <div
                 key={step.id}
                 className={`relative flex flex-col md:flex-row md:items-center mb-20 last:mb-0 transition-all duration-500 ease-out ${
                   visibleSteps.includes(step.id) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
-                } ${shouldReverse ? '' : 'md:flex-row-reverse'}`}
+                } ${shouldReverse ? 'md:flex-row-reverse' : ''}`}
                 style={{ transitionDelay: `${index * 150}ms` }}
               >
                 {/* Desktop content */}
                 <div className={`hidden md:block w-1/2 ${
-                  shouldReverse ? 'text-right md:pr-8' : 'text-left md:pl-8'
+                  shouldReverse ? 'text-left md:pl-8' : 'text-right md:pr-8'
                 }`}>
-                  <div className="inline-block">
-                    <div className="bg-tarabut-teal/20 p-4 rounded-full mb-4 inline-flex">
+                  <div className={`inline-block ${isRTL ? 'text-right' : ''}`}>
+                    <div className={`bg-tarabut-teal/20 p-4 rounded-full mb-4 inline-flex ${isRTL ? 'mr-0 ml-4' : 'ml-0 mr-4'}`}>
                       <div className="text-tarabut-teal">{step.icon}</div>
                     </div>
                     <h3 className="text-lg md:text-xl font-semibold mb-3 text-white">
@@ -116,17 +116,19 @@ const HowItWorksSection = () => {
                 </div>
 
                 {/* Mobile content - centered below the number */}
-                <div className="md:hidden mt-16 text-center">
-                  <div className="flex flex-col items-center">
-                    <div className="bg-tarabut-teal/20 p-4 rounded-full mb-4 inline-flex">
+                <div className={`md:hidden mt-16 ${isRTL ? 'text-right' : 'text-center'}`}>
+                  <div className={`flex ${isRTL ? 'flex-row-reverse justify-end' : 'flex-col items-center'}`}>
+                    <div className={`bg-tarabut-teal/20 p-4 rounded-full mb-4 inline-flex ${isRTL ? 'ml-4' : ''}`}>
                       <div className="text-tarabut-teal">{step.icon}</div>
                     </div>
-                    <h3 className="text-lg md:text-xl font-semibold mb-3 text-white">
-                      {isChangingLanguage ? '...' : t(step.titleKey)}
-                    </h3>
-                    <p className="text-sm md:text-base text-white/80 max-w-sm mx-auto">
-                      {isChangingLanguage ? '...' : t(step.descriptionKey)}
-                    </p>
+                    <div className={isRTL ? 'text-right' : 'text-center'}>
+                      <h3 className="text-lg md:text-xl font-semibold mb-3 text-white">
+                        {isChangingLanguage ? '...' : t(step.titleKey)}
+                      </h3>
+                      <p className="text-sm md:text-base text-white/80 max-w-sm mx-auto">
+                        {isChangingLanguage ? '...' : t(step.descriptionKey)}
+                      </p>
+                    </div>
                   </div>
                 </div>
                 

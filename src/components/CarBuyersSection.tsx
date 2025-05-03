@@ -62,7 +62,7 @@ const CarBuyersSection = () => {
   }, [inView, language]);
 
   return (
-    <section id="car-buyers" className="py-16 md:py-24 bg-white">
+    <section id="car-buyers" className={`py-16 md:py-24 bg-white ${isRTL ? 'rtl' : ''}`}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-ksa-dark mb-3 md:mb-4">
@@ -77,9 +77,9 @@ const CarBuyersSection = () => {
           {benefits.map((benefit, index) => (
             <div
               key={benefit.id}
-              className={`flex ${isRTL ? 'flex-row-reverse' : ''} items-start transition-all duration-500 ease-out transform ${
+              className={`flex items-start transition-all duration-500 ease-out transform ${
                 visibleBenefits.includes(benefit.id) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-              }`}
+              } ${isRTL ? 'flex-row-reverse' : ''}`}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
               <div className="bg-ksa-secondary/10 p-4 rounded-full shrink-0">
