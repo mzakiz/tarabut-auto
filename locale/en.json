@@ -10,9 +10,15 @@
     "dealership.phone": "Phone Number",
     "dealership.submit": "Submit",
     "dealership.submitting": "Submitting...",
+    "back": "Back",
+    "dealership.success": "Registration Successful",
+    "dealership.success.description": "Your dealership has been successfully registered.",
+    "dealership.error": "Registration Error",
+    "dealership.error.description": "There was an error registering your dealership. Please try again.",
     "form.placeholder.contact": "Enter contact name",
     "form.placeholder.dealership": "Enter dealership name",
     "form.placeholder.business.email": "Enter business email",
+    "form.placeholder.phone": "5XXXXXXXX",
     "form.validation.work.email": "Please use your work email address",
     "form.validation.phone": "Please enter a valid phone number starting with 5"
 }

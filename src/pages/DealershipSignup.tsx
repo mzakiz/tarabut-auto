@@ -3,7 +3,6 @@ import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import { Input } from '@/components/ui/input';
 import { useToast } from '@/hooks/use-toast';
 import { supabase } from '@/integrations/supabase/client';
 import { Form, FormControl, FormField, FormItem, FormLabel, FormMessage } from '@/components/ui/form';
@@ -13,6 +12,7 @@ import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import * as z from 'zod';
 import type { Tables } from '@/integrations/supabase/types';
+import { Input } from '@/components/ui/input';
 
 const PERSONAL_EMAIL_DOMAINS = [
   'gmail.com', 'yahoo.com', 'hotmail.com', 'outlook.com', 'icloud.com', 
@@ -138,9 +138,10 @@ const DealershipSignup: React.FC = () => {
                       <FormControl>
                         <Input 
                           placeholder={t('form.placeholder.contact')}
-                          className={`h-12 ${isRTL ? 'text-right' : ''}`} 
+                          className={`h-12 ${isRTL ? 'text-right placeholder:text-right' : ''}`} 
                           {...field} 
                           dir={isRTL ? 'rtl' : 'ltr'}
+                          style={isRTL ? { textAlign: 'right' } : undefined}
                         />
                       </FormControl>
                       <FormMessage className={isRTL ? 'text-right' : ''} />
@@ -159,9 +160,10 @@ const DealershipSignup: React.FC = () => {
                       <FormControl>
                         <Input 
                           placeholder={t('form.placeholder.dealership')}
-                          className={`h-12 ${isRTL ? 'text-right' : ''}`} 
+                          className={`h-12 ${isRTL ? 'text-right placeholder:text-right' : ''}`} 
                           {...field} 
                           dir={isRTL ? 'rtl' : 'ltr'}
+                          style={isRTL ? { textAlign: 'right' } : undefined}
                         />
                       </FormControl>
                       <FormMessage className={isRTL ? 'text-right' : ''} />
@@ -181,7 +183,7 @@ const DealershipSignup: React.FC = () => {
                         <Input 
                           type="email" 
                           placeholder={t('form.placeholder.business.email')}
-                          className="h-12 text-left" 
+                          className={`h-12 ${isRTL ? 'placeholder:text-right' : ''}`}
                           {...field} 
                           dir="ltr"
                         />
@@ -209,7 +211,7 @@ const DealershipSignup: React.FC = () => {
                         <FormControl>
                           <Input 
                             placeholder={t('form.placeholder.phone')}
-                            className={`h-12 ${isRTL ? 'text-right pr-16' : 'text-left pl-16'}`}
+                            className={`h-12 ${isRTL ? 'text-right pr-16' : 'text-left pl-16'} ${isRTL ? 'placeholder:text-right' : ''}`}
                             maxLength={9}
                             {...field} 
                             dir="ltr"

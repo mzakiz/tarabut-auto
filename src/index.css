@@ -164,6 +164,16 @@
   order: 2;
 }
 
+/* Ensure placeholder text aligns correctly in RTL mode */
+[dir="rtl"] input::placeholder,
+[dir="rtl"] textarea::placeholder {
+  text-align: right;
+}
+
+[dir="rtl"] .placeholder\:text-right::placeholder {
+  text-align: right;
+}
+
 /* Fix RTL flex ordering issues on section components */
 [dir="rtl"] .rtl-reverse-icon-order .icon {
   order: 1;

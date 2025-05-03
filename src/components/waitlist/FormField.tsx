@@ -42,12 +42,16 @@ export const FormField: React.FC<FormFieldProps> = ({
   
   return (
     <div>
-      <Label htmlFor={id} className={`text-sm font-medium block ${isRTL ? 'text-right w-full' : 'text-left'}`}>
+      <Label htmlFor={id} className={`text-sm font-medium block w-full ${isRTL ? 'text-right' : 'text-left'}`}>
         {label} {required && <span className="text-red-500">*</span>}
       </Label>
       <div className="relative">
         {prefix && (
-          <span className={`absolute top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 ${isRTL ? 'right-3' : 'left-3'}`}>
+          <span 
+            className={`absolute top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 ${
+              isRTL ? 'right-3' : 'left-3'
+            }`}
+          >
             {prefix}
           </span>
         )}
@@ -58,12 +62,16 @@ export const FormField: React.FC<FormFieldProps> = ({
           onChange={(e) => onChange(e.target.value)}
           onFocus={onFocus}
           onBlur={onBlur}
-          className={`w-full h-12 mt-1 ${error ? 'border-red-500' : ''} ${prefix ? (isRTL ? 'pr-14' : 'pl-14') : ''} ${isRTL ? 'text-right' : 'text-left'} ${className}`}
+          className={`w-full h-12 mt-1 ${error ? 'border-red-500' : ''} 
+            ${prefix ? (isRTL ? 'pr-14' : 'pl-14') : ''} 
+            ${isRTL ? 'text-right placeholder:text-right' : 'text-left placeholder:text-left'}
+            ${className}`}
           placeholder={placeholder}
           required={required}
           maxLength={maxLength}
           inputMode={inputMode}
           dir={dir}
+          style={isRTL ? { textAlign: 'right' } : { textAlign: 'left' }}
         />
       </div>
       {error && <p className={`text-sm text-red-500 mt-1 ${isRTL ? 'text-right' : 'text-left'}`}>{error}</p>}
