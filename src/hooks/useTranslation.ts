@@ -1,3 +1,4 @@
+
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useState, useEffect, useRef, useMemo } from 'react';
 import {
@@ -55,7 +56,18 @@ const DEFAULT_FALLBACKS: Record<string, string> = {
   'tier.vip_access.points': '600+ points',
   'tier.early_access.points': '400-599 points',
   'tier.fast_track.points': '250-399 points',
-  'tier.standard.points': '100-249 points'
+  'tier.standard.points': '100-249 points',
+  
+  // Calculator fallbacks
+  'calculator.title': 'Calculate Your Monthly Payment',
+  'calculator.subtitle': 'See if your dream car fits your budget!',
+  'calculator.customize': 'Customize Your Monthly Payment',
+  'calculator.monthly.payment': 'Monthly Payment',
+  'calculator.loan.amount': 'Loan Amount: ',
+  'calculator.loan.tenor': 'Loan Term: ',
+  'calculator.months': 'months',
+  'calculator.cta.question': 'Like what you see?',
+  'calculator.cta.action': 'Join the Waitlist'
 };
 
 // Immediately ensure translations are initialized
@@ -102,6 +114,27 @@ export const useTranslation = () => {
 
       try {
         // Check each source in order of preference
+        
+        // 0. Special handling for calculator keys that often show up as raw keys
+        if (key.startsWith('calculator.')) {
+          // Direct mapping for critical calculator keys
+          if (DEFAULT_FALLBACKS[key]) {
+            if (language === 'ar') {
+              // Arabic calculator fallbacks
+              if (key === 'calculator.title') return "احسب قسطك الشهري";
+              if (key === 'calculator.subtitle') return "شوف إذا تقدر تدبر قسط سيارة أحلامك!";
+              if (key === 'calculator.customize') return "عدّل قسطك الشهري";
+              if (key === 'calculator.monthly.payment') return "القسط الشهري";
+              if (key === 'calculator.loan.amount') return "مبلغ التمويل: ";
+              if (key === 'calculator.loan.tenor') return "مدة التمويل: ";
+              if (key === 'calculator.months') return "شهر";
+              if (key === 'calculator.cta.question') return "عجبك العرض؟";
+              if (key === 'calculator.cta.action') return "انضم لقائمة الانتظار";
+            } else {
+              return DEFAULT_FALLBACKS[key];
+            }
+          }
+        }
         
         // 1. Try direct access to the translation data first (fastest)
         if (translationData && translationData[key]) {
