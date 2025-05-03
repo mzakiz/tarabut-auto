@@ -67,7 +67,22 @@ const DEFAULT_FALLBACKS: Record<string, string> = {
   'calculator.loan.tenor': 'Loan Term: ',
   'calculator.months': 'months',
   'calculator.cta.question': 'Like what you see?',
-  'calculator.cta.action': 'Join the Waitlist'
+  'calculator.cta.action': 'Join the Waitlist',
+
+  // Dealership form fallbacks
+  'dealership.registration': 'Dealership Registration',
+  'dealership.registration.subtitle': 'Join Tarabut Auto\'s dealership network and increase your sales opportunities',
+  'dealership.contact.name': 'Contact Name',
+  'dealership.name': 'Dealership Name',
+  'dealership.email': 'Email Address',
+  'dealership.phone': 'Phone Number',
+  'dealership.submit': 'Submit',
+  'dealership.submitting': 'Submitting...',
+  'form.placeholder.contact': 'Enter contact name',
+  'form.placeholder.dealership': 'Enter dealership name',
+  'form.placeholder.business.email': 'Enter business email',
+  'form.validation.work.email': 'Please use your work email address',
+  'form.validation.phone': 'Please enter a valid phone number starting with 5'
 };
 
 // Arabic fallbacks for critical components
@@ -81,7 +96,22 @@ const AR_FALLBACKS: Record<string, string> = {
   'calculator.loan.tenor': "مدة التمويل: ",
   'calculator.months': "شهر",
   'calculator.cta.question': "عجبك العرض؟",
-  'calculator.cta.action': "انضم لقائمة الانتظار"
+  'calculator.cta.action': "انضم لقائمة الانتظار",
+
+  // Dealership form Arabic fallbacks
+  'dealership.registration': "تسجيل معرض سيارات",
+  'dealership.registration.subtitle': "انضم لشبكة معارض ترابط أوتو واستفد من فرص بيع أكثر",
+  'dealership.contact.name': "اسم مسؤول التواصل",
+  'dealership.name': "اسم المعرض",
+  'dealership.email': "البريد الإلكتروني",
+  'dealership.phone': "رقم الجوال",
+  'dealership.submit': "تسجيل",
+  'dealership.submitting': "جاري التسجيل...",
+  'form.placeholder.contact': "أدخل اسم مسؤول التواصل",
+  'form.placeholder.dealership': "أدخل اسم المعرض",
+  'form.placeholder.business.email': "أدخل البريد الإلكتروني للعمل",
+  'form.validation.work.email': "الرجاء استخدام البريد الإلكتروني للعمل",
+  'form.validation.phone': "الرجاء إدخال رقم جوال صحيح يبدأ بـ 5"
 };
 
 // Immediately ensure translations are initialized

@@ -1,7 +1,7 @@
 
 {
     "speed.tagline": "خلك سبّاق وتعدى 3 أسابيع انتظار البنوك",
-    "speed.subtitle": "خذ الموافقة الحصرية في دقيقة وحدة",
+    "speed.subtitle": "خذ الموافقة الحصرية في دقيقة",
     "offer.tagline": "نتفاوض مع 12 بنك عشان ما تتعب",
     "offer.subtitle": "احصل على أفضل سعر حصري",
     "budget.tagline": "احجز سيارة أحلامك بدون ما تكسر راتبك",
@@ -206,7 +206,23 @@
     "dealerships.benefit4.title": "خدمة عملاء متميزة",
     "dealerships.benefit4.description": "قدم تجربة رهيبة للعملاء مع خيارات تمويل متعددة ودعم مستمر",
 
+    "dealership.registration": "تسجيل معرض سيارات",
+    "dealership.registration.subtitle": "انضم لشبكة معارض ترابط أوتو واستفد من فرص بيع أكثر",
+    "dealership.contact.name": "اسم مسؤول التواصل",
+    "dealership.name": "اسم المعرض",
+    "dealership.email": "البريد الإلكتروني",
+    "dealership.phone": "رقم الجوال",
+    "dealership.submit": "تسجيل",
+    "dealership.submitting": "جاري التسجيل...",
+    "dealership.error": "حدث خطأ",
+    "dealership.error.description": "يرجى المحاولة مرة أخرى لاحقاً",
     "dealership.success": "تم تسجيل طلبك بنجاح!",
     "dealership.success.description": "فريقنا راح يتواصل معك قريباً عشان تنضم لشركاء ترابط أوتو",
-    "dealership.back": "ارجع للصفحة الرئيسية"
+    "dealership.back": "ارجع للصفحة الرئيسية",
+    
+    "form.placeholder.contact": "أدخل اسم مسؤول التواصل",
+    "form.placeholder.dealership": "أدخل اسم المعرض",
+    "form.placeholder.business.email": "أدخل البريد الإلكتروني للعمل",
+    "form.validation.work.email": "الرجاء استخدام البريد الإلكتروني للعمل",
+    "form.validation.phone": "الرجاء إدخال رقم جوال صحيح يبدأ بـ 5"
 }

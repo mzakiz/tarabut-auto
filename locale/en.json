@@ -1,3 +1,18 @@
+
 {
-    "speed.tagline": "Skip 3-week bank waits for Auto Lending"
+    "speed.tagline": "Skip 3-week bank waits for Auto Lending",
+    "speed.subtitle": "Get exclusive approval in just one minute",
+    "dealership.registration": "Dealership Registration",
+    "dealership.registration.subtitle": "Join Tarabut Auto's dealership network and increase your sales opportunities",
+    "dealership.contact.name": "Contact Name",
+    "dealership.name": "Dealership Name",
+    "dealership.email": "Email Address",
+    "dealership.phone": "Phone Number",
+    "dealership.submit": "Submit",
+    "dealership.submitting": "Submitting...",
+    "form.placeholder.contact": "Enter contact name",
+    "form.placeholder.dealership": "Enter dealership name",
+    "form.placeholder.business.email": "Enter business email",
+    "form.validation.work.email": "Please use your work email address",
+    "form.validation.phone": "Please enter a valid phone number starting with 5"
 }

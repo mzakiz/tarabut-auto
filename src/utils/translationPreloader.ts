@@ -49,6 +49,29 @@ export const preloadAllTranslations = (): void => {
       GLOBAL_TRANSLATIONS.en['calculator.title'] = "Calculate Your Monthly Payment";
       GLOBAL_TRANSLATIONS.ar['calculator.title'] = "احسب قسطك الشهري";
     }
+
+    // Double check that dealership form translations are loaded
+    if (!GLOBAL_TRANSLATIONS.en['dealership.registration'] || !GLOBAL_TRANSLATIONS.ar['dealership.registration']) {
+      console.error('[TranslationPreloader] Critical dealership translations missing, attempting to recover');
+      // Force recovery for dealership form
+      GLOBAL_TRANSLATIONS.en['dealership.registration'] = "Dealership Registration";
+      GLOBAL_TRANSLATIONS.ar['dealership.registration'] = "تسجيل معرض سيارات";
+      
+      GLOBAL_TRANSLATIONS.en['dealership.contact.name'] = "Contact Name";
+      GLOBAL_TRANSLATIONS.ar['dealership.contact.name'] = "اسم مسؤول التواصل";
+      
+      GLOBAL_TRANSLATIONS.en['dealership.name'] = "Dealership Name";
+      GLOBAL_TRANSLATIONS.ar['dealership.name'] = "اسم المعرض";
+      
+      GLOBAL_TRANSLATIONS.en['dealership.email'] = "Email Address";
+      GLOBAL_TRANSLATIONS.ar['dealership.email'] = "البريد الإلكتروني";
+      
+      GLOBAL_TRANSLATIONS.en['dealership.phone'] = "Phone Number";
+      GLOBAL_TRANSLATIONS.ar['dealership.phone'] = "رقم الجوال";
+      
+      GLOBAL_TRANSLATIONS.en['dealership.submit'] = "Submit";
+      GLOBAL_TRANSLATIONS.ar['dealership.submit'] = "تسجيل";
+    }
     
     LOADING_STATUS.initialized = true;
     LOADING_STATUS.ready = true;
@@ -156,6 +179,59 @@ export const getTranslationValue = (
     
     if (key === 'calculator.cta.action') {
       return language === 'ar' ? "انضم لقائمة الانتظار" : "Join the Waitlist";
+    }
+    
+    // Special hardcoded fallbacks for dealership form
+    if (key === 'dealership.registration') {
+      return language === 'ar' ? "تسجيل معرض سيارات" : "Dealership Registration";
+    }
+    
+    if (key === 'dealership.registration.subtitle') {
+      return language === 'ar' ? "انضم لشبكة معارض ترابط أوتو واستفد من فرص بيع أكثر" : "Join Tarabut Auto's dealership network and increase your sales opportunities";
+    }
+    
+    if (key === 'dealership.contact.name') {
+      return language === 'ar' ? "اسم مسؤول التواصل" : "Contact Name";
+    }
+    
+    if (key === 'dealership.name') {
+      return language === 'ar' ? "اسم المعرض" : "Dealership Name";
+    }
+    
+    if (key === 'dealership.email') {
+      return language === 'ar' ? "البريد الإلكتروني" : "Email Address";
+    }
+    
+    if (key === 'dealership.phone') {
+      return language === 'ar' ? "رقم الجوال" : "Phone Number";
+    }
+    
+    if (key === 'dealership.submit') {
+      return language === 'ar' ? "تسجيل" : "Submit";
+    }
+    
+    if (key === 'dealership.submitting') {
+      return language === 'ar' ? "جاري التسجيل..." : "Submitting...";
+    }
+    
+    if (key === 'form.placeholder.contact') {
+      return language === 'ar' ? "أدخل اسم مسؤول التواصل" : "Enter contact name";
+    }
+    
+    if (key === 'form.placeholder.dealership') {
+      return language === 'ar' ? "أدخل اسم المعرض" : "Enter dealership name";
+    }
+    
+    if (key === 'form.placeholder.business.email') {
+      return language === 'ar' ? "أدخل البريد الإلكتروني للعمل" : "Enter business email";
+    }
+    
+    if (key === 'form.validation.work.email') {
+      return language === 'ar' ? "الرجاء استخدام البريد الإلكتروني للعمل" : "Please use your work email address";
+    }
+    
+    if (key === 'form.validation.phone') {
+      return language === 'ar' ? "الرجاء إدخال رقم جوال صحيح يبدأ بـ 5" : "Please enter a valid phone number starting with 5";
     }
     
     // Return fallback if no translation found
