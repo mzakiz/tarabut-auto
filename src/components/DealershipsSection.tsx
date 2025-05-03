@@ -98,7 +98,7 @@ const DealershipsSection = () => {
               <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
                 {isRTL ? (
                   <>
-                    <div className="text-center md:text-right">
+                    <div className="text-center md:text-right flex-1">
                       <h3 className="text-2xl font-semibold mb-4">
                         {isChangingLanguage ? '...' : t(benefits[0].titleKey)}
                       </h3>
@@ -115,7 +115,7 @@ const DealershipsSection = () => {
                     <div className="bg-white/20 p-6 rounded-full shrink-0">
                       {benefits[0].icon}
                     </div>
-                    <div className="text-center md:text-left">
+                    <div className="text-center md:text-left flex-1">
                       <h3 className="text-2xl font-semibold mb-4">
                         {isChangingLanguage ? '...' : t(benefits[0].titleKey)}
                       </h3>

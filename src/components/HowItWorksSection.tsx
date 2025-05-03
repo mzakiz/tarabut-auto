@@ -118,11 +118,22 @@ const HowItWorksSection = () => {
                 <div className="md:w-1/2 text-left rtl:text-right">
                   {isLeftSideContent && (
                     <div className="hidden md:block pl-8 rtl:pl-0 rtl:pr-8">
-                      <div className="flex items-center mb-4 justify-start rtl:justify-end rtl:flex-row-reverse gap-4">
-                        <div className="bg-tarabut-teal/20 p-4 rounded-full inline-flex">
-                          <div className="text-tarabut-teal">{step.icon}</div>
-                        </div>
-                        <h3 className="text-xl font-semibold text-white">{isChangingLanguage ? '...' : t(step.titleKey)}</h3>
+                      <div className="flex items-center mb-4 justify-start rtl:justify-end gap-4">
+                        {isRTL ? (
+                          <>
+                            <h3 className="text-xl font-semibold text-white">{isChangingLanguage ? '...' : t(step.titleKey)}</h3>
+                            <div className="bg-tarabut-teal/20 p-4 rounded-full inline-flex">
+                              <div className="text-tarabut-teal">{step.icon}</div>
+                            </div>
+                          </>
+                        ) : (
+                          <>
+                            <div className="bg-tarabut-teal/20 p-4 rounded-full inline-flex">
+                              <div className="text-tarabut-teal">{step.icon}</div>
+                            </div>
+                            <h3 className="text-xl font-semibold text-white">{isChangingLanguage ? '...' : t(step.titleKey)}</h3>
+                          </>
+                        )}
                       </div>
                       <p className="text-white/80 text-left rtl:text-right">
                         {isChangingLanguage ? '...' : t(step.descriptionKey)}

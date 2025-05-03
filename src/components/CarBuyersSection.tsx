@@ -79,12 +79,12 @@ const CarBuyersSection = () => {
               key={benefit.id}
               className={`flex transition-all duration-500 ease-out transform ${
                 visibleBenefits.includes(benefit.id) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-              }`}
+              } ${index >= 2 && isRTL ? 'mr-0 lg:mr-4' : ''}`}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
               {isRTL ? (
                 <>
-                  <div className="text-right">
+                  <div className="text-right flex-1">
                     <h3 className="text-xl font-semibold mb-3 text-ksa-dark">
                       {isChangingLanguage ? '...' : t(benefit.titleKey)}
                     </h3>
@@ -101,7 +101,7 @@ const CarBuyersSection = () => {
                   <div className="bg-ksa-secondary/10 p-4 rounded-full shrink-0 mr-6 ml-0">
                     <div className="text-ksa-secondary">{benefit.icon}</div>
                   </div>
-                  <div className="text-left">
+                  <div className="flex-1">
                     <h3 className="text-xl font-semibold mb-3 text-ksa-dark">
                       {isChangingLanguage ? '...' : t(benefit.titleKey)}
                     </h3>
