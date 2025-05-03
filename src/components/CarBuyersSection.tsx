@@ -62,7 +62,7 @@ const CarBuyersSection = () => {
   }, [inView, language]);
 
   return (
-    <section id="car-buyers" className={`py-16 md:py-24 bg-white ${isRTL ? 'rtl' : ''}`}>
+    <section id="car-buyers" className="py-16 md:py-24 bg-white" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-ksa-dark mb-3 md:mb-4">
@@ -79,20 +79,38 @@ const CarBuyersSection = () => {
               key={benefit.id}
               className={`flex items-start transition-all duration-500 ease-out transform ${
                 visibleBenefits.includes(benefit.id) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-              } ${isRTL ? 'flex-row-reverse' : ''}`}
+              }`}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
-              <div className="bg-ksa-secondary/10 p-4 rounded-full shrink-0">
-                <div className="text-ksa-secondary">{benefit.icon}</div>
-              </div>
-              <div className={`${isRTL ? 'mr-6 text-right' : 'ml-6 text-left'}`}>
-                <h3 className="text-xl font-semibold mb-3 text-ksa-dark">
-                  {isChangingLanguage ? '...' : t(benefit.titleKey)}
-                </h3>
-                <p className="text-gray-600 leading-relaxed">
-                  {isChangingLanguage ? '...' : t(benefit.descriptionKey)}
-                </p>
-              </div>
+              {!isRTL ? (
+                <>
+                  <div className="bg-ksa-secondary/10 p-4 rounded-full shrink-0">
+                    <div className="text-ksa-secondary">{benefit.icon}</div>
+                  </div>
+                  <div className="ml-6 text-left">
+                    <h3 className="text-xl font-semibold mb-3 text-ksa-dark">
+                      {isChangingLanguage ? '...' : t(benefit.titleKey)}
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      {isChangingLanguage ? '...' : t(benefit.descriptionKey)}
+                    </p>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <div className="mr-6 text-right">
+                    <h3 className="text-xl font-semibold mb-3 text-ksa-dark">
+                      {isChangingLanguage ? '...' : t(benefit.titleKey)}
+                    </h3>
+                    <p className="text-gray-600 leading-relaxed">
+                      {isChangingLanguage ? '...' : t(benefit.descriptionKey)}
+                    </p>
+                  </div>
+                  <div className="bg-ksa-secondary/10 p-4 rounded-full shrink-0">
+                    <div className="text-ksa-secondary">{benefit.icon}</div>
+                  </div>
+                </>
+              )}
             </div>
           ))}
         </div>

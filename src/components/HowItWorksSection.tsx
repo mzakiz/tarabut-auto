@@ -62,9 +62,9 @@ const HowItWorksSection = () => {
   }, [inView, language]);
 
   return (
-    <section id="how-it-works" className="py-16 md:py-24 bg-gradient-to-b from-tarabut-dark to-tarabut-dark/90">
+    <section id="how-it-works" className="py-16 md:py-24 bg-gradient-to-b from-tarabut-dark to-tarabut-dark/90" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
-        <div className={`text-center mb-12 md:mb-16 ${isRTL ? 'rtl' : ''}`}>
+        <div className="text-center mb-12 md:mb-16">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-white mb-3 md:mb-4">
             {isChangingLanguage ? '...' : t('how_it_works.title')}
           </h2>
@@ -73,67 +73,85 @@ const HowItWorksSection = () => {
           </p>
         </div>
 
-        <div ref={ref} className={`relative max-w-5xl mx-auto ${isRTL ? 'rtl' : ''}`}>
-          {/* Vertical line for desktop */}
+        <div ref={ref} className="relative max-w-5xl mx-auto">
+          {/* Center vertical line */}
           <div className="absolute left-1/2 top-0 bottom-0 w-px bg-white/10 transform -translate-x-1/2 hidden md:block" />
           
           {/* Steps */}
           {steps.map((step, index) => {
-            // In RTL mode, we reverse the positioning logic
-            const isEvenStep = index % 2 === 0;
-            const shouldReverse = isRTL ? isEvenStep : !isEvenStep;
+            const isEven = index % 2 === 0;
             
             return (
               <div
                 key={step.id}
                 className={`relative flex flex-col md:flex-row md:items-center mb-20 last:mb-0 transition-all duration-500 ease-out ${
                   visibleSteps.includes(step.id) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-12'
-                } ${shouldReverse ? 'md:flex-row-reverse' : ''}`}
+                }`}
                 style={{ transitionDelay: `${index * 150}ms` }}
               >
-                {/* Desktop content */}
-                <div className={`hidden md:block w-1/2 ${
-                  shouldReverse ? 'text-left md:pl-8' : 'text-right md:pr-8'
+                {/* Left Side - For LTR: Even steps have content, For RTL: Odd steps have content */}
+                <div className={`hidden md:block md:w-1/2 ${
+                  (isRTL ? !isEven : isEven) ? 'text-right' : ''
                 }`}>
-                  <div className={`inline-block ${isRTL ? 'text-right' : ''}`}>
-                    <div className={`bg-tarabut-teal/20 p-4 rounded-full mb-4 inline-flex ${isRTL ? 'mr-0 ml-4' : 'ml-0 mr-4'}`}>
-                      <div className="text-tarabut-teal">{step.icon}</div>
+                  {(isRTL ? !isEven : isEven) && (
+                    <div className={`${isRTL ? 'pr-8 text-right' : 'pl-8 text-left'}`}>
+                      <div className="flex items-center mb-4 gap-4">
+                        <div className={`order-${isRTL ? '2' : '1'} bg-tarabut-teal/20 p-4 rounded-full inline-flex`}>
+                          <div className="text-tarabut-teal">{step.icon}</div>
+                        </div>
+                        <h3 className={`order-${isRTL ? '1' : '2'} text-xl font-semibold text-white`}>
+                          {isChangingLanguage ? '...' : t(step.titleKey)}
+                        </h3>
+                      </div>
+                      <p className="text-white/80">
+                        {isChangingLanguage ? '...' : t(step.descriptionKey)}
+                      </p>
                     </div>
-                    <h3 className="text-lg md:text-xl font-semibold mb-3 text-white">
-                      {isChangingLanguage ? '...' : t(step.titleKey)}
-                    </h3>
-                    <p className="text-sm md:text-base text-white/80 max-w-sm">
-                      {isChangingLanguage ? '...' : t(step.descriptionKey)}
-                    </p>
-                  </div>
+                  )}
                 </div>
                 
-                {/* Step number circle - always in center */}
+                {/* Center Circle */}
                 <div className="absolute left-1/2 transform -translate-x-1/2 md:static md:transform-none md:flex md:items-center md:justify-center md:w-0">
-                  <div className="w-10 h-10 rounded-full bg-tarabut-teal flex items-center justify-center text-tarabut-dark font-bold text-base">
+                  <div className="w-10 h-10 rounded-full bg-tarabut-teal flex items-center justify-center text-tarabut-dark font-bold text-base z-10">
                     {step.id}
                   </div>
                 </div>
 
-                {/* Mobile content - centered below the number */}
-                <div className={`md:hidden mt-16 ${isRTL ? 'text-right' : 'text-center'}`}>
-                  <div className={`flex ${isRTL ? 'flex-row-reverse justify-end' : 'flex-col items-center'}`}>
-                    <div className={`bg-tarabut-teal/20 p-4 rounded-full mb-4 inline-flex ${isRTL ? 'ml-4' : ''}`}>
-                      <div className="text-tarabut-teal">{step.icon}</div>
-                    </div>
-                    <div className={isRTL ? 'text-right' : 'text-center'}>
-                      <h3 className="text-lg md:text-xl font-semibold mb-3 text-white">
-                        {isChangingLanguage ? '...' : t(step.titleKey)}
-                      </h3>
-                      <p className="text-sm md:text-base text-white/80 max-w-sm mx-auto">
+                {/* Right Side - For LTR: Odd steps have content, For RTL: Even steps have content */}
+                <div className={`hidden md:block md:w-1/2 ${
+                  (isRTL ? isEven : !isEven) ? 'text-left' : ''
+                }`}>
+                  {(isRTL ? isEven : !isEven) && (
+                    <div className={`${isRTL ? 'pl-8 text-left' : 'pr-8 text-right'}`}>
+                      <div className={`flex items-center mb-4 ${isRTL ? 'justify-start' : 'justify-end'} gap-4`}>
+                        <div className={`order-${isRTL ? '1' : '2'} bg-tarabut-teal/20 p-4 rounded-full inline-flex`}>
+                          <div className="text-tarabut-teal">{step.icon}</div>
+                        </div>
+                        <h3 className={`order-${isRTL ? '2' : '1'} text-xl font-semibold text-white`}>
+                          {isChangingLanguage ? '...' : t(step.titleKey)}
+                        </h3>
+                      </div>
+                      <p className="text-white/80">
                         {isChangingLanguage ? '...' : t(step.descriptionKey)}
                       </p>
                     </div>
+                  )}
+                </div>
+
+                {/* Mobile content - centered below the number */}
+                <div className="md:hidden mt-16 text-center">
+                  <div className={`flex flex-col items-center ${isRTL ? 'rtl' : ''}`}>
+                    <div className="bg-tarabut-teal/20 p-4 rounded-full inline-flex mb-4">
+                      <div className="text-tarabut-teal">{step.icon}</div>
+                    </div>
+                    <h3 className="text-xl font-semibold mb-3 text-white">
+                      {isChangingLanguage ? '...' : t(step.titleKey)}
+                    </h3>
+                    <p className="text-white/80 max-w-sm mx-auto">
+                      {isChangingLanguage ? '...' : t(step.descriptionKey)}
+                    </p>
                   </div>
                 </div>
-                
-                {/* Desktop content for the other side */}
-                <div className="hidden md:block w-1/2"></div>
               </div>
             );
           })}
