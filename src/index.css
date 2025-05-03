@@ -164,6 +164,15 @@
   order: 2;
 }
 
+/* Fix RTL flex ordering issues on section components */
+[dir="rtl"] .rtl-reverse-icon-order .icon {
+  order: 1;
+}
+
+[dir="rtl"] .rtl-reverse-icon-order .text {
+  order: 0;
+}
+
 /* RTL margin fixes */
 [dir="rtl"] .ml-1, [dir="rtl"] .ml-2, [dir="rtl"] .ml-3, [dir="rtl"] .ml-4, 
 [dir="rtl"] .ml-5, [dir="rtl"] .ml-6, [dir="rtl"] .ml-8, [dir="rtl"] .ml-10, [dir="rtl"] .ml-12 {
@@ -293,6 +302,27 @@
 
 [dir="rtl"] .rtl\:order-last {
   order: 999;
+}
+
+/* Additional RTL fixes for specific section icon alignment */
+[dir="rtl"] .how-it-works-icon-right .icon-container {
+  order: 0;
+}
+
+[dir="rtl"] .how-it-works-icon-right .text-container {
+  order: 1;
+}
+
+[dir="rtl"] .dealership-section .main-benefit .icon-container {
+  order: 0;
+}
+
+[dir="rtl"] .dealership-section .main-benefit .text-container {
+  order: 1;
+}
+
+[dir="rtl"] .car-buyers-section .row-lower .card {
+  margin-right: 1.25rem;
 }
 
 /* Keep the rest of the animations and other styles */

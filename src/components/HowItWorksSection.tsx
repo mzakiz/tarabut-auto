@@ -94,11 +94,22 @@ const HowItWorksSection = () => {
                 <div className="md:w-1/2 text-right rtl:text-left">
                   {!isLeftSideContent && (
                     <div className="hidden md:block pr-8 rtl:pr-0 rtl:pl-8">
-                      <div className="flex items-center mb-4 justify-end rtl:justify-start rtl:flex-row-reverse gap-4">
-                        <h3 className="text-xl font-semibold text-white">{isChangingLanguage ? '...' : t(step.titleKey)}</h3>
-                        <div className="bg-tarabut-teal/20 p-4 rounded-full inline-flex">
-                          <div className="text-tarabut-teal">{step.icon}</div>
-                        </div>
+                      <div className="flex items-center mb-4 justify-end rtl:justify-start gap-4">
+                        {isRTL ? (
+                          <>
+                            <div className="bg-tarabut-teal/20 p-4 rounded-full inline-flex">
+                              <div className="text-tarabut-teal">{step.icon}</div>
+                            </div>
+                            <h3 className="text-xl font-semibold text-white">{isChangingLanguage ? '...' : t(step.titleKey)}</h3>
+                          </>
+                        ) : (
+                          <>
+                            <h3 className="text-xl font-semibold text-white">{isChangingLanguage ? '...' : t(step.titleKey)}</h3>
+                            <div className="bg-tarabut-teal/20 p-4 rounded-full inline-flex">
+                              <div className="text-tarabut-teal">{step.icon}</div>
+                            </div>
+                          </>
+                        )}
                       </div>
                       <p className="text-white/80 text-right rtl:text-left">
                         {isChangingLanguage ? '...' : t(step.descriptionKey)}
@@ -121,10 +132,10 @@ const HowItWorksSection = () => {
                       <div className="flex items-center mb-4 justify-start rtl:justify-end gap-4">
                         {isRTL ? (
                           <>
-                            <h3 className="text-xl font-semibold text-white">{isChangingLanguage ? '...' : t(step.titleKey)}</h3>
                             <div className="bg-tarabut-teal/20 p-4 rounded-full inline-flex">
                               <div className="text-tarabut-teal">{step.icon}</div>
                             </div>
+                            <h3 className="text-xl font-semibold text-white">{isChangingLanguage ? '...' : t(step.titleKey)}</h3>
                           </>
                         ) : (
                           <>
