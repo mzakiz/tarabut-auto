@@ -2,10 +2,13 @@
 import React, { useEffect, useState } from 'react';
 import { Shield, Fuel, Wind, Zap, Sparkles, Gauge } from 'lucide-react';
 import { useTranslation } from '@/hooks/useTranslation';
+import { useLanguage } from '@/contexts/LanguageContext';
 
 const FeaturesSection = () => {
   const [visibleFeatures, setVisibleFeatures] = useState<number[]>([]);
   const { t, isChangingLanguage } = useTranslation();
+  const { language } = useLanguage();
+  const isRTL = language === 'ar';
 
   const features = [
     {
@@ -64,11 +67,8 @@ const FeaturesSection = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
-  console.log("Current language:", isChangingLanguage ? "changing" : "stable");
-  console.log("Features title translation:", t('features.title'));
-
   return (
-    <section id="features" className="py-12 md:py-20 bg-white">
+    <section id="features" className="py-12 md:py-20 bg-white" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-10 md:mb-16">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-ksa-dark mb-3 md:mb-4">

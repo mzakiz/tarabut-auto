@@ -1,4 +1,4 @@
-/* Keep the beginning of the file */
+
 @import url('https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&display=swap');
 @import url('https://fonts.googleapis.com/css2?family=Space+Grotesk:wght@300;400;500;600;700&display=swap');
 
@@ -323,6 +323,40 @@
 
 [dir="rtl"] .car-buyers-section .row-lower .card {
   margin-right: 1.25rem;
+}
+
+/* Enhanced spacing for timeline components in RTL */
+[dir="rtl"] .how-it-works-section .timeline-item:nth-child(odd) .content {
+  padding-right: 2rem;
+  padding-left: 0;
+  text-align: right;
+}
+
+[dir="rtl"] .how-it-works-section .timeline-item:nth-child(even) .content {
+  padding-left: 2rem;
+  padding-right: 0;
+  text-align: left;
+}
+
+/* Fix icon alignment in dealership cards for RTL */
+[dir="rtl"] .dealership-section .card-content .icon-wrapper {
+  margin-left: 0;
+  margin-right: 1rem;
+}
+
+/* Specific fixes for car buyers section in RTL */
+[dir="rtl"] .car-buyers-section .benefit-card {
+  flex-direction: row-reverse;
+}
+
+[dir="rtl"] .car-buyers-section .benefit-card .icon-container {
+  margin-left: 0;
+  margin-right: 1.5rem;
+}
+
+[dir="rtl"] .car-buyers-section .benefit-row-lower .benefit-card .icon-container {
+  margin-left: 0;
+  margin-right: 2.5rem;
 }
 
 /* Keep the rest of the animations and other styles */

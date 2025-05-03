@@ -77,7 +77,7 @@ const DealershipsSection = () => {
   };
 
   return (
-    <section id="dealerships" className="py-16 md:py-24 bg-gray-50" dir={isRTL ? 'rtl' : 'ltr'}>
+    <section id="dealerships" className="py-16 md:py-24 bg-gray-50 dealership-section" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-ksa-dark mb-3 md:mb-4">
@@ -95,10 +95,10 @@ const DealershipsSection = () => {
                 visibleBenefits.includes(1) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
               }`}
             >
-              <div className="flex flex-col md:flex-row items-center md:items-start gap-6">
+              <div className="flex flex-col md:flex-row items-center md:items-start gap-6 main-benefit">
                 {isRTL ? (
                   <>
-                    <div className="text-center md:text-right flex-1">
+                    <div className="text-center md:text-right flex-1 text-container">
                       <h3 className="text-2xl font-semibold mb-4">
                         {isChangingLanguage ? '...' : t(benefits[0].titleKey)}
                       </h3>
@@ -106,7 +106,7 @@ const DealershipsSection = () => {
                         {isChangingLanguage ? '...' : t(benefits[0].descriptionKey)}
                       </p>
                     </div>
-                    <div className="bg-white/20 p-6 rounded-full shrink-0">
+                    <div className="bg-white/20 p-6 rounded-full shrink-0 icon-container">
                       {benefits[0].icon}
                     </div>
                   </>
@@ -155,7 +155,7 @@ const DealershipsSection = () => {
         <div className="text-center">
           <Button 
             onClick={handleDealershipClick}
-            className="bg-tarabut-secondary hover:bg-tarabut-secondary/90 text-white px-8 py-5 rounded-md text-md md:text-lg"
+            className={`bg-tarabut-secondary hover:bg-tarabut-secondary/90 text-white px-8 py-5 rounded-md text-md md:text-lg ${isRTL ? 'flex-row-reverse' : ''}`}
           >
             {isChangingLanguage ? '...' : t('dealership.cta')}
           </Button>

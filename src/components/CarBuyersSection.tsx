@@ -62,7 +62,7 @@ const CarBuyersSection = () => {
   }, [inView, language]);
 
   return (
-    <section id="car-buyers" className="py-16 md:py-24 bg-white" dir={isRTL ? 'rtl' : 'ltr'}>
+    <section id="car-buyers" className="py-16 md:py-24 bg-white car-buyers-section" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="container mx-auto px-4 sm:px-6 lg:px-8">
         <div className="text-center mb-12 md:mb-16">
           <h2 className="text-2xl md:text-3xl lg:text-4xl font-bold text-ksa-dark mb-3 md:mb-4">
@@ -79,7 +79,7 @@ const CarBuyersSection = () => {
               key={benefit.id}
               className={`flex transition-all duration-500 ease-out transform ${
                 visibleBenefits.includes(benefit.id) ? 'opacity-100 translate-y-0' : 'opacity-0 translate-y-10'
-              }`}
+              } ${index >= 2 ? 'row-lower' : ''}`}
               style={{ transitionDelay: `${index * 100}ms` }}
             >
               {isRTL ? (
