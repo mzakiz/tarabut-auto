@@ -1,3 +1,4 @@
+
 import React, { useState } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ArrowLeft } from 'lucide-react';
@@ -39,6 +40,7 @@ const DealershipSignup: React.FC = () => {
   const { toast } = useToast();
   const { language } = useLanguage();
   const { t } = useTranslation();
+  const isRTL = language === 'ar';
   
   const form = useForm<z.infer<typeof formSchema>>({
     resolver: zodResolver(formSchema),
@@ -95,14 +97,14 @@ const DealershipSignup: React.FC = () => {
   };
 
   return (
-    <div className="min-h-screen bg-white" dir={language === 'ar' ? 'rtl' : 'ltr'}>
+    <div className="min-h-screen bg-white" dir={isRTL ? 'rtl' : 'ltr'}>
       <div className="container mx-auto px-4 py-8 sm:px-6 lg:px-8">
         <Button 
           variant="ghost" 
           onClick={handleBackClick}
-          className={`mb-6 ${language === 'ar' ? 'flex-row-reverse' : ''}`}
+          className={`mb-6 ${isRTL ? 'flex-row-reverse' : ''}`}
         >
-          <ArrowLeft className={`${language === 'ar' ? 'ml-2 rotate-180' : 'mr-2'} h-4 w-4`} />
+          <ArrowLeft className={`${isRTL ? 'ml-2 rotate-180' : 'mr-2'} h-4 w-4`} />
           {t('back')}
         </Button>
         
@@ -130,18 +132,18 @@ const DealershipSignup: React.FC = () => {
                   name="name"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className={`${language === 'ar' ? 'text-right block w-full' : ''}`}>
+                      <FormLabel className={`text-sm font-medium block w-full ${isRTL ? 'text-right' : ''}`}>
                         {t('dealership.contact.name')} <span className="text-red-500">*</span>
                       </FormLabel>
                       <FormControl>
                         <Input 
                           placeholder={t('form.placeholder.contact')}
-                          className="h-12" 
+                          className={`h-12 ${isRTL ? 'text-right' : ''}`} 
                           {...field} 
-                          dir={language === 'ar' ? 'rtl' : 'ltr'}
+                          dir={isRTL ? 'rtl' : 'ltr'}
                         />
                       </FormControl>
-                      <FormMessage className={language === 'ar' ? 'text-right' : ''} />
+                      <FormMessage className={isRTL ? 'text-right' : ''} />
                     </FormItem>
                   )}
                 />
@@ -151,18 +153,18 @@ const DealershipSignup: React.FC = () => {
                   name="dealershipName"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className={`${language === 'ar' ? 'text-right block w-full' : ''}`}>
+                      <FormLabel className={`text-sm font-medium block w-full ${isRTL ? 'text-right' : ''}`}>
                         {t('dealership.name')} <span className="text-red-500">*</span>
                       </FormLabel>
                       <FormControl>
                         <Input 
                           placeholder={t('form.placeholder.dealership')}
-                          className="h-12" 
+                          className={`h-12 ${isRTL ? 'text-right' : ''}`} 
                           {...field} 
-                          dir={language === 'ar' ? 'rtl' : 'ltr'}
+                          dir={isRTL ? 'rtl' : 'ltr'}
                         />
                       </FormControl>
-                      <FormMessage className={language === 'ar' ? 'text-right' : ''} />
+                      <FormMessage className={isRTL ? 'text-right' : ''} />
                     </FormItem>
                   )}
                 />
@@ -172,7 +174,7 @@ const DealershipSignup: React.FC = () => {
                   name="email"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className={`${language === 'ar' ? 'text-right block w-full' : ''}`}>
+                      <FormLabel className={`text-sm font-medium block w-full ${isRTL ? 'text-right' : ''}`}>
                         {t('dealership.email')} <span className="text-red-500">*</span>
                       </FormLabel>
                       <FormControl>
@@ -184,8 +186,8 @@ const DealershipSignup: React.FC = () => {
                           dir="ltr"
                         />
                       </FormControl>
-                      <FormMessage className={language === 'ar' ? 'text-right' : ''} />
-                      <p className={`text-sm text-gray-500 mt-1 ${language === 'ar' ? 'text-right' : ''}`}>
+                      <FormMessage className={isRTL ? 'text-right' : ''} />
+                      <p className={`text-sm text-gray-500 mt-1 ${isRTL ? 'text-right' : ''}`}>
                         {t('form.validation.work.email')}
                       </p>
                     </FormItem>
@@ -197,25 +199,25 @@ const DealershipSignup: React.FC = () => {
                   name="phone"
                   render={({ field }) => (
                     <FormItem>
-                      <FormLabel className={`${language === 'ar' ? 'text-right block w-full' : ''}`}>
+                      <FormLabel className={`text-sm font-medium block w-full ${isRTL ? 'text-right' : ''}`}>
                         {t('dealership.phone')} <span className="text-red-500">*</span>
                       </FormLabel>
                       <div className="relative">
-                        <span className={`absolute left-3 top-1/2 -translate-y-1/2 text-gray-500`}>
+                        <span className={`absolute ${isRTL ? 'right-3' : 'left-3'} top-1/2 -translate-y-1/2 text-gray-500`}>
                           +966
                         </span>
                         <FormControl>
                           <Input 
                             placeholder={t('form.placeholder.phone')}
-                            className="h-12 text-left pl-16"
+                            className={`h-12 ${isRTL ? 'text-right pr-16' : 'text-left pl-16'}`}
                             maxLength={9}
                             {...field} 
                             dir="ltr"
                           />
                         </FormControl>
                       </div>
-                      <FormMessage className={language === 'ar' ? 'text-right' : ''} />
-                      <p className={`text-sm text-gray-500 mt-1 ${language === 'ar' ? 'text-right' : 'text-left'}`}>
+                      <FormMessage className={isRTL ? 'text-right' : ''} />
+                      <p className={`text-sm text-gray-500 mt-1 ${isRTL ? 'text-right' : ''}`}>
                         {t('form.validation.phone')}
                       </p>
                     </FormItem>
