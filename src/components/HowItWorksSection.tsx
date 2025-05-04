@@ -129,9 +129,17 @@ const HowItWorksSection = () => {
                   )}
                 </div>
 
-                {/* Center step indicator - Now truly circular with fixed width/height */}
+                {/* Center step indicator - Fixed circle with proper aspect ratio */}
                 <div className="absolute left-1/2 transform -translate-x-1/2 z-10 md:static md:flex md:items-center md:justify-center md:w-0 md:z-auto">
-                  <div className="h-10 w-10 rounded-full bg-tarabut-teal flex items-center justify-center text-tarabut-dark font-bold">
+                  <div 
+                    className="w-8 h-8 md:w-10 md:h-10 rounded-full bg-tarabut-teal flex items-center justify-center text-tarabut-dark font-bold"
+                    style={{ 
+                      width: '2.5rem',
+                      height: '2.5rem',
+                      borderRadius: '9999px', // Ensure it's a perfect circle with CSS
+                      aspectRatio: '1 / 1' // Force 1:1 aspect ratio
+                    }}
+                  >
                     {step.id}
                   </div>
                 </div>
