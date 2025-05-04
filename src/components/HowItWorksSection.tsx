@@ -129,9 +129,9 @@ const HowItWorksSection = () => {
                   )}
                 </div>
 
-                {/* Center number - Perfect circle with fixed dimensions */}
+                {/* Center step indicator - Now truly circular with fixed width/height */}
                 <div className="absolute left-1/2 transform -translate-x-1/2 z-10 md:static md:flex md:items-center md:justify-center md:w-0 md:z-auto">
-                  <div className="w-10 h-10 rounded-full bg-tarabut-teal flex items-center justify-center text-tarabut-dark font-bold text-lg">
+                  <div className="h-10 w-10 rounded-full bg-tarabut-teal flex items-center justify-center text-tarabut-dark font-bold">
                     {step.id}
                   </div>
                 </div>
