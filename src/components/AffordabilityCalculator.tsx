@@ -13,6 +13,7 @@ const AffordabilityCalculator = () => {
   const [loanTerm, setLoanTerm] = useState(60);
   const [monthlyPayment, setMonthlyPayment] = useState(0);
   const [isVisible, setIsVisible] = useState(false);
+  const [hasInteracted, setHasInteracted] = useState(false);
   const navigate = useNavigate();
   const { language } = useLanguage();
   const { t } = useTranslation();
@@ -28,36 +29,46 @@ const AffordabilityCalculator = () => {
     return carPrice; // Fallback
   };
   
-  useEffect(() => {
-    const payment = calculateMonthlyPayment();
-    setMonthlyPayment(payment);
+  // Handle user changing the car price slider
+  const handleCarPriceChange = (value: number[]) => {
+    setCarPrice(value[0]);
+    setHasInteracted(true);
     
-    // Enhanced analytics for calculator interaction
+    // Track analytics after user interaction
+    const payment = calculateMonthlyPayment();
     Analytics.trackCalculatorInteraction({
       action: 'amount_changed',
-      value: carPrice,
+      value: value[0],
       term: loanTerm,
       monthly_payment: payment,
       currency: 'SAR',
       language,
       screen: 'calculator'
     });
-  }, [carPrice]);
+  };
   
-  useEffect(() => {
-    const payment = calculateMonthlyPayment();
-    setMonthlyPayment(payment);
+  // Handle user changing the loan term slider
+  const handleLoanTermChange = (value: number[]) => {
+    setLoanTerm(value[0]);
+    setHasInteracted(true);
     
-    // Enhanced analytics for term changes
+    // Track analytics after user interaction
+    const payment = calculateMonthlyPayment();
     Analytics.trackCalculatorInteraction({
       action: 'term_changed',
-      value: loanTerm,
+      value: value[0],
       monthly_payment: payment,
       currency: 'SAR',
       language,
       screen: 'calculator'
     });
-  }, [loanTerm]);
+  };
+  
+  // Update monthly payment when values change (without tracking analytics)
+  useEffect(() => {
+    const payment = calculateMonthlyPayment();
+    setMonthlyPayment(payment);
+  }, [carPrice, loanTerm]);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -174,7 +185,7 @@ const AffordabilityCalculator = () => {
                       min={80000}
                       max={150000}
                       step={1000}
-                      onValueChange={(value) => setCarPrice(value[0])}
+                      onValueChange={handleCarPriceChange}
                       className="my-4"
                       dir={isRTL ? "rtl" : "ltr"}
                     />
@@ -189,7 +200,7 @@ const AffordabilityCalculator = () => {
                       min={36}
                       max={60}
                       step={12}
-                      onValueChange={(value) => setLoanTerm(value[0])}
+                      onValueChange={handleLoanTermChange}
                       className="my-4"
                       dir={isRTL ? "rtl" : "ltr"}
                     />
