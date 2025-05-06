@@ -1,5 +1,5 @@
 
-import React, { useState, useEffect } from 'react';
+import React, { useState, useEffect, useCallback } from 'react';
 import { Calculator, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
 import { Slider } from '@/components/ui/slider';
@@ -29,46 +29,80 @@ const AffordabilityCalculator = () => {
     return carPrice; // Fallback
   };
   
-  // Handle user changing the car price slider
+  // Debounced analytics tracking
+  const debounceTimeout = React.useRef<number | null>(null);
+  
+  const trackAnalyticsDebounced = useCallback((action: string, value: number, term: number, payment: number) => {
+    // Clear any existing timeout
+    if (debounceTimeout.current) {
+      clearTimeout(debounceTimeout.current);
+    }
+    
+    // Set new timeout for 1 second
+    debounceTimeout.current = window.setTimeout(() => {
+      // Only track if user has interacted
+      if (!hasInteracted) return;
+      
+      Analytics.trackCalculatorInteraction({
+        action,
+        value,
+        term,
+        monthly_payment: payment,
+        currency: 'SAR',
+        language,
+        screen: 'calculator'
+      });
+    }, 1000);
+  }, [hasInteracted, language]);
+  
+  // Immediate UI update for car price slider
   const handleCarPriceChange = (value: number[]) => {
-    setCarPrice(value[0]);
-    setHasInteracted(true);
+    const newPrice = value[0];
+    setCarPrice(newPrice);
     
-    // Track analytics after user interaction
-    const payment = calculateMonthlyPayment();
-    Analytics.trackCalculatorInteraction({
-      action: 'amount_changed',
-      value: value[0],
-      term: loanTerm,
-      monthly_payment: payment,
-      currency: 'SAR',
-      language,
-      screen: 'calculator'
-    });
+    // Set interaction flag on first interaction
+    if (!hasInteracted) {
+      setHasInteracted(true);
+    }
+    
+    // Calculate payment for analytics
+    const payment = newPrice / loanTerm;
+    
+    // Trigger debounced analytics tracking
+    trackAnalyticsDebounced('amount_changed', newPrice, loanTerm, payment);
   };
   
-  // Handle user changing the loan term slider
+  // Immediate UI update for loan term slider
   const handleLoanTermChange = (value: number[]) => {
-    setLoanTerm(value[0]);
-    setHasInteracted(true);
+    const newTerm = value[0];
+    setLoanTerm(newTerm);
     
-    // Track analytics after user interaction
-    const payment = calculateMonthlyPayment();
-    Analytics.trackCalculatorInteraction({
-      action: 'term_changed',
-      value: value[0],
-      monthly_payment: payment,
-      currency: 'SAR',
-      language,
-      screen: 'calculator'
-    });
+    // Set interaction flag on first interaction
+    if (!hasInteracted) {
+      setHasInteracted(true);
+    }
+    
+    // Calculate payment for analytics
+    const payment = carPrice / newTerm;
+    
+    // Trigger debounced analytics tracking
+    trackAnalyticsDebounced('term_changed', newTerm, newTerm, payment);
   };
   
-  // Update monthly payment when values change (without tracking analytics)
+  // Update monthly payment when values change
   useEffect(() => {
     const payment = calculateMonthlyPayment();
     setMonthlyPayment(payment);
   }, [carPrice, loanTerm]);
+
+  // Clean up timeout on component unmount
+  useEffect(() => {
+    return () => {
+      if (debounceTimeout.current) {
+        clearTimeout(debounceTimeout.current);
+      }
+    };
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
