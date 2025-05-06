@@ -1,4 +1,3 @@
-
 import React, { useState, useEffect, useCallback } from 'react';
 import { Calculator, ArrowRight, ArrowLeft } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -7,6 +6,7 @@ import { useNavigate } from 'react-router-dom';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { useTranslation } from '@/hooks/useTranslation';
 import { Analytics } from '@/services/analytics';
+import { CalculatorInteractionProperties } from '@/services/analytics/types';
 
 const AffordabilityCalculator = () => {
   const [carPrice, setCarPrice] = useState(120000);
@@ -32,7 +32,7 @@ const AffordabilityCalculator = () => {
   // Debounced analytics tracking
   const debounceTimeout = React.useRef<number | null>(null);
   
-  const trackAnalyticsDebounced = useCallback((action: string, value: number, term: number, payment: number) => {
+  const trackAnalyticsDebounced = useCallback((action: CalculatorInteractionProperties['action'], value: number, term: number, payment: number) => {
     // Clear any existing timeout
     if (debounceTimeout.current) {
       clearTimeout(debounceTimeout.current);
