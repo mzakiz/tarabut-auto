@@ -19,6 +19,7 @@ interface FormFieldProps {
   inputMode?: 'text' | 'numeric';
   prefix?: string;
   dir?: 'rtl' | 'ltr';
+  suffix?: string;
 }
 
 export const FormField: React.FC<FormFieldProps> = ({
@@ -36,7 +37,8 @@ export const FormField: React.FC<FormFieldProps> = ({
   maxLength,
   inputMode,
   prefix,
-  dir
+  dir,
+  suffix
 }) => {
   const isRTL = dir === 'rtl';
   
@@ -44,11 +46,11 @@ export const FormField: React.FC<FormFieldProps> = ({
     onChange(e.target.value);
   };
 
-  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+  const handleFocus = () => {
     if (onFocus) onFocus();
   };
 
-  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+  const handleBlur = () => {
     if (onBlur) onBlur();
   };
   
@@ -67,6 +69,17 @@ export const FormField: React.FC<FormFieldProps> = ({
             {prefix}
           </span>
         )}
+        
+        {suffix && (
+          <span 
+            className={`absolute top-1/2 -translate-y-1/2 pointer-events-none text-gray-500 ${
+              isRTL ? 'left-3' : 'right-3'
+            }`}
+          >
+            {suffix}
+          </span>
+        )}
+        
         <Input
           id={id}
           type={type}
@@ -76,6 +89,7 @@ export const FormField: React.FC<FormFieldProps> = ({
           onBlur={handleBlur}
           className={`w-full h-12 mt-1 ${error ? 'border-red-500' : ''} 
             ${prefix ? (isRTL ? 'pr-14' : 'pl-14') : ''} 
+            ${suffix ? (isRTL ? 'pl-14' : 'pr-14') : ''} 
             ${isRTL ? 'text-right placeholder:text-right' : 'text-left placeholder:text-left'}
             ${className}`}
           placeholder={placeholder}

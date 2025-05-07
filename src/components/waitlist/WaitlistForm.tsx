@@ -1,5 +1,5 @@
 
-import React from 'react';
+import React, { useEffect } from 'react';
 import { useForm } from "react-hook-form";
 import { Button } from "@/components/ui/button";
 import { FormField } from "@/components/waitlist/FormField";
@@ -20,10 +20,10 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({
 }) => {
   const { language } = useLanguage();
   const { t } = useTranslation();
-  const { isSubmitting, submissionProgress, handleSubmit } = useWaitlistSubmission();
+  const { isSubmitting, submissionProgress, handleSubmit: submitWaitlist } = useWaitlistSubmission();
   const { validateAllFields, validateField, validationErrors } = useWaitlistValidation();
   
-  const { register, handleSubmit: formSubmit, formState: { errors } } = useForm({
+  const { register, handleSubmit, setValue, watch } = useForm({
     defaultValues: {
       name: '',
       email: '',
@@ -31,6 +31,19 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({
       referralCode: referralCode || ''
     }
   });
+  
+  // Update referral code if passed as prop
+  useEffect(() => {
+    if (referralCode) {
+      setValue('referralCode', referralCode);
+    }
+  }, [referralCode, setValue]);
+  
+  // Get current form values
+  const name = watch('name');
+  const email = watch('email');
+  const phoneNumber = watch('phoneNumber');
+  const currentReferralCode = watch('referralCode');
   
   const onSubmit = async (data: {
     name: string;
@@ -41,34 +54,48 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({
     const isValid = await validateAllFields(data);
     if (!isValid) return;
     
-    handleSubmit({
+    submitWaitlist({
       ...data,
       variant
     });
   };
   
-  // Create state-bound handlers that don't require event parameters
+  // Handle field changes
+  const handleNameChange = (value: string) => {
+    setValue('name', value);
+  };
+  
+  const handleEmailChange = (value: string) => {
+    setValue('email', value);
+  };
+  
+  const handlePhoneChange = (value: string) => {
+    // Remove non-numeric characters
+    const numericValue = value.replace(/\D/g, '');
+    setValue('phoneNumber', numericValue);
+  };
+  
+  const handleReferralChange = (value: string) => {
+    setValue('referralCode', value);
+  };
+  
+  // Field event handlers
   const handleNameBlur = () => {
-    const nameInput = document.getElementById('name') as HTMLInputElement;
-    validateField('name', nameInput.value);
+    validateField('name', name);
   };
   
   const handleEmailBlur = () => {
-    const emailInput = document.getElementById('email') as HTMLInputElement;
-    validateField('email', emailInput.value);
+    validateField('email', email);
   };
   
   const handlePhoneBlur = () => {
-    const phoneInput = document.getElementById('phoneNumber') as HTMLInputElement;
-    validateField('phone', phoneInput.value);
+    validateField('phone', phoneNumber);
   };
   
   const handleReferralBlur = () => {
-    const referralInput = document.getElementById('referralCode') as HTMLInputElement;
-    validateField('referralCode', referralInput.value);
+    validateField('referralCode', currentReferralCode);
   };
   
-  // Create focus handlers that don't use event parameters
   const handleNameFocus = () => {
     // Focus handling for name field
   };
@@ -98,62 +125,62 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({
       )}
       
       <form 
-        onSubmit={formSubmit(onSubmit)}
+        onSubmit={handleSubmit(onSubmit)}
         className={`space-y-4 ${isRTL ? 'text-right' : 'text-left'}`}
       >
         <FormField
           type="text"
           id="name"
-          name="name"
           label={t('form.name')}
-          value={register('name').value}
-          onChange={(value) => register('name').onChange({ target: { value } })}
+          value={name}
+          onChange={handleNameChange}
           placeholder={t('form.placeholder.name')}
-          error={validationErrors.name || errors.name?.message}
+          error={validationErrors.name}
           onBlur={handleNameBlur}
           onFocus={handleNameFocus}
+          required={true}
           dir={isRTL ? 'rtl' : 'ltr'}
         />
         
         <FormField
           type="email"
           id="email"
-          name="email"
           label={t('form.email')}
-          value={register('email').value}
-          onChange={(value) => register('email').onChange({ target: { value } })}
+          value={email}
+          onChange={handleEmailChange}
           placeholder={t('form.placeholder.email')}
-          error={validationErrors.email || errors.email?.message}
+          error={validationErrors.email}
           onBlur={handleEmailBlur}
           onFocus={handleEmailFocus}
+          required={true}
           dir={isRTL ? 'rtl' : 'ltr'}
         />
         
         <FormField
           type="tel"
           id="phoneNumber"
-          name="phoneNumber"
           label={t('form.phone')}
-          value={register('phoneNumber').value}
-          onChange={(value) => register('phoneNumber').onChange({ target: { value } })}
+          value={phoneNumber}
+          onChange={handlePhoneChange}
           placeholder={t('form.placeholder.phone')}
-          error={validationErrors.phone || errors.phoneNumber?.message}
+          error={validationErrors.phone}
           onBlur={handlePhoneBlur}
           onFocus={handlePhoneFocus}
-          prefix={isRTL ? '' : '+966'}
-          suffix={isRTL ? '966+' : ''}
+          prefix="+966"
+          required={true}
+          maxLength={9}
+          inputMode="numeric"
           dir={isRTL ? 'rtl' : 'ltr'}
         />
         
         <FormField
           type="text"
           id="referralCode"
-          name="referralCode"
           label={t('form.referral')}
-          value={register('referralCode').value}
-          onChange={(value) => register('referralCode').onChange({ target: { value } })}
+          value={currentReferralCode}
+          onChange={handleReferralChange}
           placeholder={t('form.placeholder.referral')}
-          error={validationErrors.referralCode || errors.referralCode?.message}
+          error={validationErrors.referralCode}
           onBlur={handleReferralBlur}
           onFocus={handleReferralFocus}
           dir={isRTL ? 'rtl' : 'ltr'}
@@ -165,7 +192,7 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({
             className="w-full bg-ksa-primary text-white hover:bg-ksa-primary/90 py-6"
             disabled={isSubmitting}
           >
-            {t('form.submit')}
+            {isSubmitting ? t('form.submitting') : t('form.submit')}
           </Button>
         </div>
       </form>
