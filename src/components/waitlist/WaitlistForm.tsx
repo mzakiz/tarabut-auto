@@ -46,9 +46,43 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({
       variant
     });
   };
-
-  const handleBlur = (field: string, value: string) => {
-    validateField(field, value);
+  
+  // Create state-bound handlers that don't require event parameters
+  const handleNameBlur = () => {
+    const nameInput = document.getElementById('name') as HTMLInputElement;
+    validateField('name', nameInput.value);
+  };
+  
+  const handleEmailBlur = () => {
+    const emailInput = document.getElementById('email') as HTMLInputElement;
+    validateField('email', emailInput.value);
+  };
+  
+  const handlePhoneBlur = () => {
+    const phoneInput = document.getElementById('phoneNumber') as HTMLInputElement;
+    validateField('phone', phoneInput.value);
+  };
+  
+  const handleReferralBlur = () => {
+    const referralInput = document.getElementById('referralCode') as HTMLInputElement;
+    validateField('referralCode', referralInput.value);
+  };
+  
+  // Create focus handlers that don't use event parameters
+  const handleNameFocus = () => {
+    // Focus handling for name field
+  };
+  
+  const handleEmailFocus = () => {
+    // Focus handling for email field
+  };
+  
+  const handlePhoneFocus = () => {
+    // Focus handling for phone field
+  };
+  
+  const handleReferralFocus = () => {
+    // Focus handling for referral code field
   };
   
   const isRTL = language === 'ar';
@@ -69,34 +103,43 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({
       >
         <FormField
           type="text"
+          id="name"
           name="name"
-          register={register}
           label={t('form.name')}
+          value={register('name').value}
+          onChange={(value) => register('name').onChange({ target: { value } })}
           placeholder={t('form.placeholder.name')}
           error={validationErrors.name || errors.name?.message}
-          onBlur={(e) => handleBlur('name', e.target.value)}
+          onBlur={handleNameBlur}
+          onFocus={handleNameFocus}
           dir={isRTL ? 'rtl' : 'ltr'}
         />
         
         <FormField
           type="email"
+          id="email"
           name="email"
-          register={register}
           label={t('form.email')}
+          value={register('email').value}
+          onChange={(value) => register('email').onChange({ target: { value } })}
           placeholder={t('form.placeholder.email')}
           error={validationErrors.email || errors.email?.message}
-          onBlur={(e) => handleBlur('email', e.target.value)}
+          onBlur={handleEmailBlur}
+          onFocus={handleEmailFocus}
           dir={isRTL ? 'rtl' : 'ltr'}
         />
         
         <FormField
           type="tel"
+          id="phoneNumber"
           name="phoneNumber"
-          register={register}
           label={t('form.phone')}
+          value={register('phoneNumber').value}
+          onChange={(value) => register('phoneNumber').onChange({ target: { value } })}
           placeholder={t('form.placeholder.phone')}
           error={validationErrors.phone || errors.phoneNumber?.message}
-          onBlur={(e) => handleBlur('phone', e.target.value)}
+          onBlur={handlePhoneBlur}
+          onFocus={handlePhoneFocus}
           prefix={isRTL ? '' : '+966'}
           suffix={isRTL ? '966+' : ''}
           dir={isRTL ? 'rtl' : 'ltr'}
@@ -104,12 +147,15 @@ export const WaitlistForm: React.FC<WaitlistFormProps> = ({
         
         <FormField
           type="text"
+          id="referralCode"
           name="referralCode"
-          register={register}
           label={t('form.referral')}
+          value={register('referralCode').value}
+          onChange={(value) => register('referralCode').onChange({ target: { value } })}
           placeholder={t('form.placeholder.referral')}
           error={validationErrors.referralCode || errors.referralCode?.message}
-          onBlur={(e) => handleBlur('referralCode', e.target.value)}
+          onBlur={handleReferralBlur}
+          onFocus={handleReferralFocus}
           dir={isRTL ? 'rtl' : 'ltr'}
         />
         

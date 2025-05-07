@@ -40,6 +40,18 @@ export const FormField: React.FC<FormFieldProps> = ({
 }) => {
   const isRTL = dir === 'rtl';
   
+  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    onChange(e.target.value);
+  };
+
+  const handleFocus = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (onFocus) onFocus();
+  };
+
+  const handleBlur = (e: React.FocusEvent<HTMLInputElement>) => {
+    if (onBlur) onBlur();
+  };
+  
   return (
     <div>
       <Label htmlFor={id} className={`text-sm font-medium block w-full ${isRTL ? 'text-right' : 'text-left'}`}>
@@ -59,9 +71,9 @@ export const FormField: React.FC<FormFieldProps> = ({
           id={id}
           type={type}
           value={value}
-          onChange={(e) => onChange(e.target.value)}
-          onFocus={onFocus}
-          onBlur={onBlur}
+          onChange={handleChange}
+          onFocus={handleFocus}
+          onBlur={handleBlur}
           className={`w-full h-12 mt-1 ${error ? 'border-red-500' : ''} 
             ${prefix ? (isRTL ? 'pr-14' : 'pl-14') : ''} 
             ${isRTL ? 'text-right placeholder:text-right' : 'text-left placeholder:text-left'}
