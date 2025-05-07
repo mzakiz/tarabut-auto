@@ -1,160 +1,130 @@
 
-import React, { useState } from 'react';
-import { useWaitlistSubmission } from '@/hooks/useWaitlistSubmission';
-import { FormField } from '@/components/waitlist/FormField';
-import { Button } from '@/components/ui/button';
+import React from 'react';
+import { useForm } from "react-hook-form";
+import { Button } from "@/components/ui/button";
+import { FormField } from "@/components/waitlist/FormField";
+import { useLanguage } from "@/contexts/LanguageContext";
 import { useTranslation } from '@/hooks/useTranslation';
-import { useWaitlistValidation, ValidationErrors } from '@/hooks/useWaitlistValidation';
-import { LoadingScreen } from '@/components/confirmation/LoadingScreen';
+import { useWaitlistSubmission } from '@/hooks/useWaitlistSubmission';
+import { useWaitlistValidation } from '@/hooks/useWaitlistValidation';
+import { LoadingOverlay } from '@/components/ui/loading-overlay';
 
 interface WaitlistFormProps {
   variant?: string;
+  referralCode?: string;
 }
 
-export const WaitlistForm: React.FC<WaitlistFormProps> = ({ variant }) => {
-  const { t, language } = useTranslation();
-  const { handleSubmit, isSubmitting } = useWaitlistSubmission();
-  const { validateField, validationErrors, setValidationErrors, validateAllFields } = useWaitlistValidation();
+export const WaitlistForm: React.FC<WaitlistFormProps> = ({ 
+  variant = 'speed',
+  referralCode = ''
+}) => {
+  const { language } = useLanguage();
+  const { t } = useTranslation();
+  const { isSubmitting, submissionProgress, handleSubmit } = useWaitlistSubmission();
+  const { validateAllFields, validateField, validationErrors } = useWaitlistValidation();
   
-  const [formData, setFormData] = useState({
-    name: '',
-    email: '',
-    phoneNumber: '',
-    referralCode: '',
-    variant: variant || 'speed',
+  const { register, handleSubmit: formSubmit, formState: { errors } } = useForm({
+    defaultValues: {
+      name: '',
+      email: '',
+      phoneNumber: '',
+      referralCode: referralCode || ''
+    }
   });
-
-  const handleChange = (field: string, value: string) => {
-    setFormData(prev => ({ ...prev, [field]: value }));
-    // Clear validation error when user starts typing
-    if (field === 'name') {
-      setValidationErrors(prev => ({ ...prev, name: '' }));
-    } else if (field === 'email') {
-      setValidationErrors(prev => ({ ...prev, email: '' }));
-    } else if (field === 'phoneNumber') {
-      setValidationErrors(prev => ({ ...prev, phone: '' }));
-    } else if (field === 'referralCode') {
-      setValidationErrors(prev => ({ ...prev, referralCode: '' }));
-    }
-  };
-
-  const handleBlur = async (field: string) => {
-    let fieldName: string;
-    let value: string;
+  
+  const onSubmit = async (data: {
+    name: string;
+    email: string;
+    phoneNumber: string;
+    referralCode: string;
+  }) => {
+    const isValid = await validateAllFields(data);
+    if (!isValid) return;
     
-    switch (field) {
-      case 'name':
-        fieldName = 'name';
-        value = formData.name;
-        break;
-      case 'email':
-        fieldName = 'email';
-        value = formData.email;
-        break;
-      case 'phoneNumber':
-        fieldName = 'phone';
-        value = formData.phoneNumber;
-        break;
-      case 'referralCode':
-        fieldName = 'referralCode';
-        value = formData.referralCode;
-        break;
-      default:
-        fieldName = field;
-        value = formData[field as keyof typeof formData] || '';
-    }
-    
-    await validateField(fieldName, value);
-  };
-
-  const onSubmit = async (e: React.FormEvent) => {
-    e.preventDefault();
-    
-    // Validate all fields using the validateAllFields from useWaitlistValidation
-    const isValid = await validateAllFields({
-      name: formData.name,
-      email: formData.email,
-      phoneNumber: formData.phoneNumber,
-      referralCode: formData.referralCode
+    handleSubmit({
+      ...data,
+      variant
     });
-    
-    if (!isValid) {
-      return;
-    }
-    
-    // Submit the form
-    handleSubmit(formData);
+  };
+
+  const handleBlur = (field: string, value: string) => {
+    validateField(field, value);
   };
   
-  // Show loading screen when submitting
-  if (isSubmitting) {
-    return <LoadingScreen />;
-  }
-
-  const dir = language === 'ar' ? 'rtl' : 'ltr';
-
+  const isRTL = language === 'ar';
+  
   return (
-    <form onSubmit={onSubmit} className="space-y-4" dir={dir}>
-      <FormField
-        id="name"
-        label={t('form.name')}
-        value={formData.name}
-        onChange={value => handleChange('name', value)}
-        onBlur={() => handleBlur('name')}
-        error={validationErrors.name}
-        required
-        placeholder={t('form.placeholder.name')}
-        dir={dir}
-      />
+    <div className="relative">
+      {isSubmitting && (
+        <LoadingOverlay 
+          message={t('form.submitting') || 'Submitting...'}
+          showProgress={true}
+          progress={submissionProgress}
+        />
+      )}
       
-      <FormField
-        id="email"
-        label={t('form.email')}
-        value={formData.email}
-        onChange={value => handleChange('email', value)}
-        onBlur={() => handleBlur('email')}
-        error={validationErrors.email}
-        required
-        type="email"
-        placeholder={t('form.placeholder.email')}
-        dir={dir}
-      />
-      
-      <FormField
-        id="phoneNumber"
-        label={t('form.phone')}
-        value={formData.phoneNumber}
-        onChange={value => handleChange('phoneNumber', value)}
-        onBlur={() => handleBlur('phoneNumber')}
-        error={validationErrors.phone}
-        required
-        type="tel"
-        placeholder={t('form.placeholder.phone')}
-        prefix="+966"
-        maxLength={9}
-        inputMode="numeric"
-        dir={dir}
-      />
-      
-      <FormField
-        id="referralCode"
-        label={t('form.referral')}
-        value={formData.referralCode}
-        onChange={value => handleChange('referralCode', value)}
-        onBlur={() => handleBlur('referralCode')}
-        error={validationErrors.referralCode}
-        placeholder={t('form.placeholder.referral')}
-        dir={dir}
-      />
-      
-      <Button 
-        type="submit" 
-        className="w-full"
-        disabled={isSubmitting}
+      <form 
+        onSubmit={formSubmit(onSubmit)}
+        className={`space-y-4 ${isRTL ? 'text-right' : 'text-left'}`}
       >
-        {isSubmitting ? t('form.submitting') : t('waitlist.join')}
-      </Button>
-    </form>
+        <FormField
+          type="text"
+          name="name"
+          register={register}
+          label={t('form.name')}
+          placeholder={t('form.placeholder.name')}
+          error={validationErrors.name || errors.name?.message}
+          onBlur={(e) => handleBlur('name', e.target.value)}
+          dir={isRTL ? 'rtl' : 'ltr'}
+        />
+        
+        <FormField
+          type="email"
+          name="email"
+          register={register}
+          label={t('form.email')}
+          placeholder={t('form.placeholder.email')}
+          error={validationErrors.email || errors.email?.message}
+          onBlur={(e) => handleBlur('email', e.target.value)}
+          dir={isRTL ? 'rtl' : 'ltr'}
+        />
+        
+        <FormField
+          type="tel"
+          name="phoneNumber"
+          register={register}
+          label={t('form.phone')}
+          placeholder={t('form.placeholder.phone')}
+          error={validationErrors.phone || errors.phoneNumber?.message}
+          onBlur={(e) => handleBlur('phone', e.target.value)}
+          prefix={isRTL ? '' : '+966'}
+          suffix={isRTL ? '966+' : ''}
+          dir={isRTL ? 'rtl' : 'ltr'}
+        />
+        
+        <FormField
+          type="text"
+          name="referralCode"
+          register={register}
+          label={t('form.referral')}
+          placeholder={t('form.placeholder.referral')}
+          error={validationErrors.referralCode || errors.referralCode?.message}
+          onBlur={(e) => handleBlur('referralCode', e.target.value)}
+          dir={isRTL ? 'rtl' : 'ltr'}
+        />
+        
+        <div className="pt-2">
+          <Button 
+            type="submit" 
+            className="w-full bg-ksa-primary text-white hover:bg-ksa-primary/90 py-6"
+            disabled={isSubmitting}
+          >
+            {t('form.submit')}
+          </Button>
+        </div>
+      </form>
+    </div>
   );
 };
 
+export default WaitlistForm;

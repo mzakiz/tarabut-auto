@@ -21,6 +21,7 @@ interface FormData {
 
 export const useWaitlistSubmission = () => {
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [submissionProgress, setSubmissionProgress] = useState(0);
   const navigate = useNavigate();
   const { toast } = useToast();
   const { t, language } = useTranslation();
@@ -32,20 +33,23 @@ export const useWaitlistSubmission = () => {
 
   const handleSubmit = async (formData: FormData) => {
     setIsSubmitting(true);
+    setSubmissionProgress(10);
     
     try {
       // Aggressively preload translations before submission
       await preloadTranslations();
+      setSubmissionProgress(20);
       
       // Get variant from the form data or extract from the URL
       const variant = formData.variant || getVariant();
       
       // Get UTM parameters for attribution
       const utmParams = getUtmParams();
-      // Remove session_id reference as it doesn't exist in the database
+      setSubmissionProgress(30);
       
       // Generate all needed codes and position
       const { displayAlias, position: positionData, referralCode: generatedReferralCode } = await generateReferralCodes();
+      setSubmissionProgress(50);
       
       // Create the user data object with proper typing
       const userData = {
@@ -63,14 +67,17 @@ export const useWaitlistSubmission = () => {
         utm_campaign: utmParams.utm_campaign,
         utm_content: utmParams.utm_content,
         utm_term: utmParams.utm_term
-        // Removed session_id as it doesn't exist in the database schema
       } as unknown as Tables<'waitlist_users'>;
+      
+      setSubmissionProgress(70);
       
       const { data: user, error } = await supabase
         .from('waitlist_users')
         .insert(userData)
         .select('position, points, referral_code, status_id')
         .single();
+      
+      setSubmissionProgress(90);
       
       if (error) {
         if (error.code === '23505' && error.message.includes('waitlist_users_email_key')) {
@@ -114,23 +121,23 @@ export const useWaitlistSubmission = () => {
         variant
       });
       
+      setSubmissionProgress(95);
+      
       // Force preload translations one more time
       await preloadTranslations();
       
-      // Create URL with query parameters - use full absolute URL
-      const baseUrl = window.location.origin;
-      const confirmationPath = `/${language}/${variant}/waitlist-signup/confirmation`;
-      const confirmationUrl = `${baseUrl}${confirmationPath}?` + new URLSearchParams({
-        referralCode: user?.referral_code || generatedReferralCode || '',
-        position: user?.position.toString() || positionData.toString(),
-        points: user?.points?.toString() || '100',
-        statusId: user?.status_id || '',
-        variant,
-        refresh: Date.now().toString() // Force cache invalidation
-      }).toString();
+      setSubmissionProgress(100);
       
-      // Use hard navigation to force a complete page reload with translations
-      window.location.href = confirmationUrl;
+      // Navigate to confirmation page with query parameters
+      navigate(`/${language}/${variant}/waitlist-signup/confirmation`, {
+        state: {
+          referralCode: user?.referral_code || generatedReferralCode || '',
+          position: user?.position || positionData,
+          points: user?.points || 100,
+          statusId: user?.status_id || '',
+          variant
+        }
+      });
       
     } catch (error: any) {
       console.error('[useWaitlistSubmission] Error joining waitlist:', error);
@@ -144,11 +151,13 @@ export const useWaitlistSubmission = () => {
       trackFormSubmissionFailed('server_error', formData.variant || getVariant());
     } finally {
       setIsSubmitting(false);
+      setSubmissionProgress(0);
     }
   };
 
   return {
     isSubmitting,
+    submissionProgress,
     handleSubmit
   };
 };
