@@ -92,5 +92,11 @@
     "calculator.cta.action": "Join the Waitlist",
 
     "form.success": "Success",
-    "form.added": "You've been added to the waitlist"
+    "form.added": "You've been added to the waitlist",
+    
+    "footer.brand": "Tarabut Auto",
+    "footer.experience": "Experience Shariah-compliant auto financing in Saudi Arabia with tailored options just for you.",
+    "footer.copyright": "All rights reserved.",
+    "footer.home": "Home",
+    "footer.about": "About Tarabut"
 }
