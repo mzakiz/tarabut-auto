@@ -1,9 +1,10 @@
 
-import React from 'react';
+import React, { useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { useLanguage } from '@/contexts/LanguageContext';
 import { Analytics } from '@/services/analytics';
 import { useReferralAnalytics } from '@/services/analytics/hooks';
+import { Check, Copy } from 'lucide-react';
 
 interface ReferralSectionProps {
   getTranslation: (key: string) => string;
@@ -18,10 +19,13 @@ export const ReferralSection: React.FC<ReferralSectionProps> = ({
 }) => {
   const { language } = useLanguage();
   const { trackReferralCopy, trackReferralShare } = useReferralAnalytics(referralCode);
+  const [copied, setCopied] = useState(false);
 
-  // Function to copy referral code to clipboard
+  // Function to copy referral code to clipboard with visual feedback
   const handleCopyClick = () => {
     navigator.clipboard.writeText(referralCode);
+    setCopied(true);
+    setTimeout(() => setCopied(false), 2000); // Reset after 2 seconds
     
     // Track the copy event
     trackReferralCopy();
@@ -98,7 +102,17 @@ export const ReferralSection: React.FC<ReferralSectionProps> = ({
           className="absolute right-2 top-1/2 transform -translate-y-1/2 bg-tarabut-teal text-tarabut-dark hover:bg-tarabut-teal/80"
           size="sm"
         >
-          {getTranslation('confirmation.copy')}
+          {copied ? (
+            <>
+              <Check className="h-4 w-4 mr-1" />
+              {getTranslation('confirmation.code.copied') || 'Copied!'}
+            </>
+          ) : (
+            <>
+              <Copy className="h-4 w-4 mr-1" />
+              {getTranslation('confirmation.copy')}
+            </>
+          )}
         </Button>
       </div>
       
