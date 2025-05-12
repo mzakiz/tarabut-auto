@@ -1,3 +1,4 @@
+
 {
     "speed.tagline": "خلك سبّاق وتعدى 3 أسابيع انتظار البنوك",
     "speed.subtitle": "خذ الموافقة الحصرية في دقيقة",
@@ -223,5 +224,16 @@
     "form.placeholder.dealership": "أدخل اسم المعرض",
     "form.placeholder.business.email": "أدخل البريد الإلكتروني للعمل",
     "form.validation.work.email": "الرجاء استخدام البريد الإلكتروني للعمل",
-    "form.validation.phone": "الرجاء إدخال رقم جوال صحيح يبدأ بـ 5"
+    "form.validation.phone": "الرجاء إدخال رقم جوال صحيح يبدأ بـ 5",
+    
+    "email.waitlist.subject": "مرحباً بك في قائمة انتظار ترابط أوتو!",
+    "email.waitlist.heading": "ألف مبروك، {name}!",
+    "email.waitlist.intro": "تم إضافتك بنجاح إلى قائمة انتظار ترابط أوتو. نحن متحمسون لانضمامك إلينا!",
+    "email.waitlist.position": "موقعك في قائمة الانتظار:",
+    "email.waitlist.tier": "المستوى الحالي: {tier}",
+    "email.waitlist.referral.heading": "شارك رمز الإحالة الخاص بك مع الأصدقاء للتقدم في قائمة الانتظار:",
+    "email.waitlist.referral.points": "في كل مرة يسجل فيها شخص ما باستخدام رمزك، ستربح 50 نقطة!",
+    "email.waitlist.status.check": "تحقق من حالتك",
+    "email.waitlist.closing": "سنعلمك بمجرد أن يكون ترابط أوتو جاهزًا للإطلاق. في غضون ذلك، لا تتردد في دعوة الأصدقاء للتقدم في قائمة الانتظار!",
+    "email.waitlist.footer": "ترابط أوتو - تمويل سيارات متوافق مع الشريعة"
 }

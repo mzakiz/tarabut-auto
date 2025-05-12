@@ -36,6 +36,44 @@ export type Database = {
         }
         Relationships: []
       }
+      email_logs: {
+        Row: {
+          created_at: string | null
+          email_to: string
+          id: string
+          metadata: Json | null
+          status: string
+          template: Database["public"]["Enums"]["email_template_type"]
+          user_id: string | null
+        }
+        Insert: {
+          created_at?: string | null
+          email_to: string
+          id?: string
+          metadata?: Json | null
+          status: string
+          template: Database["public"]["Enums"]["email_template_type"]
+          user_id?: string | null
+        }
+        Update: {
+          created_at?: string | null
+          email_to?: string
+          id?: string
+          metadata?: Json | null
+          status?: string
+          template?: Database["public"]["Enums"]["email_template_type"]
+          user_id?: string | null
+        }
+        Relationships: [
+          {
+            foreignKeyName: "email_logs_user_id_fkey"
+            columns: ["user_id"]
+            isOneToOne: false
+            referencedRelation: "waitlist_users"
+            referencedColumns: ["id"]
+          },
+        ]
+      }
       waitlist_users: {
         Row: {
           created_at: string | null
@@ -107,7 +145,10 @@ export type Database = {
       }
     }
     Enums: {
-      [_ in never]: never
+      email_template_type:
+        | "waitlist_confirmation"
+        | "dealership_confirmation"
+        | "status_update"
     }
     CompositeTypes: {
       [_ in never]: never
@@ -222,6 +263,12 @@ export type CompositeTypes<
 
 export const Constants = {
   public: {
-    Enums: {},
+    Enums: {
+      email_template_type: [
+        "waitlist_confirmation",
+        "dealership_confirmation",
+        "status_update",
+      ],
+    },
   },
 } as const

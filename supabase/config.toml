@@ -1,1 +1,29 @@
+
 project_id = "uzclrkrxqwzajiixgjbs"
+
+[api]
+enabled = true
+port = 54321
+schemas = ["public", "storage", "graphql_public"]
+
+[db]
+port = 54322
+
+[studio]
+port = 54323
+
+[inbucket]
+port = 54324
+
+[storage]
+port = 5000
+
+[auth]
+port = 5001
+
+[realtime]
+port = 5002
+
+[functions]
+[functions.send-waitlist-email]
+verify_jwt = false

@@ -98,5 +98,16 @@
     "footer.experience": "Experience Shariah-compliant auto financing in Saudi Arabia with tailored options just for you.",
     "footer.copyright": "All rights reserved.",
     "footer.home": "Home",
-    "footer.about": "About Tarabut"
+    "footer.about": "About Tarabut",
+    
+    "email.waitlist.subject": "Welcome to Tarabut Auto Waitlist!",
+    "email.waitlist.heading": "Congratulations, {name}!",
+    "email.waitlist.intro": "You've been successfully added to the Tarabut Auto waitlist. We're excited to have you join us!",
+    "email.waitlist.position": "Your position in the waitlist:",
+    "email.waitlist.tier": "Current Tier: {tier}",
+    "email.waitlist.referral.heading": "Share your referral code with friends to move up the waitlist:",
+    "email.waitlist.referral.points": "Every time someone signs up using your code, you'll earn 50 points!",
+    "email.waitlist.status.check": "Check Your Status",
+    "email.waitlist.closing": "We'll notify you as soon as Tarabut Auto is ready to launch. In the meantime, feel free to refer friends to get ahead in line!",
+    "email.waitlist.footer": "Tarabut Auto - Shariah-compliant auto financing"
 }
