@@ -53,9 +53,9 @@ serve(async (req) => {
       ? getArabicTemplate(name, position, referralCode, statusURL, tier, variant)
       : getEnglishTemplate(name, position, referralCode, statusURL, tier, variant);
     
-    // Send the email
+    // Send the email - UPDATED FROM ADDRESS TO USE VERIFIED DOMAIN
     const { data, error } = await resend.emails.send({
-      from: 'Tarabut Auto <noreply@tarabutauto.com>',
+      from: 'Tarabut Auto <auto-support@tarabut.com>',
       to: [to],
       subject: subject,
       html: htmlContent,
