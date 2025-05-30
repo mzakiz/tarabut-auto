@@ -1,3 +1,4 @@
+
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
 import { PDFDocument } from 'https://esm.sh/pdf-lib@1.17.1';
@@ -38,14 +39,14 @@ async function splitPdf(buffer: Uint8Array): Promise<Uint8Array[]> {
 
 // Call OCR.space for each page individually
 async function callOcrSpacePerPage(pages: Uint8Array[], ocrApiKey: string): Promise<string> {
-  try {
-    const texts: string[] = [];
+  const texts: string[] = [];
+  
+  console.log(`Processing ${pages.length} pages with OCR.space`);
+  
+  for (let i = 0; i < pages.length; i++) {
+    console.log(`Processing page ${i + 1}/${pages.length}`);
     
-    console.log(`Processing ${pages.length} pages with OCR.space`);
-    
-    for (let i = 0; i < pages.length; i++) {
-      console.log(`Processing page ${i + 1}/${pages.length}`);
-      
+    try {
       const pdfBytes = pages[i];
       const base64 = btoa(String.fromCharCode(...pdfBytes));
       
@@ -76,16 +77,16 @@ async function callOcrSpacePerPage(pages: Uint8Array[], ocrApiKey: string): Prom
       texts.push(pageText);
       
       console.log(`Page ${i + 1} extracted ${pageText.length} characters`);
+    } catch (pageError) {
+      console.error(`Error processing page ${i + 1}:`, pageError);
+      texts.push(''); // Add empty text for failed pages
     }
-    
-    const finalText = texts.join('\n');
-    console.log(`Total extracted text length: ${finalText.length}`);
-    
-    return finalText;
-  } catch (error) {
-    console.error('OCR per-page processing error:', error);
-    throw new Error(`OCR processing failed: ${error.message}`);
   }
+  
+  const finalText = texts.join('\n');
+  console.log(`Total extracted text length: ${finalText.length}`);
+  
+  return finalText;
 }
 
 // OCR.space fallback function for images
