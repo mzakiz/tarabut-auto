@@ -4,7 +4,7 @@ import { useDropzone } from 'react-dropzone';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { FileText, Upload, CheckCircle, XCircle, Loader2 } from 'lucide-react';
+import { FileText, Upload, CheckCircle, XCircle, Loader2, AlertTriangle } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface DocumentUploadZoneProps {
@@ -17,6 +17,7 @@ interface DocumentUploadZoneProps {
     status: 'uploading' | 'processing' | 'completed' | 'failed';
     progress: number;
     error?: string;
+    errorType?: 'UNREADABLE_PDF' | 'SERVER_ERROR' | 'UPLOAD_ERROR';
     fileName?: string;
   };
   icon?: React.ReactNode;
@@ -64,7 +65,9 @@ export const DocumentUploadZone: React.FC<DocumentUploadZoneProps> = ({
       case 'completed':
         return <CheckCircle className="w-8 h-8 text-green-500" />;
       case 'failed':
-        return <XCircle className="w-8 h-8 text-red-500" />;
+        return uploadStatus.errorType === 'UNREADABLE_PDF' 
+          ? <AlertTriangle className="w-8 h-8 text-orange-500" />
+          : <XCircle className="w-8 h-8 text-red-500" />;
       default:
         return icon || <FileText className="w-8 h-8" />;
     }
@@ -81,22 +84,42 @@ export const DocumentUploadZone: React.FC<DocumentUploadZoneProps> = ({
       case 'completed':
         return `✅ ${uploadStatus.fileName} processed successfully`;
       case 'failed':
+        if (uploadStatus.errorType === 'UNREADABLE_PDF') {
+          return `⚠️ PDF text could not be read. Please upload as image (PNG/JPG)`;
+        }
         return `❌ ${uploadStatus.error || 'Upload failed'}`;
       default:
         return description;
     }
   };
 
+  const getCardBorderColor = () => {
+    if (!uploadStatus) {
+      if (isDragActive) return "border-primary bg-primary/5";
+      return "hover:border-primary/50 cursor-pointer";
+    }
+    
+    switch (uploadStatus.status) {
+      case 'completed':
+        return "border-green-500 bg-green-50";
+      case 'failed':
+        return uploadStatus.errorType === 'UNREADABLE_PDF'
+          ? "border-orange-500 bg-orange-50"
+          : "border-red-500 bg-red-50";
+      default:
+        return "";
+    }
+  };
+
   const isCompleted = uploadStatus?.status === 'completed';
   const isProcessing = uploadStatus?.status === 'uploading' || uploadStatus?.status === 'processing';
+  const isPdfReadError = uploadStatus?.status === 'failed' && uploadStatus?.errorType === 'UNREADABLE_PDF';
 
   return (
     <Card className={cn(
       "p-6 border-2 border-dashed transition-all duration-200",
-      isDragActive && "border-primary bg-primary/5",
-      isCompleted && "border-green-500 bg-green-50",
-      uploadStatus?.status === 'failed' && "border-red-500 bg-red-50",
-      !isProcessing && !isCompleted && "hover:border-primary/50 cursor-pointer"
+      getCardBorderColor(),
+      !isProcessing && !isCompleted && "cursor-pointer"
     )}>
       <div 
         {...getRootProps()} 
@@ -109,7 +132,14 @@ export const DocumentUploadZone: React.FC<DocumentUploadZoneProps> = ({
           
           <div>
             <h3 className="text-lg font-semibold mb-2">{title}</h3>
-            <p className="text-sm text-muted-foreground mb-4">
+            <p className={cn(
+              "text-sm mb-4",
+              uploadStatus?.status === 'failed' 
+                ? uploadStatus.errorType === 'UNREADABLE_PDF' 
+                  ? "text-orange-600" 
+                  : "text-red-600"
+                : "text-muted-foreground"
+            )}>
               {getStatusText()}
             </p>
             
@@ -118,6 +148,17 @@ export const DocumentUploadZone: React.FC<DocumentUploadZoneProps> = ({
                 <Progress value={uploadStatus.progress} className="mb-2" />
                 <p className="text-xs text-muted-foreground">
                   {uploadStatus.progress}% complete
+                </p>
+              </div>
+            )}
+
+            {isPdfReadError && (
+              <div className="mt-3 p-3 bg-orange-100 border border-orange-300 rounded-md">
+                <p className="text-xs text-orange-800 font-medium mb-2">
+                  💡 PDF Tip: Scanned or image-based PDFs work better as images
+                </p>
+                <p className="text-xs text-orange-700">
+                  Try uploading your document as a high-resolution PNG or JPG image instead
                 </p>
               </div>
             )}
@@ -145,10 +186,15 @@ export const DocumentUploadZone: React.FC<DocumentUploadZoneProps> = ({
             <p className="text-xs text-muted-foreground">
               Max file size: 10MB
             </p>
+            {isPdfReadError && (
+              <p className="text-xs text-orange-600 font-medium">
+                📸 For best results, use PNG/JPG images
+              </p>
+            )}
           </div>
         )}
         
-        {isCompleted && (
+        {(isCompleted || isPdfReadError) && (
           <Button
             type="button"
             variant="outline"

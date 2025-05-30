@@ -78,7 +78,7 @@ serve(async (req) => {
     let extractedData;
 
     if (fileExtension === 'pdf') {
-      // For PDFs, extract text and use Chat Completions with functions
+      // For PDFs, extract text and validate quality before proceeding
       console.log('Processing PDF file...');
       
       const arrayBuffer = await fileBlob.arrayBuffer();
@@ -144,12 +144,23 @@ serve(async (req) => {
         console.log('Extracted text length:', textContent.length);
         console.log('First 500 chars of extracted text:', textContent.substring(0, 500));
         
-        // Classify text quality before proceeding
+        // Step 1: Classify text quality before proceeding
         if (textContent.length < 20) {
-          throw new Error('Could not extract sufficient text from PDF');
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: 'UNREADABLE_PDF',
+              message: 'Could not extract sufficient text from PDF. Please upload the document as a high-resolution image (PNG/JPG) for better results.'
+            }),
+            {
+              status: 422,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          );
         }
         
-        // Use the text quality classifier
+        // Step 2: Use the text quality classifier
+        console.log('Running text quality classification...');
         const classifierMessages = [
           {
             role: 'system',
@@ -200,16 +211,64 @@ ${textContent}
         
         console.log('Text quality classification:', classification);
         
+        // Step 3: Handle garbage text with structured error response
         if (classification.is_garbage) {
-          throw new Error(`PDF text extraction failed: ${classification.reason}. Sample: "${classification.sample_excerpt}". Please try uploading the document as an image (PNG/JPG) for better results.`);
+          console.log('PDF text classified as garbage, returning structured error');
+          
+          // Update document with structured error
+          await supabase
+            .from('document_uploads')
+            .update({
+              processing_status: 'failed',
+              error_message: `PDF text extraction failed: ${classification.reason}. Sample: "${classification.sample_excerpt}"`
+            })
+            .eq('id', documentId);
+
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: 'UNREADABLE_PDF',
+              message: `PDF text extraction failed: ${classification.reason}. Please upload the document as a high-resolution image (PNG/JPG) for better results.`,
+              details: {
+                reason: classification.reason,
+                sample_excerpt: classification.sample_excerpt
+              }
+            }),
+            {
+              status: 422,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          );
         }
+        
+        console.log('Text quality approved, proceeding with salary extraction');
         
       } catch (error) {
         console.error('PDF text extraction failed:', error);
-        throw new Error('Failed to extract readable text from PDF. Please try uploading the document as an image (PNG/JPG) for better results.');
+        
+        // Update document with error
+        await supabase
+          .from('document_uploads')
+          .update({
+            processing_status: 'failed',
+            error_message: 'Failed to extract readable text from PDF'
+          })
+          .eq('id', documentId);
+
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'UNREADABLE_PDF',
+            message: 'Failed to extract readable text from PDF. Please upload the document as a high-resolution image (PNG/JPG) for better results.'
+          }),
+          {
+            status: 422,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
       }
 
-      // Prepare messages for document analysis
+      // Step 4: Proceed with salary extraction using the validated text
       const systemMessage = documentType === 'salary_certificate' 
         ? `You are an assistant that extracts salary information from a salary certificate. 
            Look for salary amounts, basic pay, allowances, deductions, and net pay.

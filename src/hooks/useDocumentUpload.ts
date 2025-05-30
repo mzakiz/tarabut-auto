@@ -11,6 +11,7 @@ interface DocumentUpload {
   progress: number;
   extractedData?: any;
   error?: string;
+  errorType?: 'UNREADABLE_PDF' | 'SERVER_ERROR' | 'UPLOAD_ERROR';
 }
 
 export const useDocumentUpload = () => {
@@ -90,7 +91,51 @@ export const useDocumentUpload = () => {
         });
 
       if (analysisError) {
+        // Check if this is a structured error response
+        if (analysisError.message && analysisError.message.includes('UNREADABLE_PDF')) {
+          setUploads(prev => ({
+            ...prev,
+            [uploadId]: {
+              ...prev[uploadId],
+              status: 'failed',
+              error: 'This PDF could not be read properly. Please upload the document as a high-resolution image (PNG/JPG) instead.',
+              errorType: 'UNREADABLE_PDF'
+            }
+          }));
+
+          toast({
+            title: "PDF Reading Failed",
+            description: "This PDF contains unreadable text. Please upload the document as a high-resolution image (PNG/JPG) for better results.",
+            variant: "destructive",
+          });
+          return;
+        }
+
         throw new Error(`Analysis failed: ${analysisError.message}`);
+      }
+
+      // Handle analysis response
+      if (!analysisData.success) {
+        if (analysisData.error === 'UNREADABLE_PDF') {
+          setUploads(prev => ({
+            ...prev,
+            [uploadId]: {
+              ...prev[uploadId],
+              status: 'failed',
+              error: analysisData.message,
+              errorType: 'UNREADABLE_PDF'
+            }
+          }));
+
+          toast({
+            title: "PDF Reading Failed",
+            description: analysisData.message,
+            variant: "destructive",
+          });
+          return;
+        }
+
+        throw new Error(analysisData.error || 'Analysis failed');
       }
 
       setUploads(prev => ({
@@ -116,7 +161,8 @@ export const useDocumentUpload = () => {
         [uploadId]: {
           ...prev[uploadId],
           status: 'failed',
-          error: error instanceof Error ? error.message : 'Upload failed'
+          error: error instanceof Error ? error.message : 'Upload failed',
+          errorType: 'SERVER_ERROR'
         }
       }));
 
