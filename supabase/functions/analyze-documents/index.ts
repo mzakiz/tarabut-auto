@@ -18,8 +18,19 @@ serve(async (req) => {
     return new Response(null, { headers: corsHeaders });
   }
 
+  let requestBody: DocumentAnalysisRequest;
+  
   try {
-    const { documentId, fileUrl, documentType } = await req.json() as DocumentAnalysisRequest;
+    requestBody = await req.json() as DocumentAnalysisRequest;
+    const { documentId, fileUrl, documentType } = requestBody;
+    
+    console.log('Processing document:', { documentId, documentType, fileUrl: fileUrl.substring(0, 50) + '...' });
+    
+    // Check if OpenAI API key is available
+    const openAIKey = Deno.env.get('OPENAI_API_KEY');
+    if (!openAIKey) {
+      throw new Error('OpenAI API key is not configured');
+    }
     
     // Initialize Supabase client
     const supabase = createClient(
@@ -72,11 +83,13 @@ serve(async (req) => {
         
         Focus on identifying recurring salary deposits. Return only the JSON object, no additional text.`;
 
+    console.log('Calling OpenAI API...');
+    
     // Call OpenAI API
     const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
       method: 'POST',
       headers: {
-        'Authorization': `Bearer ${Deno.env.get('OPENAI_API_KEY')}`,
+        'Authorization': `Bearer ${openAIKey}`,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
@@ -104,11 +117,15 @@ serve(async (req) => {
     });
 
     if (!openAIResponse.ok) {
+      const errorText = await openAIResponse.text();
+      console.error('OpenAI API error:', openAIResponse.status, errorText);
       throw new Error(`OpenAI API error: ${openAIResponse.statusText}`);
     }
 
     const openAIData = await openAIResponse.json();
     const extractedText = openAIData.choices[0].message.content;
+    
+    console.log('OpenAI response received:', extractedText.substring(0, 200) + '...');
     
     // Parse the JSON response
     let extractedData;
@@ -137,6 +154,8 @@ serve(async (req) => {
       throw new Error(`Database update error: ${updateError.message}`);
     }
 
+    console.log('Document analysis completed successfully');
+
     return new Response(
       JSON.stringify({
         success: true,
@@ -153,20 +172,23 @@ serve(async (req) => {
     console.error('Document analysis error:', error);
     
     // Try to update document status to failed if we have the documentId
-    const requestBody = await req.clone().json().catch(() => ({}));
-    if (requestBody.documentId) {
-      const supabase = createClient(
-        Deno.env.get('SUPABASE_URL') ?? '',
-        Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-      );
-      
-      await supabase
-        .from('document_uploads')
-        .update({
-          processing_status: 'failed',
-          error_message: error.message
-        })
-        .eq('id', requestBody.documentId);
+    if (requestBody?.documentId) {
+      try {
+        const supabase = createClient(
+          Deno.env.get('SUPABASE_URL') ?? '',
+          Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
+        );
+        
+        await supabase
+          .from('document_uploads')
+          .update({
+            processing_status: 'failed',
+            error_message: error.message
+          })
+          .eq('id', requestBody.documentId);
+      } catch (updateError) {
+        console.error('Failed to update error status:', updateError);
+      }
     }
 
     return new Response(
