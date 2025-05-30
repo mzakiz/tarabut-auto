@@ -65,32 +65,7 @@ serve(async (req) => {
     }
     
     const fileBlob = await fileResponse.blob();
-    const fileName = `document_${documentId}.${fileExtension}`;
     
-    // Upload file to OpenAI Files API
-    console.log('Uploading file to OpenAI...');
-    const formData = new FormData();
-    formData.append('file', fileBlob, fileName);
-    formData.append('purpose', 'vision');
-
-    const uploadResponse = await fetch('https://api.openai.com/v1/files', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIKey}`,
-      },
-      body: formData,
-    });
-
-    if (!uploadResponse.ok) {
-      const errorText = await uploadResponse.text();
-      console.error('OpenAI file upload error:', uploadResponse.status, errorText);
-      throw new Error(`Failed to upload file to OpenAI: ${uploadResponse.statusText}`);
-    }
-
-    const uploadData = await uploadResponse.json();
-    const fileId = uploadData.id;
-    console.log('File uploaded to OpenAI with ID:', fileId);
-
     // Prepare OpenAI prompt based on document type
     const prompt = documentType === 'salary_certificate' 
       ? `Analyze this salary certificate document and extract the following information in JSON format:
@@ -132,48 +107,50 @@ serve(async (req) => {
 
     console.log('Calling OpenAI API for document analysis...');
     
-    // Use GPT-4o with the uploaded file for analysis
-    const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: prompt
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: `data:${fileBlob.type};base64,${await blobToBase64(fileBlob)}`
-                }
-              }
-            ]
-          }
-        ],
-        max_tokens: 1500,
-        temperature: 0.1
-      }),
-    });
-
-    // Clean up: Delete the uploaded file from OpenAI
-    try {
-      await fetch(`https://api.openai.com/v1/files/${fileId}`, {
-        method: 'DELETE',
+    // Convert file to base64 for direct analysis
+    const base64Data = await blobToBase64(fileBlob);
+    const mimeType = fileBlob.type || (fileExtension === 'pdf' ? 'application/pdf' : `image/${fileExtension}`);
+    
+    // For PDFs, we need to handle them differently since OpenAI vision doesn't support PDFs directly
+    let analysisResponse;
+    
+    if (fileExtension === 'pdf') {
+      // For PDFs, we'll use a text-based approach with GPT-4o
+      // Note: This is a limitation - we can't directly process PDF content without OCR
+      // For now, we'll inform the user that PDF processing needs image conversion
+      throw new Error('PDF files need to be converted to images first. Please upload your document as a PNG or JPG image for accurate analysis.');
+    } else {
+      // Use GPT-4o with vision for image files
+      analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
         headers: {
           'Authorization': `Bearer ${openAIKey}`,
+          'Content-Type': 'application/json',
         },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: prompt
+                },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: `data:${mimeType};base64,${base64Data}`,
+                    detail: 'high'
+                  }
+                }
+              ]
+            }
+          ],
+          max_tokens: 1500,
+          temperature: 0.1
+        }),
       });
-      console.log('Cleaned up uploaded file from OpenAI');
-    } catch (cleanupError) {
-      console.warn('Failed to cleanup file from OpenAI:', cleanupError);
     }
 
     if (!analysisResponse.ok) {
