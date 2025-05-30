@@ -14,110 +14,125 @@ interface DocumentAnalysisRequest {
   documentType: 'salary_certificate' | 'bank_statement';
 }
 
-// Chunked base64 conversion to avoid stack overflow
-function arrayBufferToBase64Chunked(buffer: ArrayBuffer): string {
+interface ExtractedData {
+  monthly_gross_salary?: number;
+  basic_salary?: number;
+  allowances?: number;
+  total_deductions?: number;
+  net_salary?: number;
+  currency: string;
+  employee_name?: string;
+  company_name?: string;
+  monthly_salary_deposits?: Array<{
+    amount: number;
+    date: string;
+    description: string;
+  }>;
+  average_monthly_income?: number;
+  account_holder_name?: string;
+  bank_name?: string;
+  confidence_score: number;
+}
+
+// Helper function for chunked base64 conversion
+function toBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
-  const chunkSize = 1024; // Process in 1KB chunks
-  let binary = '';
+  const chunkSize = 8192; // 8KB chunks
+  let result = '';
   
   for (let i = 0; i < bytes.length; i += chunkSize) {
     const chunk = bytes.slice(i, i + chunkSize);
-    binary += String.fromCharCode(...chunk);
+    result += String.fromCharCode(...chunk);
   }
   
-  return btoa(binary);
+  return btoa(result);
 }
 
-// Split PDF into individual pages
-async function splitPdf(buffer: Uint8Array): Promise<Uint8Array[]> {
+// OCR processing for PDFs
+async function extractTextFromPDF(pdfBuffer: Uint8Array, apiKey: string): Promise<string> {
+  console.log('Starting PDF text extraction');
+  
   try {
-    const src = await PDFDocument.load(buffer);
-    const total = src.getPageCount();
-    const pages: Uint8Array[] = [];
+    const pdfDoc = await PDFDocument.load(pdfBuffer);
+    const pageCount = pdfDoc.getPageCount();
+    console.log(`PDF has ${pageCount} pages`);
     
-    console.log(`Splitting PDF into ${total} pages`);
+    const extractedTexts: string[] = [];
     
-    for (let i = 0; i < total; i++) {
-      const dst = await PDFDocument.create();
-      const [page] = await dst.copyPages(src, [i]);
-      dst.addPage(page);
-      pages.push(await dst.save());
-    }
-    
-    return pages;
-  } catch (error) {
-    console.error('PDF splitting error:', error);
-    throw new Error(`Failed to split PDF: ${error.message}`);
-  }
-}
-
-// Call OCR.space for each page individually
-async function callOcrSpacePerPage(pages: Uint8Array[], ocrApiKey: string): Promise<string> {
-  const texts: string[] = [];
-  
-  console.log(`Processing ${pages.length} pages with OCR.space`);
-  
-  for (let i = 0; i < pages.length; i++) {
-    console.log(`Processing page ${i + 1}/${pages.length}`);
-    
-    try {
-      const pdfBytes = pages[i];
+    for (let i = 0; i < pageCount; i++) {
+      console.log(`Processing page ${i + 1}/${pageCount}`);
       
-      // Use chunked conversion to avoid stack overflow
-      const base64 = arrayBufferToBase64Chunked(pdfBytes.buffer);
-      
-      const resp = await fetch('https://api.ocr.space/parse/image', {
-        method: 'POST',
-        headers: {
-          'apikey': ocrApiKey,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          base64Image: `data:application/pdf;base64,${base64}`,
-          language: 'eng',
-          isTable: true,
-          detectOrientation: true,
-          scale: true,
-          OCREngine: 2
-        }),
-      });
+      try {
+        // Create single page PDF
+        const singlePageDoc = await PDFDocument.create();
+        const [page] = await singlePageDoc.copyPages(pdfDoc, [i]);
+        singlePageDoc.addPage(page);
+        const pageBuffer = await singlePageDoc.save();
+        
+        // Convert to base64
+        const base64 = toBase64(pageBuffer.buffer);
+        
+        // OCR the page
+        const response = await fetch('https://api.ocr.space/parse/image', {
+          method: 'POST',
+          headers: {
+            'apikey': apiKey,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            base64Image: `data:application/pdf;base64,${base64}`,
+            language: 'eng',
+            isTable: true,
+            detectOrientation: true,
+            scale: true,
+            OCREngine: 2
+          }),
+        });
 
-      if (!resp.ok) {
-        console.warn(`OCR failed for page ${i + 1}: ${resp.status} ${resp.statusText}`);
-        texts.push(''); // Add empty text for failed pages
-        continue;
+        if (response.ok) {
+          const result = await response.json();
+          const pageText = result.ParsedResults?.[0]?.ParsedText || '';
+          extractedTexts.push(pageText);
+          console.log(`Page ${i + 1} extracted ${pageText.length} characters`);
+        } else {
+          console.warn(`OCR failed for page ${i + 1}: ${response.status}`);
+          extractedTexts.push('');
+        }
+      } catch (pageError) {
+        console.error(`Error processing page ${i + 1}:`, pageError);
+        extractedTexts.push('');
       }
-
-      const json = await resp.json();
-      const pageText = json.ParsedResults?.[0]?.ParsedText || '';
-      texts.push(pageText);
-      
-      console.log(`Page ${i + 1} extracted ${pageText.length} characters`);
-    } catch (pageError) {
-      console.error(`Error processing page ${i + 1}:`, pageError);
-      texts.push(''); // Add empty text for failed pages
     }
+    
+    const fullText = extractedTexts.join('\n').trim();
+    console.log(`Total extracted text: ${fullText.length} characters`);
+    
+    if (fullText.length < 50) {
+      throw new Error('Insufficient text extracted from PDF');
+    }
+    
+    return fullText;
+  } catch (error) {
+    console.error('PDF text extraction failed:', error);
+    throw new Error(`PDF processing failed: ${error.message}`);
   }
-  
-  const finalText = texts.join('\n');
-  console.log(`Total extracted text length: ${finalText.length}`);
-  
-  return finalText;
 }
 
-// OCR.space fallback function for images
-async function callOcrSpaceImage(buffer: ArrayBuffer, ocrApiKey: string) {
+// OCR processing for images
+async function extractTextFromImage(imageBuffer: ArrayBuffer, apiKey: string, mimeType: string): Promise<string> {
+  console.log('Starting image text extraction');
+  
   try {
-    const base64Data = arrayBufferToBase64Chunked(buffer);
+    const base64 = toBase64(imageBuffer);
     
-    const ocrResponse = await fetch('https://api.ocr.space/parse/image', {
+    const response = await fetch('https://api.ocr.space/parse/image', {
       method: 'POST',
       headers: {
-        'apikey': ocrApiKey,
+        'apikey': apiKey,
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        base64Image: `data:image/jpeg;base64,${base64Data}`,
+        base64Image: `data:${mimeType};base64,${base64}`,
         language: 'eng',
         isTable: true,
         detectOrientation: true,
@@ -126,21 +141,179 @@ async function callOcrSpaceImage(buffer: ArrayBuffer, ocrApiKey: string) {
       }),
     });
 
-    if (!ocrResponse.ok) {
-      throw new Error(`OCR.space API error: ${ocrResponse.status} ${ocrResponse.statusText}`);
+    if (!response.ok) {
+      throw new Error(`OCR API returned ${response.status}: ${response.statusText}`);
     }
 
-    const ocrData = await ocrResponse.json();
-    console.log('OCR.space response:', JSON.stringify(ocrData, null, 2));
+    const result = await response.json();
+    const extractedText = result.ParsedResults?.[0]?.ParsedText || '';
     
-    if (ocrData.ParsedResults && ocrData.ParsedResults.length > 0) {
-      return ocrData.ParsedResults[0].ParsedText || '';
+    if (extractedText.length < 20) {
+      throw new Error('Insufficient text extracted from image');
     }
     
-    throw new Error('OCR.space returned no results');
+    console.log(`Extracted ${extractedText.length} characters from image`);
+    return extractedText;
   } catch (error) {
-    console.error('OCR.space error details:', error);
-    throw error;
+    console.error('Image text extraction failed:', error);
+    throw new Error(`Image OCR failed: ${error.message}`);
+  }
+}
+
+// AI analysis using OpenAI
+async function analyzeWithOpenAI(
+  content: string | ArrayBuffer,
+  documentType: string,
+  apiKey: string,
+  isImage: boolean = false,
+  mimeType?: string
+): Promise<ExtractedData> {
+  console.log('Starting OpenAI analysis');
+  
+  const systemMessage = documentType === 'salary_certificate' 
+    ? 'Extract salary information from this document. Look for salary amounts, allowances, deductions, and employee details.'
+    : 'Extract salary-related transactions from this bank statement. Look for recurring deposits that appear to be salary payments.';
+
+  const functionName = documentType === 'salary_certificate' ? 'extract_salary_data' : 'extract_bank_data';
+  
+  const functionSchema = documentType === 'salary_certificate' ? {
+    name: "extract_salary_data",
+    description: "Extract structured salary data",
+    parameters: {
+      type: "object",
+      properties: {
+        monthly_gross_salary: { type: "number", description: "Monthly gross salary" },
+        basic_salary: { type: "number", description: "Basic salary" },
+        allowances: { type: "number", description: "Total allowances" },
+        total_deductions: { type: "number", description: "Total deductions" },
+        net_salary: { type: "number", description: "Net salary" },
+        currency: { type: "string", description: "Currency code" },
+        employee_name: { type: "string", description: "Employee name" },
+        company_name: { type: "string", description: "Company name" },
+        confidence_score: { type: "number", description: "Confidence 0-1" }
+      },
+      required: ["currency", "confidence_score"]
+    }
+  } : {
+    name: "extract_bank_data",
+    description: "Extract structured bank statement data",
+    parameters: {
+      type: "object",
+      properties: {
+        monthly_salary_deposits: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              amount: { type: "number" },
+              date: { type: "string" },
+              description: { type: "string" }
+            }
+          }
+        },
+        average_monthly_income: { type: "number", description: "Average monthly income" },
+        currency: { type: "string", description: "Currency code" },
+        account_holder_name: { type: "string", description: "Account holder" },
+        bank_name: { type: "string", description: "Bank name" },
+        confidence_score: { type: "number", description: "Confidence 0-1" }
+      },
+      required: ["currency", "confidence_score"]
+    }
+  };
+
+  let messages;
+  if (isImage && content instanceof ArrayBuffer) {
+    const base64 = toBase64(content);
+    messages = [
+      { role: 'system', content: systemMessage },
+      {
+        role: 'user',
+        content: [
+          { type: 'text', text: `Analyze this ${documentType.replace('_', ' ')} image:` },
+          {
+            type: 'image_url',
+            image_url: {
+              url: `data:${mimeType};base64,${base64}`,
+              detail: 'high'
+            }
+          }
+        ]
+      }
+    ];
+  } else {
+    messages = [
+      { role: 'system', content: systemMessage },
+      { role: 'user', content: `Analyze this ${documentType.replace('_', ' ')} text:\n\n${content}` }
+    ];
+  }
+
+  try {
+    const response = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${apiKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages,
+        functions: [functionSchema],
+        function_call: { name: functionName },
+        temperature: 0.1
+      }),
+    });
+
+    if (!response.ok) {
+      const errorText = await response.text();
+      throw new Error(`OpenAI API error: ${response.status} - ${errorText}`);
+    }
+
+    const result = await response.json();
+    const functionCall = result.choices[0].message.function_call;
+    
+    if (!functionCall?.arguments) {
+      throw new Error('No structured data extracted');
+    }
+
+    const extractedData = JSON.parse(functionCall.arguments) as ExtractedData;
+    console.log('OpenAI analysis completed successfully');
+    
+    return extractedData;
+  } catch (error) {
+    console.error('OpenAI analysis failed:', error);
+    throw new Error(`AI analysis failed: ${error.message}`);
+  }
+}
+
+// Update document status in database
+async function updateDocumentStatus(
+  supabase: any,
+  documentId: string,
+  status: string,
+  extractedData?: ExtractedData,
+  errorMessage?: string
+) {
+  const updateData: any = {
+    processing_status: status,
+    processed_at: new Date().toISOString()
+  };
+
+  if (extractedData) {
+    updateData.extracted_data = extractedData;
+    updateData.confidence_score = extractedData.confidence_score;
+  }
+
+  if (errorMessage) {
+    updateData.error_message = errorMessage;
+  }
+
+  const { error } = await supabase
+    .from('document_uploads')
+    .update(updateData)
+    .eq('id', documentId);
+
+  if (error) {
+    console.error('Failed to update document status:', error);
   }
 }
 
@@ -152,16 +325,13 @@ serve(async (req) => {
   let requestBody: DocumentAnalysisRequest;
   
   try {
-    console.log('=== Starting document analysis ===');
+    console.log('=== Document Analysis Started ===');
     
-    requestBody = await req.json() as DocumentAnalysisRequest;
+    requestBody = await req.json();
     const { documentId, fileUrl, documentType } = requestBody;
     
-    console.log('Processing document:', { documentId, documentType, hasFileUrl: !!fileUrl });
-    
-    // Validate required fields
+    // Validate input
     if (!documentId || !fileUrl || !documentType) {
-      console.error('Missing required fields:', { documentId: !!documentId, fileUrl: !!fileUrl, documentType: !!documentType });
       return new Response(
         JSON.stringify({
           success: false,
@@ -174,29 +344,15 @@ serve(async (req) => {
       );
     }
     
-    // Check if required API keys are available
+    // Check API keys
     const openAIKey = Deno.env.get('OPENAI_API_KEY');
-    if (!openAIKey) {
-      console.error('OpenAI API key is not configured');
+    const ocrKey = Deno.env.get('OCR_SPACE_API_KEY');
+    
+    if (!openAIKey || !ocrKey) {
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'OpenAI API key is not configured'
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    const ocrSpaceKey = Deno.env.get('OCR_SPACE_API_KEY');
-    if (!ocrSpaceKey) {
-      console.error('OCR.space API key is not configured');
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'OCR.space API key is not configured'
+          error: 'API keys not configured'
         }),
         {
           status: 500,
@@ -205,12 +361,11 @@ serve(async (req) => {
       );
     }
     
-    // Initialize Supabase client
+    // Initialize Supabase
     const supabaseUrl = Deno.env.get('SUPABASE_URL');
     const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
     
     if (!supabaseUrl || !supabaseKey) {
-      console.error('Supabase configuration missing');
       return new Response(
         JSON.stringify({
           success: false,
@@ -225,68 +380,18 @@ serve(async (req) => {
     
     const supabase = createClient(supabaseUrl, supabaseKey);
 
-    // Update document status to processing
-    console.log('Updating document status to processing...');
-    const { error: updateError } = await supabase
-      .from('document_uploads')
-      .update({ processing_status: 'processing' })
-      .eq('id', documentId);
-      
-    if (updateError) {
-      console.error('Failed to update document status:', updateError);
-    }
+    // Update status to processing
+    await updateDocumentStatus(supabase, documentId, 'processing');
 
-    let extractedData;
-    let processingMethod = 'vision_api';
-
-    // Handle file processing
-    const urlParams = new URL(fileUrl);
-    const filePath = urlParams.pathname;
-    const fileExtension = filePath.split('.').pop()?.toLowerCase();
-    
-    console.log('File extension detected:', fileExtension);
-
-    const supportedFormats = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf'];
-    if (!supportedFormats.includes(fileExtension || '')) {
-      console.error('Unsupported file format:', fileExtension);
-      await supabase
-        .from('document_uploads')
-        .update({
-          processing_status: 'failed',
-          error_message: 'Unsupported file format. Please upload PDF, PNG, JPG, JPEG, GIF, or WEBP files.'
-        })
-        .eq('id', documentId);
-        
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'UNSUPPORTED_FORMAT',
-          message: 'Unsupported file format. Please upload PDF, PNG, JPG, JPEG, GIF, or WEBP files.'
-        }),
-        {
-          status: 400,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    console.log('Fetching file from storage...');
+    // Download file
+    console.log('Downloading file...');
     const fileResponse = await fetch(fileUrl);
     if (!fileResponse.ok) {
-      console.error('Failed to fetch file:', fileResponse.status, fileResponse.statusText);
-      await supabase
-        .from('document_uploads')
-        .update({
-          processing_status: 'failed',
-          error_message: `Failed to fetch file: ${fileResponse.statusText}`
-        })
-        .eq('id', documentId);
-        
+      await updateDocumentStatus(supabase, documentId, 'failed', undefined, `File download failed: ${fileResponse.statusText}`);
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'FILE_FETCH_FAILED',
-          message: `Failed to fetch file: ${fileResponse.statusText}`
+          error: 'File download failed'
         }),
         {
           status: 400,
@@ -296,25 +401,15 @@ serve(async (req) => {
     }
     
     const fileBlob = await fileResponse.blob();
+    const fileExtension = new URL(fileUrl).pathname.split('.').pop()?.toLowerCase();
     
-    // File size guardrail - reject files larger than 5MB
-    const maxFileSize = 5 * 1024 * 1024; // 5MB
-    if (fileBlob.size > maxFileSize) {
-      console.log(`File too large: ${fileBlob.size} bytes (max: ${maxFileSize})`);
-      
-      await supabase
-        .from('document_uploads')
-        .update({
-          processing_status: 'failed',
-          error_message: 'File too large. Please upload a file smaller than 5MB or use an image format.'
-        })
-        .eq('id', documentId);
-
+    // File size check (10MB limit)
+    if (fileBlob.size > 10 * 1024 * 1024) {
+      await updateDocumentStatus(supabase, documentId, 'failed', undefined, 'File too large (max 10MB)');
       return new Response(
         JSON.stringify({
           success: false,
-          error: 'FILE_TOO_LARGE',
-          message: 'File is too large. Please upload a file smaller than 5MB or convert your document to a high-quality image (PNG/JPG).'
+          error: 'File too large. Maximum size is 10MB.'
         }),
         {
           status: 413,
@@ -322,395 +417,29 @@ serve(async (req) => {
         }
       );
     }
-    
-    console.log('Analyzing document...');
-    
+
+    let extractedData: ExtractedData;
+    const arrayBuffer = await fileBlob.arrayBuffer();
+
     if (fileExtension === 'pdf') {
-      console.log('Processing PDF file with page-by-page OCR...');
-      
-      let finalText = '';
-      
-      try {
-        // For PDFs, split into pages and process each with OCR.space
-        const arrayBuffer = await fileBlob.arrayBuffer();
-        const uint8Buffer = new Uint8Array(arrayBuffer);
-        
-        const pages = await splitPdf(uint8Buffer);
-        finalText = await callOcrSpacePerPage(pages, ocrSpaceKey);
-        processingMethod = 'ocr_extraction';
-        console.log(`OCR extraction successful, text length: ${finalText.length}`);
-        
-      } catch (ocrError) {
-        console.error('OCR extraction failed:', ocrError);
-        
-        await supabase
-          .from('document_uploads')
-          .update({
-            processing_status: 'failed',
-            error_message: `OCR processing failed: ${ocrError.message}`
-          })
-          .eq('id', documentId);
-
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: 'OCR_FAILED',
-            message: 'We couldn\'t process your PDF. Please try uploading it as a high-quality image (PNG/JPG) instead.'
-          }),
-          {
-            status: 422,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        );
-      }
-      
-      if (!finalText || finalText.trim().length < 20) {
-        console.log('Extracted text too short:', finalText.length);
-        await supabase
-          .from('document_uploads')
-          .update({
-            processing_status: 'failed',
-            error_message: 'Unable to extract readable text from PDF'
-          })
-          .eq('id', documentId);
-
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: 'UNABLE_TO_EXTRACT_TEXT',
-            message: 'We couldn\'t read your PDF. Please upload a clear image of your salary certificate.'
-          }),
-          {
-            status: 422,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        );
-      }
-
-      // Proceed with AI analysis using the extracted text
-      const systemMessage = documentType === 'salary_certificate' 
-        ? `You are an assistant that extracts salary information from a salary certificate text. 
-           Look for salary amounts, basic pay, allowances, deductions, and net pay.
-           Respond ONLY with a function call to extract_salary_data.`
-        : `You are an assistant that extracts salary-related transactions from bank statement text.
-           Look for recurring deposits that appear to be salary payments.
-           Respond ONLY with a function call to extract_bank_data.`;
-
-      const messages = [
-        { role: 'system', content: systemMessage },
-        { role: 'user', content: `Please analyze this ${documentType.replace('_', ' ')} text and extract the information:\n\n${finalText.substring(0, 8000)}` }
-      ];
-
-      // Define functions for extraction
-      const functions = documentType === 'salary_certificate' ? [{
-        name: "extract_salary_data",
-        description: "Extract structured salary data from a salary certificate",
-        parameters: {
-          type: "object",
-          properties: {
-            monthly_gross_salary: { type: "number", description: "Monthly gross salary amount" },
-            basic_salary: { type: "number", description: "Basic salary amount" },
-            allowances: { type: "number", description: "Total allowances amount" },
-            total_deductions: { type: "number", description: "Total deductions amount" },
-            net_salary: { type: "number", description: "Net salary after deductions" },
-            currency: { type: "string", description: "Currency code (e.g., SAR)" },
-            employee_name: { type: "string", description: "Employee full name" },
-            company_name: { type: "string", description: "Company name" },
-            confidence_score: { type: "number", description: "Confidence score between 0 and 1" }
-          },
-          required: ["currency", "confidence_score"]
-        }
-      }] : [{
-        name: "extract_bank_data",
-        description: "Extract structured data from a bank statement",
-        parameters: {
-          type: "object",
-          properties: {
-            monthly_salary_deposits: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  amount: { type: "number" },
-                  date: { type: "string" },
-                  description: { type: "string" }
-                }
-              }
-            },
-            average_monthly_income: { type: "number", description: "Average monthly income" },
-            currency: { type: "string", description: "Currency code (e.g., SAR)" },
-            account_holder_name: { type: "string", description: "Account holder name" },
-            bank_name: { type: "string", description: "Bank name" },
-            confidence_score: { type: "number", description: "Confidence score between 0 and 1" }
-          },
-          required: ["currency", "confidence_score"]
-        }
-      }];
-
-      console.log('Calling OpenAI for analysis...');
-      const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAIKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages,
-          functions,
-          function_call: { 
-            name: documentType === 'salary_certificate' ? 'extract_salary_data' : 'extract_bank_data' 
-          },
-          temperature: 0.1
-        }),
-      });
-
-      if (!analysisResponse.ok) {
-        const errorText = await analysisResponse.text();
-        console.error('OpenAI analysis error:', analysisResponse.status, errorText);
-        
-        await supabase
-          .from('document_uploads')
-          .update({
-            processing_status: 'failed',
-            error_message: `OpenAI analysis failed: ${analysisResponse.statusText}`
-          })
-          .eq('id', documentId);
-          
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: 'ANALYSIS_FAILED',
-            message: `OpenAI analysis failed: ${analysisResponse.statusText}`
-          }),
-          {
-            status: 500,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        );
-      }
-
-      const analysisData = await analysisResponse.json();
-      const responseMessage = analysisData.choices[0].message;
-      
-      if (responseMessage.function_call && responseMessage.function_call.arguments) {
-        extractedData = JSON.parse(responseMessage.function_call.arguments);
-        console.log(`Extracted data using ${processingMethod}:`, extractedData);
-      } else {
-        console.error('Failed to extract structured data from document text');
-        await supabase
-          .from('document_uploads')
-          .update({
-            processing_status: 'failed',
-            error_message: 'Failed to extract structured data from document text'
-          })
-          .eq('id', documentId);
-          
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: 'EXTRACTION_FAILED',
-            message: 'Failed to extract structured data from document text'
-          }),
-          {
-            status: 422,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        );
-      }
-
+      // Process PDF with OCR
+      const extractedText = await extractTextFromPDF(new Uint8Array(arrayBuffer), ocrKey);
+      extractedData = await analyzeWithOpenAI(extractedText, documentType, openAIKey);
     } else {
-      // For images, use Vision API directly
-      console.log('Processing image file...');
-      
-      const arrayBuffer = await fileBlob.arrayBuffer();
-      const base64Data = arrayBufferToBase64Chunked(arrayBuffer);
-      const mimeType = fileBlob.type || `image/${fileExtension}`;
-      
-      const systemMessage = documentType === 'salary_certificate' 
-        ? `You are an assistant that extracts salary information from a salary certificate image.
-           Look carefully at all numbers and text in the image.
-           Respond ONLY with a function call to extract_salary_data.`
-        : `You are an assistant that extracts salary-related transactions from bank statement images.
-           Look for recurring deposits that appear to be salary payments.
-           Respond ONLY with a function call to extract_bank_data.`;
-
-      const messages = [
-        { role: 'system', content: systemMessage },
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: `Please analyze this ${documentType.replace('_', ' ')} image carefully and extract all the structured information you can see.`
-            },
-            {
-              type: 'image_url',
-              image_url: {
-                url: `data:${mimeType};base64,${base64Data}`,
-                detail: 'high'
-              }
-            }
-          ]
-        }
-      ];
-
-      const functions = documentType === 'salary_certificate' ? [{
-        name: "extract_salary_data",
-        description: "Extract structured salary data from a salary certificate image",
-        parameters: {
-          type: "object",
-          properties: {
-            monthly_gross_salary: { type: "number", description: "Monthly gross salary amount" },
-            basic_salary: { type: "number", description: "Basic salary amount" },
-            allowances: { type: "number", description: "Total allowances amount" },
-            total_deductions: { type: "number", description: "Total deductions amount" },
-            net_salary: { type: "number", description: "Net salary after deductions" },
-            currency: { type: "string", description: "Currency code (e.g., SAR)" },
-            employee_name: { type: "string", description: "Employee full name" },
-            company_name: { type: "string", description: "Company name" },
-            confidence_score: { type: "number", description: "Confidence score between 0 and 1" }
-          },
-          required: ["currency", "confidence_score"]
-        }
-      }] : [{
-        name: "extract_bank_data",
-        description: "Extract structured data from a bank statement image",
-        parameters: {
-          type: "object",
-          properties: {
-            monthly_salary_deposits: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  amount: { type: "number" },
-                  date: { type: "string" },
-                  description: { type: "string" }
-                }
-              }
-            },
-            average_monthly_income: { type: "number", description: "Average monthly income" },
-            currency: { type: "string", description: "Currency code (e.g., SAR)" },
-            account_holder_name: { type: "string", description: "Account holder name" },
-            bank_name: { type: "string", description: "Bank name" },
-            confidence_score: { type: "number", description: "Confidence score between 0 and 1" }
-          },
-          required: ["currency", "confidence_score"]
-        }
-      }];
-
-      console.log('Calling OpenAI Vision API for analysis...');
-      const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAIKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages,
-          functions,
-          function_call: { 
-            name: documentType === 'salary_certificate' ? 'extract_salary_data' : 'extract_bank_data' 
-          },
-          temperature: 0.1
-        }),
-      });
-
-      if (!analysisResponse.ok) {
-        const errorText = await analysisResponse.text();
-        console.error('OpenAI analysis error:', analysisResponse.status, errorText);
-        
-        await supabase
-          .from('document_uploads')
-          .update({
-            processing_status: 'failed',
-            error_message: `OpenAI analysis failed: ${analysisResponse.statusText}`
-          })
-          .eq('id', documentId);
-          
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: 'ANALYSIS_FAILED',
-            message: `OpenAI analysis failed: ${analysisResponse.statusText}`
-          }),
-          {
-            status: 500,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        );
-      }
-
-      const analysisData = await analysisResponse.json();
-      const responseMessage = analysisData.choices[0].message;
-      
-      if (responseMessage.function_call && responseMessage.function_call.arguments) {
-        extractedData = JSON.parse(responseMessage.function_call.arguments);
-        console.log('Extracted data from image:', extractedData);
-      } else {
-        console.error('Failed to extract structured data from document image');
-        await supabase
-          .from('document_uploads')
-          .update({
-            processing_status: 'failed',
-            error_message: 'Failed to extract structured data from document image'
-          })
-          .eq('id', documentId);
-          
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: 'EXTRACTION_FAILED',
-            message: 'Failed to extract structured data from document image'
-          }),
-          {
-            status: 422,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        );
-      }
+      // Process image directly with Vision API
+      extractedData = await analyzeWithOpenAI(arrayBuffer, documentType, openAIKey, true, fileBlob.type);
     }
 
-    const confidenceScore = extractedData.confidence_score || 0.5;
-    
-    console.log('Document analysis completed successfully with confidence:', confidenceScore);
+    // Update document with results
+    await updateDocumentStatus(supabase, documentId, 'completed', extractedData);
 
-    // Update document with extracted data
-    const { error: finalUpdateError } = await supabase
-      .from('document_uploads')
-      .update({
-        processing_status: 'completed',
-        processed_at: new Date().toISOString(),
-        extracted_data: extractedData,
-        confidence_score: confidenceScore
-      })
-      .eq('id', documentId);
-
-    if (finalUpdateError) {
-      console.error('Failed to update document with results:', finalUpdateError);
-      return new Response(
-        JSON.stringify({
-          success: false,
-          error: 'DATABASE_UPDATE_FAILED',
-          message: `Database update error: ${finalUpdateError.message}`
-        }),
-        {
-          status: 500,
-          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-        }
-      );
-    }
-
-    console.log('=== Document analysis completed successfully ===');
+    console.log('=== Document Analysis Completed ===');
     return new Response(
       JSON.stringify({
         success: true,
         documentId,
         extractedData,
-        confidenceScore,
-        processingMethod
+        confidenceScore: extractedData.confidence_score
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
@@ -719,23 +448,15 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Document analysis error:', error);
-    console.error('Error stack:', error.stack);
     
-    // Try to update document status to failed if we have the documentId
+    // Update document status if we have the ID
     if (requestBody?.documentId) {
       try {
         const supabase = createClient(
           Deno.env.get('SUPABASE_URL') ?? '',
           Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
         );
-        
-        await supabase
-          .from('document_uploads')
-          .update({
-            processing_status: 'failed',
-            error_message: error.message
-          })
-          .eq('id', requestBody.documentId);
+        await updateDocumentStatus(supabase, requestBody.documentId, 'failed', undefined, error.message);
       } catch (updateError) {
         console.error('Failed to update error status:', updateError);
       }
@@ -744,8 +465,7 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: 'INTERNAL_ERROR',
-        message: error.message
+        error: error.message || 'Internal server error'
       }),
       {
         status: 500,
@@ -754,9 +474,3 @@ serve(async (req) => {
     );
   }
 });
-
-// Helper function to convert blob to base64
-async function blobToBase64(blob: Blob): Promise<string> {
-  const buffer = await blob.arrayBuffer();
-  return arrayBufferToBase64Chunked(buffer);
-}
