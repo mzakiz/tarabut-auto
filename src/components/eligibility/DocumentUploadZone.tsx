@@ -141,6 +141,9 @@ export const DocumentUploadZone: React.FC<DocumentUploadZoneProps> = ({
                            (uploadStatus?.errorType === 'UNREADABLE_PDF' || 
                             uploadStatus?.errorType === 'CONVERSION_ERROR');
   const wasConvertedFromPdf = uploadStatus?.processingMethod === 'pdf_to_image_fallback';
+  const isPdfReadError = uploadStatus?.status === 'failed' && 
+                         (uploadStatus?.errorType === 'UNREADABLE_PDF' || 
+                          uploadStatus?.errorType === 'CONVERSION_ERROR');
 
   return (
     <Card className={cn(
