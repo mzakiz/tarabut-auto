@@ -12,6 +12,7 @@ interface DocumentUpload {
   extractedData?: any;
   error?: string;
   errorType?: 'UNREADABLE_PDF' | 'SERVER_ERROR' | 'UPLOAD_ERROR';
+  processingMethod?: 'text_extraction' | 'pdf_to_image_fallback' | 'image_direct';
 }
 
 export const useDocumentUpload = () => {
@@ -98,14 +99,14 @@ export const useDocumentUpload = () => {
             [uploadId]: {
               ...prev[uploadId],
               status: 'failed',
-              error: 'This PDF could not be read properly. Please upload the document as a high-resolution image (PNG/JPG) instead.',
+              error: 'This PDF could not be read properly and image conversion failed. Please upload the document as a high-resolution image (PNG/JPG) instead.',
               errorType: 'UNREADABLE_PDF'
             }
           }));
 
           toast({
-            title: "PDF Reading Failed",
-            description: "This PDF contains unreadable text. Please upload the document as a high-resolution image (PNG/JPG) for better results.",
+            title: "PDF Processing Failed",
+            description: "This PDF could not be processed with text extraction or image conversion. Please upload the document as a high-resolution image (PNG/JPG) for better results.",
             variant: "destructive",
           });
           return;
@@ -128,7 +129,7 @@ export const useDocumentUpload = () => {
           }));
 
           toast({
-            title: "PDF Reading Failed",
+            title: "PDF Processing Failed",
             description: analysisData.message,
             variant: "destructive",
           });
@@ -144,13 +145,19 @@ export const useDocumentUpload = () => {
           ...prev[uploadId],
           progress: 100,
           status: 'completed',
-          extractedData: analysisData.extractedData
+          extractedData: analysisData.extractedData,
+          processingMethod: analysisData.processingMethod || 'text_extraction'
         }
       }));
 
+      // Show appropriate success message based on processing method
+      const methodMessage = analysisData.processingMethod === 'pdf_to_image_fallback' 
+        ? 'Document processed using advanced image analysis.'
+        : 'Document processed successfully.';
+
       toast({
         title: "Document Processed Successfully",
-        description: `Your ${type.replace('_', ' ')} has been analyzed.`,
+        description: `${methodMessage} Your ${type.replace('_', ' ')} has been analyzed.`,
       });
 
     } catch (error) {

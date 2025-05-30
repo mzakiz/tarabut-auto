@@ -1,4 +1,3 @@
-
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
 
@@ -17,6 +16,218 @@ interface TextQualityClassification {
   is_garbage: boolean;
   reason: string;
   sample_excerpt: string;
+}
+
+// PDF-to-image conversion using PDF.js
+async function convertPdfToImages(pdfBlob: Blob): Promise<string[]> {
+  try {
+    console.log('Starting PDF-to-image conversion...');
+    
+    // Import PDF.js from CDN
+    const pdfjsLib = await import('https://cdn.jsdelivr.net/npm/pdfjs-dist@3.11.174/build/pdf.min.mjs');
+    
+    const arrayBuffer = await pdfBlob.arrayBuffer();
+    const uint8Array = new Uint8Array(arrayBuffer);
+    
+    // Load the PDF document
+    const pdf = await pdfjsLib.getDocument({ data: uint8Array }).promise;
+    const numPages = pdf.numPages;
+    console.log(`PDF has ${numPages} pages`);
+    
+    const images: string[] = [];
+    
+    // Process maximum 3 pages to avoid timeouts and excessive API calls
+    const maxPages = Math.min(numPages, 3);
+    
+    for (let pageNum = 1; pageNum <= maxPages; pageNum++) {
+      try {
+        const page = await pdf.getPage(pageNum);
+        
+        // Set up canvas for high-resolution rendering
+        const viewport = page.getViewport({ scale: 2.0 }); // 2x scale for better quality
+        
+        // Create offscreen canvas
+        const canvas = new OffscreenCanvas(viewport.width, viewport.height);
+        const context = canvas.getContext('2d');
+        
+        if (!context) {
+          console.error(`Failed to get canvas context for page ${pageNum}`);
+          continue;
+        }
+        
+        // Render page to canvas
+        const renderContext = {
+          canvasContext: context,
+          viewport: viewport,
+        };
+        
+        await page.render(renderContext).promise;
+        
+        // Convert canvas to blob then to base64
+        const blob = await canvas.convertToBlob({ type: 'image/png', quality: 0.95 });
+        const base64 = await blobToBase64(blob);
+        
+        images.push(base64);
+        console.log(`Successfully converted page ${pageNum} to image`);
+        
+      } catch (pageError) {
+        console.error(`Error processing page ${pageNum}:`, pageError);
+        // Continue with other pages even if one fails
+      }
+    }
+    
+    if (images.length === 0) {
+      throw new Error('Failed to convert any PDF pages to images');
+    }
+    
+    console.log(`Successfully converted ${images.length} pages to images`);
+    return images;
+    
+  } catch (error) {
+    console.error('PDF-to-image conversion failed:', error);
+    throw new Error(`PDF conversion failed: ${error.message}`);
+  }
+}
+
+// Analyze images using GPT Vision API
+async function analyzeImagesWithVision(
+  images: string[], 
+  documentType: 'salary_certificate' | 'bank_statement',
+  openAIKey: string
+): Promise<any> {
+  console.log(`Analyzing ${images.length} images with GPT Vision...`);
+  
+  const systemMessage = documentType === 'salary_certificate' 
+    ? `You are an assistant that extracts salary information from salary certificate images.
+       Look carefully at all numbers and text in the image.
+       Respond ONLY with a function call to extract_salary_data.`
+    : `You are an assistant that extracts salary-related transactions from bank statement images.
+       Look for recurring deposits that appear to be salary payments.
+       Respond ONLY with a function call to extract_bank_data.`;
+
+  const functions = documentType === 'salary_certificate' ? [{
+    name: "extract_salary_data",
+    description: "Extract structured salary data from a salary certificate image",
+    parameters: {
+      type: "object",
+      properties: {
+        monthly_gross_salary: { type: "number", description: "Monthly gross salary amount" },
+        basic_salary: { type: "number", description: "Basic salary amount" },
+        allowances: { type: "number", description: "Total allowances amount" },
+        total_deductions: { type: "number", description: "Total deductions amount" },
+        net_salary: { type: "number", description: "Net salary after deductions" },
+        currency: { type: "string", description: "Currency code (e.g., SAR)" },
+        employee_name: { type: "string", description: "Employee full name" },
+        company_name: { type: "string", description: "Company name" },
+        confidence_score: { type: "number", description: "Confidence score between 0 and 1" }
+      },
+      required: ["currency", "confidence_score"]
+    }
+  }] : [{
+    name: "extract_bank_data",
+    description: "Extract structured data from a bank statement image",
+    parameters: {
+      type: "object",
+      properties: {
+        monthly_salary_deposits: {
+          type: "array",
+          items: {
+            type: "object",
+            properties: {
+              amount: { type: "number" },
+              date: { type: "string" },
+              description: { type: "string" }
+            }
+          }
+        },
+        average_monthly_income: { type: "number", description: "Average monthly income" },
+        currency: { type: "string", description: "Currency code (e.g., SAR)" },
+        account_holder_name: { type: "string", description: "Account holder name" },
+        bank_name: { type: "string", description: "Bank name" },
+        confidence_score: { type: "number", description: "Confidence score between 0 and 1" }
+      },
+      required: ["currency", "confidence_score"]
+    }
+  }];
+
+  let bestResult = null;
+  let highestConfidence = 0;
+
+  // Process each image and find the best result
+  for (let i = 0; i < images.length; i++) {
+    try {
+      console.log(`Processing image ${i + 1}/${images.length}...`);
+      
+      const messages = [
+        { role: 'system', content: systemMessage },
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: `Please analyze this ${documentType.replace('_', ' ')} image carefully and extract all the structured information you can see. This is page ${i + 1} of ${images.length}.`
+            },
+            {
+              type: 'image_url',
+              image_url: {
+                url: `data:image/png;base64,${images[i]}`,
+                detail: 'high'
+              }
+            }
+          ]
+        }
+      ];
+
+      const response = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages,
+          functions,
+          function_call: { 
+            name: documentType === 'salary_certificate' ? 'extract_salary_data' : 'extract_bank_data' 
+          },
+          temperature: 0.1
+        }),
+      });
+
+      if (!response.ok) {
+        console.error(`Vision API failed for image ${i + 1}:`, response.status, await response.text());
+        continue;
+      }
+
+      const data = await response.json();
+      const responseMessage = data.choices[0].message;
+      
+      if (responseMessage.function_call && responseMessage.function_call.arguments) {
+        const extractedData = JSON.parse(responseMessage.function_call.arguments);
+        const confidence = extractedData.confidence_score || 0;
+        
+        console.log(`Image ${i + 1} confidence: ${confidence}`);
+        
+        // Keep the result with highest confidence
+        if (confidence > highestConfidence) {
+          highestConfidence = confidence;
+          bestResult = extractedData;
+        }
+      }
+      
+    } catch (imageError) {
+      console.error(`Error processing image ${i + 1}:`, imageError);
+      // Continue with other images
+    }
+  }
+
+  if (!bestResult) {
+    throw new Error('Failed to extract data from any of the converted images');
+  }
+
+  console.log(`Best result from images with confidence ${highestConfidence}:`, bestResult);
+  return bestResult;
 }
 
 serve(async (req) => {
@@ -146,17 +357,60 @@ serve(async (req) => {
         
         // Step 1: Classify text quality before proceeding
         if (textContent.length < 20) {
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: 'UNREADABLE_PDF',
-              message: 'Could not extract sufficient text from PDF. Please upload the document as a high-resolution image (PNG/JPG) for better results.'
-            }),
-            {
-              status: 422,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          console.log('Insufficient text extracted, falling back to image conversion...');
+          
+          // Fallback: Convert PDF to images and use Vision API
+          try {
+            const images = await convertPdfToImages(fileBlob);
+            extractedData = await analyzeImagesWithVision(images, documentType, openAIKey);
+            
+            console.log('Successfully extracted data using image fallback:', extractedData);
+            
+            // Update document with extracted data
+            const confidenceScore = extractedData.confidence_score || 0.5;
+            
+            const { error: updateError } = await supabase
+              .from('document_uploads')
+              .update({
+                processing_status: 'completed',
+                processed_at: new Date().toISOString(),
+                extracted_data: extractedData,
+                confidence_score: confidenceScore
+              })
+              .eq('id', documentId);
+
+            if (updateError) {
+              throw new Error(`Database update error: ${updateError.message}`);
             }
-          );
+
+            return new Response(
+              JSON.stringify({
+                success: true,
+                documentId,
+                extractedData,
+                confidenceScore,
+                processingMethod: 'pdf_to_image_fallback'
+              }),
+              {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            );
+            
+          } catch (fallbackError) {
+            console.error('Image fallback also failed:', fallbackError);
+            
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: 'UNREADABLE_PDF',
+                message: 'Could not extract sufficient text from PDF and image conversion failed. Please upload the document as a high-resolution image (PNG/JPG) for better results.'
+              }),
+              {
+                status: 422,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            );
+          }
         }
         
         // Step 2: Use the text quality classifier
@@ -211,34 +465,75 @@ ${textContent}
         
         console.log('Text quality classification:', classification);
         
-        // Step 3: Handle garbage text with structured error response
+        // Step 3: Handle garbage text with image fallback
         if (classification.is_garbage) {
-          console.log('PDF text classified as garbage, returning structured error');
+          console.log('PDF text classified as garbage, falling back to image conversion...');
           
-          // Update document with structured error
-          await supabase
-            .from('document_uploads')
-            .update({
-              processing_status: 'failed',
-              error_message: `PDF text extraction failed: ${classification.reason}. Sample: "${classification.sample_excerpt}"`
-            })
-            .eq('id', documentId);
+          try {
+            const images = await convertPdfToImages(fileBlob);
+            extractedData = await analyzeImagesWithVision(images, documentType, openAIKey);
+            
+            console.log('Successfully extracted data using image fallback:', extractedData);
+            
+            // Update document with extracted data
+            const confidenceScore = extractedData.confidence_score || 0.5;
+            
+            const { error: updateError } = await supabase
+              .from('document_uploads')
+              .update({
+                processing_status: 'completed',
+                processed_at: new Date().toISOString(),
+                extracted_data: extractedData,
+                confidence_score: confidenceScore
+              })
+              .eq('id', documentId);
 
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: 'UNREADABLE_PDF',
-              message: `PDF text extraction failed: ${classification.reason}. Please upload the document as a high-resolution image (PNG/JPG) for better results.`,
-              details: {
-                reason: classification.reason,
-                sample_excerpt: classification.sample_excerpt
-              }
-            }),
-            {
-              status: 422,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            if (updateError) {
+              throw new Error(`Database update error: ${updateError.message}`);
             }
-          );
+
+            return new Response(
+              JSON.stringify({
+                success: true,
+                documentId,
+                extractedData,
+                confidenceScore,
+                processingMethod: 'pdf_to_image_fallback'
+              }),
+              {
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            );
+            
+          } catch (fallbackError) {
+            console.error('Image fallback failed:', fallbackError);
+            
+            // Update document with structured error
+            await supabase
+              .from('document_uploads')
+              .update({
+                processing_status: 'failed',
+                error_message: `PDF text extraction failed: ${classification.reason}. Image fallback also failed: ${fallbackError.message}`
+              })
+              .eq('id', documentId);
+
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: 'UNREADABLE_PDF',
+                message: `PDF text extraction failed: ${classification.reason}. Image conversion also failed. Please upload the document as a high-resolution image (PNG/JPG) for better results.`,
+                details: {
+                  reason: classification.reason,
+                  sample_excerpt: classification.sample_excerpt,
+                  fallback_error: fallbackError.message
+                }
+              }),
+              {
+                status: 422,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            );
+          }
         }
         
         console.log('Text quality approved, proceeding with salary extraction');
@@ -246,26 +541,69 @@ ${textContent}
       } catch (error) {
         console.error('PDF text extraction failed:', error);
         
-        // Update document with error
-        await supabase
-          .from('document_uploads')
-          .update({
-            processing_status: 'failed',
-            error_message: 'Failed to extract readable text from PDF'
-          })
-          .eq('id', documentId);
+        // Try image fallback as last resort
+        console.log('Text extraction failed, trying image fallback as last resort...');
+        
+        try {
+          const images = await convertPdfToImages(fileBlob);
+          extractedData = await analyzeImagesWithVision(images, documentType, openAIKey);
+          
+          console.log('Successfully extracted data using image fallback after text failure:', extractedData);
+          
+          // Update document with extracted data
+          const confidenceScore = extractedData.confidence_score || 0.5;
+          
+          const { error: updateError } = await supabase
+            .from('document_uploads')
+            .update({
+              processing_status: 'completed',
+              processed_at: new Date().toISOString(),
+              extracted_data: extractedData,
+              confidence_score: confidenceScore
+            })
+            .eq('id', documentId);
 
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: 'UNREADABLE_PDF',
-            message: 'Failed to extract readable text from PDF. Please upload the document as a high-resolution image (PNG/JPG) for better results.'
-          }),
-          {
-            status: 422,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          if (updateError) {
+            throw new Error(`Database update error: ${updateError.message}`);
           }
-        );
+
+          return new Response(
+            JSON.stringify({
+              success: true,
+              documentId,
+              extractedData,
+              confidenceScore,
+              processingMethod: 'pdf_to_image_fallback'
+            }),
+            {
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          );
+          
+        } catch (fallbackError) {
+          console.error('Final image fallback also failed:', fallbackError);
+          
+          // Update document with error
+          await supabase
+            .from('document_uploads')
+            .update({
+              processing_status: 'failed',
+              error_message: 'Failed to extract readable text from PDF and image conversion failed'
+            })
+            .eq('id', documentId);
+
+          return new Response(
+            JSON.stringify({
+              success: false,
+              error: 'UNREADABLE_PDF',
+              message: 'Failed to extract readable text from PDF and image conversion failed. Please upload the document as a high-resolution image (PNG/JPG) for better results.'
+            }),
+            {
+              status: 422,
+              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+            }
+          );
+        }
       }
 
       // Step 4: Proceed with salary extraction using the validated text
@@ -408,7 +746,7 @@ ${textContent}
       }
 
     } else {
-      // For images, use Vision API with the older functions format
+      // For images, use Vision API directly
       console.log('Processing image file...');
       
       const base64Data = await blobToBase64(fileBlob);

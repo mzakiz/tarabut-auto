@@ -4,7 +4,7 @@ import { useDropzone } from 'react-dropzone';
 import { Card } from '@/components/ui/card';
 import { Button } from '@/components/ui/button';
 import { Progress } from '@/components/ui/progress';
-import { FileText, Upload, CheckCircle, XCircle, Loader2, AlertTriangle } from 'lucide-react';
+import { FileText, Upload, CheckCircle, XCircle, Loader2, AlertTriangle, Image } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
 interface DocumentUploadZoneProps {
@@ -19,6 +19,7 @@ interface DocumentUploadZoneProps {
     error?: string;
     errorType?: 'UNREADABLE_PDF' | 'SERVER_ERROR' | 'UPLOAD_ERROR';
     fileName?: string;
+    processingMethod?: 'text_extraction' | 'pdf_to_image_fallback' | 'image_direct';
   };
   icon?: React.ReactNode;
 }
@@ -63,7 +64,9 @@ export const DocumentUploadZone: React.FC<DocumentUploadZoneProps> = ({
       case 'processing':
         return <Loader2 className="w-8 h-8 animate-spin" />;
       case 'completed':
-        return <CheckCircle className="w-8 h-8 text-green-500" />;
+        return uploadStatus.processingMethod === 'pdf_to_image_fallback' 
+          ? <Image className="w-8 h-8 text-green-500" />
+          : <CheckCircle className="w-8 h-8 text-green-500" />;
       case 'failed':
         return uploadStatus.errorType === 'UNREADABLE_PDF' 
           ? <AlertTriangle className="w-8 h-8 text-orange-500" />
@@ -80,12 +83,17 @@ export const DocumentUploadZone: React.FC<DocumentUploadZoneProps> = ({
       case 'uploading':
         return 'Uploading document...';
       case 'processing':
-        return 'Analyzing document with AI...';
+        return uploadStatus.processingMethod === 'pdf_to_image_fallback' 
+          ? 'Converting PDF to images and analyzing...'
+          : 'Analyzing document with AI...';
       case 'completed':
-        return `✅ ${uploadStatus.fileName} processed successfully`;
+        const methodText = uploadStatus.processingMethod === 'pdf_to_image_fallback' 
+          ? ' (processed as images)'
+          : '';
+        return `✅ ${uploadStatus.fileName} processed successfully${methodText}`;
       case 'failed':
         if (uploadStatus.errorType === 'UNREADABLE_PDF') {
-          return `⚠️ PDF text could not be read. Please upload as image (PNG/JPG)`;
+          return `⚠️ PDF processing failed. Please upload as image (PNG/JPG)`;
         }
         return `❌ ${uploadStatus.error || 'Upload failed'}`;
       default:
@@ -101,7 +109,9 @@ export const DocumentUploadZone: React.FC<DocumentUploadZoneProps> = ({
     
     switch (uploadStatus.status) {
       case 'completed':
-        return "border-green-500 bg-green-50";
+        return uploadStatus.processingMethod === 'pdf_to_image_fallback'
+          ? "border-blue-500 bg-blue-50"
+          : "border-green-500 bg-green-50";
       case 'failed':
         return uploadStatus.errorType === 'UNREADABLE_PDF'
           ? "border-orange-500 bg-orange-50"
@@ -114,6 +124,7 @@ export const DocumentUploadZone: React.FC<DocumentUploadZoneProps> = ({
   const isCompleted = uploadStatus?.status === 'completed';
   const isProcessing = uploadStatus?.status === 'uploading' || uploadStatus?.status === 'processing';
   const isPdfReadError = uploadStatus?.status === 'failed' && uploadStatus?.errorType === 'UNREADABLE_PDF';
+  const wasProcessedAsImages = uploadStatus?.processingMethod === 'pdf_to_image_fallback';
 
   return (
     <Card className={cn(
@@ -138,7 +149,9 @@ export const DocumentUploadZone: React.FC<DocumentUploadZoneProps> = ({
                 ? uploadStatus.errorType === 'UNREADABLE_PDF' 
                   ? "text-orange-600" 
                   : "text-red-600"
-                : "text-muted-foreground"
+                : wasProcessedAsImages
+                  ? "text-blue-600"
+                  : "text-muted-foreground"
             )}>
               {getStatusText()}
             </p>
@@ -152,13 +165,24 @@ export const DocumentUploadZone: React.FC<DocumentUploadZoneProps> = ({
               </div>
             )}
 
+            {wasProcessedAsImages && (
+              <div className="mt-3 p-3 bg-blue-100 border border-blue-300 rounded-md">
+                <p className="text-xs text-blue-800 font-medium mb-2">
+                  🖼️ Advanced Processing Used
+                </p>
+                <p className="text-xs text-blue-700">
+                  Your PDF was converted to images for better text recognition
+                </p>
+              </div>
+            )}
+
             {isPdfReadError && (
               <div className="mt-3 p-3 bg-orange-100 border border-orange-300 rounded-md">
                 <p className="text-xs text-orange-800 font-medium mb-2">
-                  💡 PDF Tip: Scanned or image-based PDFs work better as images
+                  💡 PDF Processing Failed
                 </p>
                 <p className="text-xs text-orange-700">
-                  Try uploading your document as a high-resolution PNG or JPG image instead
+                  Both text extraction and image conversion failed. Try uploading your document as a high-resolution PNG or JPG image instead
                 </p>
               </div>
             )}
