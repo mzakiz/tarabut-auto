@@ -1,4 +1,3 @@
-
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
 
@@ -15,36 +14,42 @@ interface DocumentAnalysisRequest {
 
 // OCR.space fallback function
 async function callOcrSpace(buffer: ArrayBuffer, ocrApiKey: string) {
-  const uint8Array = new Uint8Array(buffer);
-  const base64Data = btoa(String.fromCharCode(...uint8Array));
-  
-  const ocrResponse = await fetch('https://api.ocr.space/parse/image', {
-    method: 'POST',
-    headers: {
-      'apikey': ocrApiKey,
-      'Content-Type': 'application/json',
-    },
-    body: JSON.stringify({
-      base64Image: `data:application/pdf;base64,${base64Data}`,
-      language: 'eng',
-      isTable: true,
-      detectOrientation: true,
-      scale: true,
-      OCREngine: 2
-    }),
-  });
+  try {
+    const uint8Array = new Uint8Array(buffer);
+    const base64Data = btoa(String.fromCharCode(...uint8Array));
+    
+    const ocrResponse = await fetch('https://api.ocr.space/parse/image', {
+      method: 'POST',
+      headers: {
+        'apikey': ocrApiKey,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        base64Image: `data:application/pdf;base64,${base64Data}`,
+        language: 'eng',
+        isTable: true,
+        detectOrientation: true,
+        scale: true,
+        OCREngine: 2
+      }),
+    });
 
-  if (!ocrResponse.ok) {
-    throw new Error(`OCR.space API error: ${ocrResponse.statusText}`);
-  }
+    if (!ocrResponse.ok) {
+      throw new Error(`OCR.space API error: ${ocrResponse.status} ${ocrResponse.statusText}`);
+    }
 
-  const ocrData = await ocrResponse.json();
-  
-  if (ocrData.ParsedResults && ocrData.ParsedResults.length > 0) {
-    return ocrData.ParsedResults[0].ParsedText || '';
+    const ocrData = await ocrResponse.json();
+    console.log('OCR.space response:', JSON.stringify(ocrData, null, 2));
+    
+    if (ocrData.ParsedResults && ocrData.ParsedResults.length > 0) {
+      return ocrData.ParsedResults[0].ParsedText || '';
+    }
+    
+    throw new Error('OCR.space returned no results');
+  } catch (error) {
+    console.error('OCR.space error details:', error);
+    throw error;
   }
-  
-  throw new Error('OCR.space returned no results');
 }
 
 serve(async (req) => {
@@ -135,20 +140,39 @@ serve(async (req) => {
     console.log('Analyzing document...');
     
     if (fileExtension === 'pdf') {
-      console.log('Processing PDF file with OCR fallback...');
+      console.log('Processing PDF file with OCR...');
       
       let finalText = '';
       
       try {
-        // For PDFs, use OCR.space directly to avoid Deno compatibility issues
+        // For PDFs, use OCR.space directly
         const arrayBuffer = await fileBlob.arrayBuffer();
         finalText = await callOcrSpace(arrayBuffer, ocrSpaceKey);
         processingMethod = 'ocr_extraction';
         console.log(`OCR extraction successful, text length: ${finalText.length}`);
         
       } catch (ocrError) {
-        console.error('OCR extraction failed:', ocrError.message);
-        throw new Error('Unable to extract text from PDF');
+        console.error('OCR extraction failed:', ocrError);
+        
+        await supabase
+          .from('document_uploads')
+          .update({
+            processing_status: 'failed',
+            error_message: `OCR processing failed: ${ocrError.message}`
+          })
+          .eq('id', documentId);
+
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'OCR_FAILED',
+            message: 'We couldn\'t process your PDF. Please try uploading it as a high-quality image (PNG/JPG) instead.'
+          }),
+          {
+            status: 422,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
       }
       
       if (!finalText || finalText.length < 20) {
