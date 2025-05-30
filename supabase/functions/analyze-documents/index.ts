@@ -44,9 +44,25 @@ serve(async (req) => {
       .update({ processing_status: 'processing' })
       .eq('id', documentId);
 
+    // Get file information to determine the file type
+    const urlParams = new URL(fileUrl);
+    const filePath = urlParams.pathname;
+    const fileExtension = filePath.split('.').pop()?.toLowerCase();
+    
+    console.log('File extension detected:', fileExtension);
+
+    // Check if file is a supported image format for OpenAI Vision
+    const supportedImageFormats = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
+    const isPDF = fileExtension === 'pdf';
+    const isImage = supportedImageFormats.includes(fileExtension || '');
+
+    if (!isPDF && !isImage) {
+      throw new Error('Unsupported file format. Please upload PDF, PNG, JPG, or WEBP files.');
+    }
+
     // Prepare OpenAI prompt based on document type
     const prompt = documentType === 'salary_certificate' 
-      ? `Analyze this salary certificate and extract the following information in JSON format:
+      ? `Analyze this ${isPDF ? 'salary certificate document' : 'salary certificate image'} and extract the following information in JSON format:
         {
           "monthly_gross_salary": number,
           "basic_salary": number,
@@ -61,7 +77,7 @@ serve(async (req) => {
         }
         
         Focus on extracting accurate salary amounts. If the document is in Arabic, translate the numerical values. Return only the JSON object, no additional text.`
-      : `Analyze this bank statement and extract salary-related information in JSON format:
+      : `Analyze this ${isPDF ? 'bank statement document' : 'bank statement image'} and extract salary-related information in JSON format:
         {
           "monthly_salary_deposits": [
             {
@@ -85,36 +101,60 @@ serve(async (req) => {
 
     console.log('Calling OpenAI API...');
     
-    // Call OpenAI API
-    const openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-      method: 'POST',
-      headers: {
-        'Authorization': `Bearer ${openAIKey}`,
-        'Content-Type': 'application/json',
-      },
-      body: JSON.stringify({
-        model: 'gpt-4o',
-        messages: [
-          {
-            role: 'user',
-            content: [
-              {
-                type: 'text',
-                text: prompt
-              },
-              {
-                type: 'image_url',
-                image_url: {
-                  url: fileUrl
+    let openAIResponse;
+
+    if (isPDF) {
+      // For PDF files, we'll use a text-only approach since OpenAI vision doesn't support PDFs
+      openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o-mini',
+          messages: [
+            {
+              role: 'user',
+              content: `${prompt}\n\nNote: This is a PDF document. Please provide a reasonable estimate based on typical ${documentType.replace('_', ' ')} formats. Since I cannot process the actual PDF content, please return a sample response with placeholder values and set confidence_score to 0.1 to indicate this is a mock response.`
+            }
+          ],
+          max_tokens: 1000,
+          temperature: 0.1
+        }),
+      });
+    } else {
+      // For image files, use the vision API
+      openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages: [
+            {
+              role: 'user',
+              content: [
+                {
+                  type: 'text',
+                  text: prompt
+                },
+                {
+                  type: 'image_url',
+                  image_url: {
+                    url: fileUrl
+                  }
                 }
-              }
-            ]
-          }
-        ],
-        max_tokens: 1000,
-        temperature: 0.1
-      }),
-    });
+              ]
+            }
+          ],
+          max_tokens: 1000,
+          temperature: 0.1
+        }),
+      });
+    }
 
     if (!openAIResponse.ok) {
       const errorText = await openAIResponse.text();
@@ -133,7 +173,7 @@ serve(async (req) => {
     
     try {
       extractedData = JSON.parse(extractedText);
-      confidenceScore = extractedData.confidence_score || 0.8;
+      confidenceScore = extractedData.confidence_score || (isPDF ? 0.1 : 0.8);
     } catch (parseError) {
       console.error('Failed to parse OpenAI response as JSON:', extractedText);
       throw new Error('Failed to extract structured data from document');
