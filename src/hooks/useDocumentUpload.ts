@@ -12,7 +12,7 @@ interface DocumentUpload {
   extractedData?: any;
   error?: string;
   errorType?: 'UNREADABLE_PDF' | 'SERVER_ERROR' | 'UPLOAD_ERROR';
-  processingMethod?: 'text_extraction' | 'vision_api';
+  processingMethod?: 'text_extraction' | 'vision_api' | 'hybrid_extraction';
 }
 
 export const useDocumentUpload = () => {
