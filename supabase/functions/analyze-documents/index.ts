@@ -51,6 +51,7 @@ serve(async (req) => {
       .eq('id', documentId);
 
     let extractedData;
+    let processingMethod = 'vision_api';
 
     // Handle file processing
     const urlParams = new URL(fileUrl);
@@ -75,22 +76,24 @@ serve(async (req) => {
     console.log('Analyzing document with hybrid approach...');
     
     if (fileExtension === 'pdf') {
-      // Hybrid PDF processing: pdf-parse first, then OCR.space fallback
+      // Hybrid PDF processing: Simple text check first, then OCR.space fallback
       console.log('Processing PDF file with hybrid approach...');
       
       try {
         const arrayBuffer = await fileBlob.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
         
-        // Convert to base64 for potential OCR.space use
+        // Convert to base64 for OCR.space use
         const base64Data = btoa(String.fromCharCode(...uint8Array));
         
-        // Step 1: Try pdf-parse text extraction
-        console.log('Attempting text extraction with pdf-parse...');
+        // Step 1: Simple text extraction check
+        console.log('Attempting simple text extraction...');
         
+        // Try to decode as text to see if there's readable content
         const decoder = new TextDecoder('utf-8', { fatal: false });
         let textContent = decoder.decode(uint8Array);
         
+        // Clean up the text and look for salary-related keywords
         textContent = textContent
           .replace(/[^\x20-\x7E\n\r]/g, ' ')
           .replace(/\s+/g, ' ')
@@ -99,17 +102,17 @@ serve(async (req) => {
         console.log('Extracted text length:', textContent.length);
         
         // Check if text extraction was successful by looking for salary-related keywords
-        const salaryKeywords = ['salary', 'basic', 'allowance', 'deduction', 'gross', 'net', 'pay', 'income', 'SAR', 'SR'];
+        const salaryKeywords = ['salary', 'basic', 'allowance', 'deduction', 'gross', 'net', 'pay', 'income', 'SAR', 'SR', 'riyal'];
         const hasRelevantContent = salaryKeywords.some(keyword => 
           textContent.toLowerCase().includes(keyword.toLowerCase())
         );
         
         let finalText = '';
-        let processingMethod = 'text_extraction';
         
-        if (textContent.length >= 50 && hasRelevantContent) {
-          console.log('Text extraction successful, using pdf-parse result');
+        if (textContent.length >= 100 && hasRelevantContent) {
+          console.log('Text extraction successful, using simple text result');
           finalText = textContent;
+          processingMethod = 'text_extraction';
         } else {
           console.log('Text extraction insufficient, falling back to OCR.space...');
           
@@ -139,7 +142,7 @@ serve(async (req) => {
           
           if (ocrData.ParsedResults && ocrData.ParsedResults.length > 0) {
             finalText = ocrData.ParsedResults[0].ParsedText || '';
-            processingMethod = 'ocr_extraction';
+            processingMethod = 'hybrid_extraction';
             console.log('OCR extraction successful, text length:', finalText.length);
           }
           
@@ -422,7 +425,7 @@ serve(async (req) => {
         documentId,
         extractedData,
         confidenceScore,
-        processingMethod: fileUrl?.includes('.pdf') ? 'hybrid_extraction' : 'vision_api'
+        processingMethod
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
