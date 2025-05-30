@@ -1,4 +1,3 @@
-
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
 
@@ -9,8 +8,10 @@ const corsHeaders = {
 
 interface DocumentAnalysisRequest {
   documentId: string;
-  fileUrl: string;
+  fileUrl?: string;
+  images?: string[]; // Base64 encoded images for PDF-to-image fallback
   documentType: 'salary_certificate' | 'bank_statement';
+  processingMethod?: 'pdf_to_image_fallback';
 }
 
 serve(async (req) => {
@@ -22,9 +23,16 @@ serve(async (req) => {
   
   try {
     requestBody = await req.json() as DocumentAnalysisRequest;
-    const { documentId, fileUrl, documentType } = requestBody;
+    const { documentId, fileUrl, images, documentType, processingMethod } = requestBody;
     
-    console.log('Processing document:', { documentId, documentType, fileUrl: fileUrl.substring(0, 50) + '...' });
+    console.log('Processing document:', { 
+      documentId, 
+      documentType, 
+      processingMethod,
+      hasFileUrl: !!fileUrl,
+      hasImages: !!images,
+      imageCount: images?.length || 0
+    });
     
     // Check if OpenAI API key is available
     const openAIKey = Deno.env.get('OPENAI_API_KEY');
@@ -44,59 +52,302 @@ serve(async (req) => {
       .update({ processing_status: 'processing' })
       .eq('id', documentId);
 
-    // Get file information to determine the file type
-    const urlParams = new URL(fileUrl);
-    const filePath = urlParams.pathname;
-    const fileExtension = filePath.split('.').pop()?.toLowerCase();
-    
-    console.log('File extension detected:', fileExtension);
-
-    // Check if file is a supported format
-    const supportedFormats = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf'];
-    if (!supportedFormats.includes(fileExtension || '')) {
-      throw new Error('Unsupported file format. Please upload PDF, PNG, JPG, JPEG, GIF, or WEBP files.');
-    }
-
-    // Fetch the file from Supabase storage
-    console.log('Fetching file from storage...');
-    const fileResponse = await fetch(fileUrl);
-    if (!fileResponse.ok) {
-      throw new Error(`Failed to fetch file: ${fileResponse.statusText}`);
-    }
-    
-    const fileBlob = await fileResponse.blob();
-    
-    console.log('Analyzing document with OpenAI...');
-    
     let extractedData;
 
-    if (fileExtension === 'pdf') {
-      // For PDFs, try basic text extraction first
-      console.log('Processing PDF file...');
+    // Handle PDF-to-image fallback processing
+    if (images && images.length > 0) {
+      console.log('Processing PDF-to-image fallback with', images.length, 'images');
       
-      try {
-        const arrayBuffer = await fileBlob.arrayBuffer();
-        const uint8Array = new Uint8Array(arrayBuffer);
+      const systemMessage = documentType === 'salary_certificate' 
+        ? `You are an assistant that extracts salary information from salary certificate images.
+           Look carefully at all numbers and text in the image.
+           Respond ONLY with a function call to extract_salary_data.`
+        : `You are an assistant that extracts salary-related transactions from bank statement images.
+           Look for recurring deposits that appear to be salary payments.
+           Respond ONLY with a function call to extract_bank_data.`;
+
+      const functions = documentType === 'salary_certificate' ? [{
+        name: "extract_salary_data",
+        description: "Extract structured salary data from a salary certificate image",
+        parameters: {
+          type: "object",
+          properties: {
+            monthly_gross_salary: { type: "number", description: "Monthly gross salary amount" },
+            basic_salary: { type: "number", description: "Basic salary amount" },
+            allowances: { type: "number", description: "Total allowances amount" },
+            total_deductions: { type: "number", description: "Total deductions amount" },
+            net_salary: { type: "number", description: "Net salary after deductions" },
+            currency: { type: "string", description: "Currency code (e.g., SAR)" },
+            employee_name: { type: "string", description: "Employee full name" },
+            company_name: { type: "string", description: "Company name" },
+            confidence_score: { type: "number", description: "Confidence score between 0 and 1" }
+          },
+          required: ["currency", "confidence_score"]
+        }
+      }] : [{
+        name: "extract_bank_data",
+        description: "Extract structured data from a bank statement image",
+        parameters: {
+          type: "object",
+          properties: {
+            monthly_salary_deposits: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  amount: { type: "number" },
+                  date: { type: "string" },
+                  description: { type: "string" }
+                }
+              }
+            },
+            average_monthly_income: { type: "number", description: "Average monthly income" },
+            currency: { type: "string", description: "Currency code (e.g., SAR)" },
+            account_holder_name: { type: "string", description: "Account holder name" },
+            bank_name: { type: "string", description: "Bank name" },
+            confidence_score: { type: "number", description: "Confidence score between 0 and 1" }
+          },
+          required: ["currency", "confidence_score"]
+        }
+      }];
+
+      // Process each image and aggregate results
+      let bestResult = null;
+      let highestConfidence = 0;
+
+      for (let i = 0; i < images.length; i++) {
+        console.log(`Processing image ${i + 1}/${images.length}`);
         
-        // Simple text extraction attempt
-        const decoder = new TextDecoder('utf-8', { fatal: false });
-        let textContent = decoder.decode(uint8Array);
+        const messages = [
+          { role: 'system', content: systemMessage },
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: `Please analyze this ${documentType.replace('_', ' ')} image (page ${i + 1}) and extract all the structured information you can see.`
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: `data:image/png;base64,${images[i]}`,
+                  detail: 'high'
+                }
+              }
+            ]
+          }
+        ];
+
+        const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openAIKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o',
+            messages,
+            functions,
+            function_call: { 
+              name: documentType === 'salary_certificate' ? 'extract_salary_data' : 'extract_bank_data' 
+            },
+            temperature: 0.1
+          }),
+        });
+
+        if (!analysisResponse.ok) {
+          console.error(`OpenAI analysis error for image ${i + 1}:`, analysisResponse.status);
+          continue;
+        }
+
+        const analysisData = await analysisResponse.json();
+        const responseMessage = analysisData.choices[0].message;
         
-        // Basic cleanup
-        textContent = textContent
-          .replace(/[^\x20-\x7E\n\r]/g, ' ') // Remove non-printable characters
-          .replace(/\s+/g, ' ')
-          .trim();
+        if (responseMessage.function_call && responseMessage.function_call.arguments) {
+          const pageResult = JSON.parse(responseMessage.function_call.arguments);
+          const confidence = pageResult.confidence_score || 0;
+          
+          console.log(`Image ${i + 1} confidence: ${confidence}`);
+          
+          // Keep the result with highest confidence
+          if (confidence > highestConfidence) {
+            highestConfidence = confidence;
+            bestResult = pageResult;
+          }
+        }
+      }
+
+      if (bestResult) {
+        extractedData = bestResult;
+        console.log('Best result selected with confidence:', highestConfidence);
+      } else {
+        throw new Error('Failed to extract data from any PDF page images');
+      }
+
+    } else if (fileUrl) {
+      // Handle regular file processing (existing logic)
+      const urlParams = new URL(fileUrl);
+      const filePath = urlParams.pathname;
+      const fileExtension = filePath.split('.').pop()?.toLowerCase();
+      
+      console.log('File extension detected:', fileExtension);
+
+      const supportedFormats = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf'];
+      if (!supportedFormats.includes(fileExtension || '')) {
+        throw new Error('Unsupported file format. Please upload PDF, PNG, JPG, JPEG, GIF, or WEBP files.');
+      }
+
+      console.log('Fetching file from storage...');
+      const fileResponse = await fetch(fileUrl);
+      if (!fileResponse.ok) {
+        throw new Error(`Failed to fetch file: ${fileResponse.statusText}`);
+      }
+      
+      const fileBlob = await fileResponse.blob();
+      
+      console.log('Analyzing document with OpenAI...');
+      
+      if (fileExtension === 'pdf') {
+        // PDF text extraction
+        console.log('Processing PDF file...');
         
-        console.log('Extracted text length:', textContent.length);
-        
-        if (textContent.length < 50) {
-          // If we can't extract enough text, return helpful error
+        try {
+          const arrayBuffer = await fileBlob.arrayBuffer();
+          const uint8Array = new Uint8Array(arrayBuffer);
+          
+          const decoder = new TextDecoder('utf-8', { fatal: false });
+          let textContent = decoder.decode(uint8Array);
+          
+          textContent = textContent
+            .replace(/[^\x20-\x7E\n\r]/g, ' ')
+            .replace(/\s+/g, ' ')
+            .trim();
+          
+          console.log('Extracted text length:', textContent.length);
+          
+          if (textContent.length < 50) {
+            await supabase
+              .from('document_uploads')
+              .update({
+                processing_status: 'failed',
+                error_message: 'PDF text extraction failed: Unable to read text from this PDF'
+              })
+              .eq('id', documentId);
+
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: 'UNREADABLE_PDF',
+                message: 'Could not extract readable text from this PDF. Please upload the document as a high-resolution image (PNG/JPG) for better results.'
+              }),
+              {
+                status: 422,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            );
+          }
+
+          // Proceed with text analysis
+          const systemMessage = documentType === 'salary_certificate' 
+            ? `You are an assistant that extracts salary information from a salary certificate text. 
+               Look for salary amounts, basic pay, allowances, deductions, and net pay.
+               Respond ONLY with a function call to extract_salary_data.`
+            : `You are an assistant that extracts salary-related transactions from bank statement text.
+               Look for recurring deposits that appear to be salary payments.
+               Respond ONLY with a function call to extract_bank_data.`;
+
+          const messages = [
+            { role: 'system', content: systemMessage },
+            { role: 'user', content: `Please analyze this ${documentType.replace('_', ' ')} text and extract the information:\n\n${textContent.substring(0, 8000)}` }
+          ];
+
+          // Define functions for extraction
+          const functions = documentType === 'salary_certificate' ? [{
+            name: "extract_salary_data",
+            description: "Extract structured salary data from a salary certificate",
+            parameters: {
+              type: "object",
+              properties: {
+                monthly_gross_salary: { type: "number", description: "Monthly gross salary amount" },
+                basic_salary: { type: "number", description: "Basic salary amount" },
+                allowances: { type: "number", description: "Total allowances amount" },
+                total_deductions: { type: "number", description: "Total deductions amount" },
+                net_salary: { type: "number", description: "Net salary after deductions" },
+                currency: { type: "string", description: "Currency code (e.g., SAR)" },
+                employee_name: { type: "string", description: "Employee full name" },
+                company_name: { type: "string", description: "Company name" },
+                confidence_score: { type: "number", description: "Confidence score between 0 and 1" }
+              },
+              required: ["currency", "confidence_score"]
+            }
+          }] : [{
+            name: "extract_bank_data",
+            description: "Extract structured data from a bank statement",
+            parameters: {
+              type: "object",
+              properties: {
+                monthly_salary_deposits: {
+                  type: "array",
+                  items: {
+                    type: "object",
+                    properties: {
+                      amount: { type: "number" },
+                      date: { type: "string" },
+                      description: { type: "string" }
+                    }
+                  }
+                },
+                average_monthly_income: { type: "number", description: "Average monthly income" },
+                currency: { type: "string", description: "Currency code (e.g., SAR)" },
+                account_holder_name: { type: "string", description: "Account holder name" },
+                bank_name: { type: "string", description: "Bank name" },
+                confidence_score: { type: "number", description: "Confidence score between 0 and 1" }
+              },
+              required: ["currency", "confidence_score"]
+            }
+          }];
+
+          const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+            method: 'POST',
+            headers: {
+              'Authorization': `Bearer ${openAIKey}`,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              model: 'gpt-4o',
+              messages,
+              functions,
+              function_call: { 
+                name: documentType === 'salary_certificate' ? 'extract_salary_data' : 'extract_bank_data' 
+              },
+              temperature: 0.1
+            }),
+          });
+
+          if (!analysisResponse.ok) {
+            const errorText = await analysisResponse.text();
+            console.error('OpenAI analysis error:', analysisResponse.status, errorText);
+            throw new Error(`OpenAI analysis failed: ${analysisResponse.statusText}`);
+          }
+
+          const analysisData = await analysisResponse.json();
+          const responseMessage = analysisData.choices[0].message;
+          
+          if (responseMessage.function_call && responseMessage.function_call.arguments) {
+            extractedData = JSON.parse(responseMessage.function_call.arguments);
+            console.log('Extracted data from PDF text:', extractedData);
+          } else {
+            throw new Error('Failed to extract structured data from document text');
+          }
+
+        } catch (error) {
+          console.error('PDF processing failed:', error);
+          
           await supabase
             .from('document_uploads')
             .update({
               processing_status: 'failed',
-              error_message: 'PDF text extraction failed: Unable to read text from this PDF'
+              error_message: 'Failed to process PDF document'
             })
             .eq('id', documentId);
 
@@ -104,7 +355,7 @@ serve(async (req) => {
             JSON.stringify({
               success: false,
               error: 'UNREADABLE_PDF',
-              message: 'Could not extract readable text from this PDF. Please upload the document as a high-resolution image (PNG/JPG) for better results.'
+              message: 'Failed to process this PDF. Please upload the document as a high-resolution image (PNG/JPG) for better results.'
             }),
             {
               status: 422,
@@ -113,24 +364,44 @@ serve(async (req) => {
           );
         }
 
-        // Proceed with text analysis
+      } else {
+        // For images, use Vision API directly
+        console.log('Processing image file...');
+        
+        const base64Data = await blobToBase64(fileBlob);
+        const mimeType = fileBlob.type || `image/${fileExtension}`;
+        
         const systemMessage = documentType === 'salary_certificate' 
-          ? `You are an assistant that extracts salary information from a salary certificate text. 
-             Look for salary amounts, basic pay, allowances, deductions, and net pay.
+          ? `You are an assistant that extracts salary information from a salary certificate image.
+             Look carefully at all numbers and text in the image.
              Respond ONLY with a function call to extract_salary_data.`
-          : `You are an assistant that extracts salary-related transactions from bank statement text.
+          : `You are an assistant that extracts salary-related transactions from bank statement images.
              Look for recurring deposits that appear to be salary payments.
              Respond ONLY with a function call to extract_bank_data.`;
 
         const messages = [
           { role: 'system', content: systemMessage },
-          { role: 'user', content: `Please analyze this ${documentType.replace('_', ' ')} text and extract the information:\n\n${textContent.substring(0, 8000)}` }
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: `Please analyze this ${documentType.replace('_', ' ')} image carefully and extract all the structured information you can see.`
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: `data:${mimeType};base64,${base64Data}`,
+                  detail: 'high'
+                }
+              }
+            ]
+          }
         ];
 
-        // Define functions for extraction
         const functions = documentType === 'salary_certificate' ? [{
           name: "extract_salary_data",
-          description: "Extract structured salary data from a salary certificate",
+          description: "Extract structured salary data from a salary certificate image",
           parameters: {
             type: "object",
             properties: {
@@ -148,7 +419,7 @@ serve(async (req) => {
           }
         }] : [{
           name: "extract_bank_data",
-          description: "Extract structured data from a bank statement",
+          description: "Extract structured data from a bank statement image",
           parameters: {
             type: "object",
             properties: {
@@ -201,147 +472,14 @@ serve(async (req) => {
         
         if (responseMessage.function_call && responseMessage.function_call.arguments) {
           extractedData = JSON.parse(responseMessage.function_call.arguments);
-          console.log('Extracted data from PDF text:', extractedData);
+          console.log('Extracted data from image:', extractedData);
         } else {
-          throw new Error('Failed to extract structured data from document text');
+          throw new Error('Failed to extract structured data from document image');
         }
-
-      } catch (error) {
-        console.error('PDF processing failed:', error);
-        
-        await supabase
-          .from('document_uploads')
-          .update({
-            processing_status: 'failed',
-            error_message: 'Failed to process PDF document'
-          })
-          .eq('id', documentId);
-
-        return new Response(
-          JSON.stringify({
-            success: false,
-            error: 'UNREADABLE_PDF',
-            message: 'Failed to process this PDF. Please upload the document as a high-resolution image (PNG/JPG) for better results.'
-          }),
-          {
-            status: 422,
-            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-          }
-        );
       }
 
     } else {
-      // For images, use Vision API directly
-      console.log('Processing image file...');
-      
-      const base64Data = await blobToBase64(fileBlob);
-      const mimeType = fileBlob.type || `image/${fileExtension}`;
-      
-      const systemMessage = documentType === 'salary_certificate' 
-        ? `You are an assistant that extracts salary information from a salary certificate image.
-           Look carefully at all numbers and text in the image.
-           Respond ONLY with a function call to extract_salary_data.`
-        : `You are an assistant that extracts salary-related transactions from bank statement images.
-           Look for recurring deposits that appear to be salary payments.
-           Respond ONLY with a function call to extract_bank_data.`;
-
-      const messages = [
-        { role: 'system', content: systemMessage },
-        {
-          role: 'user',
-          content: [
-            {
-              type: 'text',
-              text: `Please analyze this ${documentType.replace('_', ' ')} image carefully and extract all the structured information you can see.`
-            },
-            {
-              type: 'image_url',
-              image_url: {
-                url: `data:${mimeType};base64,${base64Data}`,
-                detail: 'high'
-              }
-            }
-          ]
-        }
-      ];
-
-      const functions = documentType === 'salary_certificate' ? [{
-        name: "extract_salary_data",
-        description: "Extract structured salary data from a salary certificate image",
-        parameters: {
-          type: "object",
-          properties: {
-            monthly_gross_salary: { type: "number", description: "Monthly gross salary amount" },
-            basic_salary: { type: "number", description: "Basic salary amount" },
-            allowances: { type: "number", description: "Total allowances amount" },
-            total_deductions: { type: "number", description: "Total deductions amount" },
-            net_salary: { type: "number", description: "Net salary after deductions" },
-            currency: { type: "string", description: "Currency code (e.g., SAR)" },
-            employee_name: { type: "string", description: "Employee full name" },
-            company_name: { type: "string", description: "Company name" },
-            confidence_score: { type: "number", description: "Confidence score between 0 and 1" }
-          },
-          required: ["currency", "confidence_score"]
-        }
-      }] : [{
-        name: "extract_bank_data",
-        description: "Extract structured data from a bank statement image",
-        parameters: {
-          type: "object",
-          properties: {
-            monthly_salary_deposits: {
-              type: "array",
-              items: {
-                type: "object",
-                properties: {
-                  amount: { type: "number" },
-                  date: { type: "string" },
-                  description: { type: "string" }
-                }
-              }
-            },
-            average_monthly_income: { type: "number", description: "Average monthly income" },
-            currency: { type: "string", description: "Currency code (e.g., SAR)" },
-            account_holder_name: { type: "string", description: "Account holder name" },
-            bank_name: { type: "string", description: "Bank name" },
-            confidence_score: { type: "number", description: "Confidence score between 0 and 1" }
-          },
-          required: ["currency", "confidence_score"]
-        }
-      }];
-
-      const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAIKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages,
-          functions,
-          function_call: { 
-            name: documentType === 'salary_certificate' ? 'extract_salary_data' : 'extract_bank_data' 
-          },
-          temperature: 0.1
-        }),
-      });
-
-      if (!analysisResponse.ok) {
-        const errorText = await analysisResponse.text();
-        console.error('OpenAI analysis error:', analysisResponse.status, errorText);
-        throw new Error(`OpenAI analysis failed: ${analysisResponse.statusText}`);
-      }
-
-      const analysisData = await analysisResponse.json();
-      const responseMessage = analysisData.choices[0].message;
-      
-      if (responseMessage.function_call && responseMessage.function_call.arguments) {
-        extractedData = JSON.parse(responseMessage.function_call.arguments);
-        console.log('Extracted data from image:', extractedData);
-      } else {
-        throw new Error('Failed to extract structured data from document image');
-      }
+      throw new Error('Either fileUrl or images must be provided');
     }
 
     const confidenceScore = extractedData.confidence_score || 0.5;
@@ -368,7 +506,8 @@ serve(async (req) => {
         success: true,
         documentId,
         extractedData,
-        confidenceScore
+        confidenceScore,
+        processingMethod: processingMethod || (fileUrl?.includes('.pdf') ? 'text_extraction' : 'vision_api')
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
