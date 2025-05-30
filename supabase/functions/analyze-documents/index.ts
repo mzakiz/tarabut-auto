@@ -14,6 +14,20 @@ interface DocumentAnalysisRequest {
   documentType: 'salary_certificate' | 'bank_statement';
 }
 
+// Chunked base64 conversion to avoid stack overflow
+function arrayBufferToBase64Chunked(buffer: ArrayBuffer): string {
+  const bytes = new Uint8Array(buffer);
+  const chunkSize = 1024; // Process in 1KB chunks
+  let binary = '';
+  
+  for (let i = 0; i < bytes.length; i += chunkSize) {
+    const chunk = bytes.slice(i, i + chunkSize);
+    binary += String.fromCharCode(...chunk);
+  }
+  
+  return btoa(binary);
+}
+
 // Split PDF into individual pages
 async function splitPdf(buffer: Uint8Array): Promise<Uint8Array[]> {
   try {
@@ -48,7 +62,9 @@ async function callOcrSpacePerPage(pages: Uint8Array[], ocrApiKey: string): Prom
     
     try {
       const pdfBytes = pages[i];
-      const base64 = btoa(String.fromCharCode(...pdfBytes));
+      
+      // Use chunked conversion to avoid stack overflow
+      const base64 = arrayBufferToBase64Chunked(pdfBytes.buffer);
       
       const resp = await fetch('https://api.ocr.space/parse/image', {
         method: 'POST',
@@ -92,8 +108,7 @@ async function callOcrSpacePerPage(pages: Uint8Array[], ocrApiKey: string): Prom
 // OCR.space fallback function for images
 async function callOcrSpaceImage(buffer: ArrayBuffer, ocrApiKey: string) {
   try {
-    const uint8Array = new Uint8Array(buffer);
-    const base64Data = btoa(String.fromCharCode(...uint8Array));
+    const base64Data = arrayBufferToBase64Chunked(buffer);
     
     const ocrResponse = await fetch('https://api.ocr.space/parse/image', {
       method: 'POST',
@@ -508,7 +523,8 @@ serve(async (req) => {
       // For images, use Vision API directly
       console.log('Processing image file...');
       
-      const base64Data = await blobToBase64(fileBlob);
+      const arrayBuffer = await fileBlob.arrayBuffer();
+      const base64Data = arrayBufferToBase64Chunked(arrayBuffer);
       const mimeType = fileBlob.type || `image/${fileExtension}`;
       
       const systemMessage = documentType === 'salary_certificate' 
@@ -742,10 +758,5 @@ serve(async (req) => {
 // Helper function to convert blob to base64
 async function blobToBase64(blob: Blob): Promise<string> {
   const buffer = await blob.arrayBuffer();
-  const bytes = new Uint8Array(buffer);
-  let binary = '';
-  for (let i = 0; i < bytes.byteLength; i++) {
-    binary += String.fromCharCode(bytes[i]);
-  }
-  return btoa(binary);
+  return arrayBufferToBase64Chunked(buffer);
 }
