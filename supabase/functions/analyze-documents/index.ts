@@ -1,8 +1,6 @@
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
-import { PDFDocument } from 'https://esm.sh/pdf-lib@1.17.1';
-import pdfParse from 'https://esm.sh/pdf-parse@1.1.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -13,24 +11,6 @@ interface DocumentAnalysisRequest {
   documentId: string;
   fileUrl: string;
   documentType: 'salary_certificate' | 'bank_statement';
-}
-
-// Extract only first few pages to prevent stack overflow
-async function extractFirstPages(buffer: ArrayBuffer, maxPages = 3) {
-  const srcDoc = await PDFDocument.load(buffer);
-  const dstDoc = await PDFDocument.create();
-  const pageCount = Math.min(srcDoc.getPageCount(), maxPages);
-  
-  if (pageCount === 0) {
-    throw new Error('PDF has no pages');
-  }
-  
-  const pageIndices = Array.from({ length: pageCount }, (_, i) => i);
-  const copiedPages = await dstDoc.copyPages(srcDoc, pageIndices);
-  copiedPages.forEach(page => dstDoc.addPage(page));
-  
-  const slicedPdfBytes = await dstDoc.save();
-  return await pdfParse(slicedPdfBytes);
 }
 
 // OCR.space fallback function
@@ -155,39 +135,20 @@ serve(async (req) => {
     console.log('Analyzing document...');
     
     if (fileExtension === 'pdf') {
-      console.log('Processing PDF file with size and page guardrails...');
+      console.log('Processing PDF file with OCR fallback...');
       
       let finalText = '';
       
       try {
-        // Try text extraction from first 3 pages only
+        // For PDFs, use OCR.space directly to avoid Deno compatibility issues
         const arrayBuffer = await fileBlob.arrayBuffer();
-        console.log('Attempting text extraction from first 3 pages...');
+        finalText = await callOcrSpace(arrayBuffer, ocrSpaceKey);
+        processingMethod = 'ocr_extraction';
+        console.log(`OCR extraction successful, text length: ${finalText.length}`);
         
-        const pdfData = await extractFirstPages(arrayBuffer, 3);
-        finalText = pdfData.text || '';
-        
-        console.log(`Text extraction successful, length: ${finalText.length}`);
-        
-        // Check if we got meaningful text (basic heuristic)
-        if (finalText.length > 50 && /[a-zA-Z]/.test(finalText)) {
-          processingMethod = 'text_extraction';
-        } else {
-          throw new Error('Insufficient text extracted');
-        }
-        
-      } catch (error) {
-        console.warn('PDF text extraction failed, falling back to OCR:', error.message);
-        
-        try {
-          const arrayBuffer = await fileBlob.arrayBuffer();
-          finalText = await callOcrSpace(arrayBuffer, ocrSpaceKey);
-          processingMethod = 'hybrid_extraction';
-          console.log(`OCR fallback successful, text length: ${finalText.length}`);
-        } catch (ocrError) {
-          console.error('OCR fallback also failed:', ocrError.message);
-          throw new Error('Unable to extract text from PDF');
-        }
+      } catch (ocrError) {
+        console.error('OCR extraction failed:', ocrError.message);
+        throw new Error('Unable to extract text from PDF');
       }
       
       if (!finalText || finalText.length < 20) {
