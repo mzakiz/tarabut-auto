@@ -1,6 +1,8 @@
 
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
+import { PDFDocument } from 'https://esm.sh/pdf-lib@1.17.1';
+import pdfParse from 'https://esm.sh/pdf-parse@1.1.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -11,6 +13,58 @@ interface DocumentAnalysisRequest {
   documentId: string;
   fileUrl: string;
   documentType: 'salary_certificate' | 'bank_statement';
+}
+
+// Extract only first few pages to prevent stack overflow
+async function extractFirstPages(buffer: ArrayBuffer, maxPages = 3) {
+  const srcDoc = await PDFDocument.load(buffer);
+  const dstDoc = await PDFDocument.create();
+  const pageCount = Math.min(srcDoc.getPageCount(), maxPages);
+  
+  if (pageCount === 0) {
+    throw new Error('PDF has no pages');
+  }
+  
+  const pageIndices = Array.from({ length: pageCount }, (_, i) => i);
+  const copiedPages = await dstDoc.copyPages(srcDoc, pageIndices);
+  copiedPages.forEach(page => dstDoc.addPage(page));
+  
+  const slicedPdfBytes = await dstDoc.save();
+  return await pdfParse(slicedPdfBytes);
+}
+
+// OCR.space fallback function
+async function callOcrSpace(buffer: ArrayBuffer, ocrApiKey: string) {
+  const uint8Array = new Uint8Array(buffer);
+  const base64Data = btoa(String.fromCharCode(...uint8Array));
+  
+  const ocrResponse = await fetch('https://api.ocr.space/parse/image', {
+    method: 'POST',
+    headers: {
+      'apikey': ocrApiKey,
+      'Content-Type': 'application/json',
+    },
+    body: JSON.stringify({
+      base64Image: `data:application/pdf;base64,${base64Data}`,
+      language: 'eng',
+      isTable: true,
+      detectOrientation: true,
+      scale: true,
+      OCREngine: 2
+    }),
+  });
+
+  if (!ocrResponse.ok) {
+    throw new Error(`OCR.space API error: ${ocrResponse.statusText}`);
+  }
+
+  const ocrData = await ocrResponse.json();
+  
+  if (ocrData.ParsedResults && ocrData.ParsedResults.length > 0) {
+    return ocrData.ParsedResults[0].ParsedText || '';
+  }
+  
+  throw new Error('OCR.space returned no results');
 }
 
 serve(async (req) => {
@@ -26,13 +80,12 @@ serve(async (req) => {
     
     console.log('Processing document:', { documentId, documentType, hasFileUrl: !!fileUrl });
     
-    // Check if OpenAI API key is available
+    // Check if required API keys are available
     const openAIKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIKey) {
       throw new Error('OpenAI API key is not configured');
     }
 
-    // Check if OCR.space API key is available
     const ocrSpaceKey = Deno.env.get('OCR_SPACE_API_KEY');
     if (!ocrSpaceKey) {
       throw new Error('OCR.space API key is not configured');
@@ -73,175 +126,76 @@ serve(async (req) => {
     
     const fileBlob = await fileResponse.blob();
     
+    // File size guardrail - reject files larger than 5MB
+    const maxFileSize = 5 * 1024 * 1024; // 5MB
+    if (fileBlob.size > maxFileSize) {
+      console.log(`File too large: ${fileBlob.size} bytes (max: ${maxFileSize})`);
+      
+      await supabase
+        .from('document_uploads')
+        .update({
+          processing_status: 'failed',
+          error_message: 'File too large. Please upload a file smaller than 5MB or use an image format.'
+        })
+        .eq('id', documentId);
+
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'FILE_TOO_LARGE',
+          message: 'File is too large. Please upload a file smaller than 5MB or convert your document to a high-quality image (PNG/JPG).'
+        }),
+        {
+          status: 413,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+    
     console.log('Analyzing document...');
     
     if (fileExtension === 'pdf') {
-      // For PDFs, use OCR.space directly to avoid stack overflow issues
-      console.log('Processing PDF file with OCR.space...');
+      console.log('Processing PDF file with size and page guardrails...');
+      
+      let finalText = '';
       
       try {
+        // Try text extraction from first 3 pages only
         const arrayBuffer = await fileBlob.arrayBuffer();
-        const uint8Array = new Uint8Array(arrayBuffer);
+        console.log('Attempting text extraction from first 3 pages...');
         
-        // Convert to base64 for OCR.space
-        const base64Data = btoa(String.fromCharCode(...uint8Array));
+        const pdfData = await extractFirstPages(arrayBuffer, 3);
+        finalText = pdfData.text || '';
         
-        console.log('Using OCR.space for PDF processing...');
+        console.log(`Text extraction successful, length: ${finalText.length}`);
         
-        const ocrResponse = await fetch('https://api.ocr.space/parse/image', {
-          method: 'POST',
-          headers: {
-            'apikey': ocrSpaceKey,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            base64Image: `data:application/pdf;base64,${base64Data}`,
-            language: 'eng',
-            isTable: true,
-            detectOrientation: true,
-            scale: true,
-            OCREngine: 2
-          }),
-        });
-
-        if (!ocrResponse.ok) {
-          throw new Error(`OCR.space API error: ${ocrResponse.statusText}`);
-        }
-
-        const ocrData = await ocrResponse.json();
-        console.log('OCR.space response received');
-        
-        let finalText = '';
-        
-        if (ocrData.ParsedResults && ocrData.ParsedResults.length > 0) {
-          finalText = ocrData.ParsedResults[0].ParsedText || '';
-          processingMethod = 'hybrid_extraction';
-          console.log('OCR extraction successful, text length:', finalText.length);
-        }
-        
-        if (!finalText || finalText.length < 20) {
-          await supabase
-            .from('document_uploads')
-            .update({
-              processing_status: 'failed',
-              error_message: 'Unable to extract readable text from PDF'
-            })
-            .eq('id', documentId);
-
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: 'UNABLE_TO_EXTRACT_TEXT',
-              message: 'We couldn\'t read your PDF. Please upload a clear image of your salary certificate.'
-            }),
-            {
-              status: 422,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            }
-          );
-        }
-
-        // Proceed with AI analysis using the extracted text
-        const systemMessage = documentType === 'salary_certificate' 
-          ? `You are an assistant that extracts salary information from a salary certificate text. 
-             Look for salary amounts, basic pay, allowances, deductions, and net pay.
-             Respond ONLY with a function call to extract_salary_data.`
-          : `You are an assistant that extracts salary-related transactions from bank statement text.
-             Look for recurring deposits that appear to be salary payments.
-             Respond ONLY with a function call to extract_bank_data.`;
-
-        const messages = [
-          { role: 'system', content: systemMessage },
-          { role: 'user', content: `Please analyze this ${documentType.replace('_', ' ')} text and extract the information:\n\n${finalText.substring(0, 8000)}` }
-        ];
-
-        // Define functions for extraction
-        const functions = documentType === 'salary_certificate' ? [{
-          name: "extract_salary_data",
-          description: "Extract structured salary data from a salary certificate",
-          parameters: {
-            type: "object",
-            properties: {
-              monthly_gross_salary: { type: "number", description: "Monthly gross salary amount" },
-              basic_salary: { type: "number", description: "Basic salary amount" },
-              allowances: { type: "number", description: "Total allowances amount" },
-              total_deductions: { type: "number", description: "Total deductions amount" },
-              net_salary: { type: "number", description: "Net salary after deductions" },
-              currency: { type: "string", description: "Currency code (e.g., SAR)" },
-              employee_name: { type: "string", description: "Employee full name" },
-              company_name: { type: "string", description: "Company name" },
-              confidence_score: { type: "number", description: "Confidence score between 0 and 1" }
-            },
-            required: ["currency", "confidence_score"]
-          }
-        }] : [{
-          name: "extract_bank_data",
-          description: "Extract structured data from a bank statement",
-          parameters: {
-            type: "object",
-            properties: {
-              monthly_salary_deposits: {
-                type: "array",
-                items: {
-                  type: "object",
-                  properties: {
-                    amount: { type: "number" },
-                    date: { type: "string" },
-                    description: { type: "string" }
-                  }
-                }
-              },
-              average_monthly_income: { type: "number", description: "Average monthly income" },
-              currency: { type: "string", description: "Currency code (e.g., SAR)" },
-              account_holder_name: { type: "string", description: "Account holder name" },
-              bank_name: { type: "string", description: "Bank name" },
-              confidence_score: { type: "number", description: "Confidence score between 0 and 1" }
-            },
-            required: ["currency", "confidence_score"]
-          }
-        }];
-
-        const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-          method: 'POST',
-          headers: {
-            'Authorization': `Bearer ${openAIKey}`,
-            'Content-Type': 'application/json',
-          },
-          body: JSON.stringify({
-            model: 'gpt-4o',
-            messages,
-            functions,
-            function_call: { 
-              name: documentType === 'salary_certificate' ? 'extract_salary_data' : 'extract_bank_data' 
-            },
-            temperature: 0.1
-          }),
-        });
-
-        if (!analysisResponse.ok) {
-          const errorText = await analysisResponse.text();
-          console.error('OpenAI analysis error:', analysisResponse.status, errorText);
-          throw new Error(`OpenAI analysis failed: ${analysisResponse.statusText}`);
-        }
-
-        const analysisData = await analysisResponse.json();
-        const responseMessage = analysisData.choices[0].message;
-        
-        if (responseMessage.function_call && responseMessage.function_call.arguments) {
-          extractedData = JSON.parse(responseMessage.function_call.arguments);
-          console.log(`Extracted data using OCR:`, extractedData);
+        // Check if we got meaningful text (basic heuristic)
+        if (finalText.length > 50 && /[a-zA-Z]/.test(finalText)) {
+          processingMethod = 'text_extraction';
         } else {
-          throw new Error('Failed to extract structured data from document text');
+          throw new Error('Insufficient text extracted');
         }
-
-      } catch (error) {
-        console.error('PDF processing failed:', error);
         
+      } catch (error) {
+        console.warn('PDF text extraction failed, falling back to OCR:', error.message);
+        
+        try {
+          const arrayBuffer = await fileBlob.arrayBuffer();
+          finalText = await callOcrSpace(arrayBuffer, ocrSpaceKey);
+          processingMethod = 'hybrid_extraction';
+          console.log(`OCR fallback successful, text length: ${finalText.length}`);
+        } catch (ocrError) {
+          console.error('OCR fallback also failed:', ocrError.message);
+          throw new Error('Unable to extract text from PDF');
+        }
+      }
+      
+      if (!finalText || finalText.length < 20) {
         await supabase
           .from('document_uploads')
           .update({
             processing_status: 'failed',
-            error_message: 'Failed to process PDF document'
+            error_message: 'Unable to extract readable text from PDF'
           })
           .eq('id', documentId);
 
@@ -256,6 +210,99 @@ serve(async (req) => {
             headers: { ...corsHeaders, 'Content-Type': 'application/json' }
           }
         );
+      }
+
+      // Proceed with AI analysis using the extracted text
+      const systemMessage = documentType === 'salary_certificate' 
+        ? `You are an assistant that extracts salary information from a salary certificate text. 
+           Look for salary amounts, basic pay, allowances, deductions, and net pay.
+           Respond ONLY with a function call to extract_salary_data.`
+        : `You are an assistant that extracts salary-related transactions from bank statement text.
+           Look for recurring deposits that appear to be salary payments.
+           Respond ONLY with a function call to extract_bank_data.`;
+
+      const messages = [
+        { role: 'system', content: systemMessage },
+        { role: 'user', content: `Please analyze this ${documentType.replace('_', ' ')} text and extract the information:\n\n${finalText.substring(0, 8000)}` }
+      ];
+
+      // Define functions for extraction
+      const functions = documentType === 'salary_certificate' ? [{
+        name: "extract_salary_data",
+        description: "Extract structured salary data from a salary certificate",
+        parameters: {
+          type: "object",
+          properties: {
+            monthly_gross_salary: { type: "number", description: "Monthly gross salary amount" },
+            basic_salary: { type: "number", description: "Basic salary amount" },
+            allowances: { type: "number", description: "Total allowances amount" },
+            total_deductions: { type: "number", description: "Total deductions amount" },
+            net_salary: { type: "number", description: "Net salary after deductions" },
+            currency: { type: "string", description: "Currency code (e.g., SAR)" },
+            employee_name: { type: "string", description: "Employee full name" },
+            company_name: { type: "string", description: "Company name" },
+            confidence_score: { type: "number", description: "Confidence score between 0 and 1" }
+          },
+          required: ["currency", "confidence_score"]
+        }
+      }] : [{
+        name: "extract_bank_data",
+        description: "Extract structured data from a bank statement",
+        parameters: {
+          type: "object",
+          properties: {
+            monthly_salary_deposits: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  amount: { type: "number" },
+                  date: { type: "string" },
+                  description: { type: "string" }
+                }
+              }
+            },
+            average_monthly_income: { type: "number", description: "Average monthly income" },
+            currency: { type: "string", description: "Currency code (e.g., SAR)" },
+            account_holder_name: { type: "string", description: "Account holder name" },
+            bank_name: { type: "string", description: "Bank name" },
+            confidence_score: { type: "number", description: "Confidence score between 0 and 1" }
+          },
+          required: ["currency", "confidence_score"]
+        }
+      }];
+
+      const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages,
+          functions,
+          function_call: { 
+            name: documentType === 'salary_certificate' ? 'extract_salary_data' : 'extract_bank_data' 
+          },
+          temperature: 0.1
+        }),
+      });
+
+      if (!analysisResponse.ok) {
+        const errorText = await analysisResponse.text();
+        console.error('OpenAI analysis error:', analysisResponse.status, errorText);
+        throw new Error(`OpenAI analysis failed: ${analysisResponse.statusText}`);
+      }
+
+      const analysisData = await analysisResponse.json();
+      const responseMessage = analysisData.choices[0].message;
+      
+      if (responseMessage.function_call && responseMessage.function_call.arguments) {
+        extractedData = JSON.parse(responseMessage.function_call.arguments);
+        console.log(`Extracted data using ${processingMethod}:`, extractedData);
+      } else {
+        throw new Error('Failed to extract structured data from document text');
       }
 
     } else {
