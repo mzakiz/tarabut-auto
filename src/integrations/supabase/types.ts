@@ -36,6 +36,51 @@ export type Database = {
         }
         Relationships: []
       }
+      document_uploads: {
+        Row: {
+          confidence_score: number | null
+          document_type: string
+          error_message: string | null
+          extracted_data: Json | null
+          file_name: string
+          file_path: string
+          file_size: number
+          id: string
+          processed_at: string | null
+          processing_status: string
+          uploaded_at: string
+          user_id: string
+        }
+        Insert: {
+          confidence_score?: number | null
+          document_type: string
+          error_message?: string | null
+          extracted_data?: Json | null
+          file_name: string
+          file_path: string
+          file_size: number
+          id?: string
+          processed_at?: string | null
+          processing_status?: string
+          uploaded_at?: string
+          user_id: string
+        }
+        Update: {
+          confidence_score?: number | null
+          document_type?: string
+          error_message?: string | null
+          extracted_data?: Json | null
+          file_name?: string
+          file_path?: string
+          file_size?: number
+          id?: string
+          processed_at?: string | null
+          processing_status?: string
+          uploaded_at?: string
+          user_id?: string
+        }
+        Relationships: []
+      }
       email_logs: {
         Row: {
           created_at: string | null

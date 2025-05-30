@@ -27,3 +27,6 @@ port = 5002
 [functions]
 [functions.send-waitlist-email]
 verify_jwt = false
+
+[functions.analyze-documents]
+verify_jwt = true

@@ -80,6 +80,7 @@
     "nav.dealerships": "For Dealerships", 
     "nav.affordability": "Affordability",
     "nav.contact": "Contact Us",
+    "nav.check_eligibility": "Check Eligibility",
     
     "calculator.title": "Calculate Your Monthly Payment",
     "calculator.subtitle": "See if your dream car fits your budget!",
@@ -109,5 +110,16 @@
     "email.waitlist.referral.points": "Every time someone signs up using your code, you'll earn 50 points!",
     "email.waitlist.status.check": "Check Your Status",
     "email.waitlist.closing": "We'll notify you as soon as Tarabut Auto is ready to launch. In the meantime, feel free to refer friends to get ahead in line!",
-    "email.waitlist.footer": "Tarabut Auto - Shariah-compliant auto financing"
+    "email.waitlist.footer": "Tarabut Auto - Shariah-compliant auto financing",
+
+    "eligibility.title": "Check Your Financing Eligibility",
+    "eligibility.description": "Upload your salary certificate and bank statement to get an instant assessment",
+    "eligibility.salary_certificate.title": "Salary Certificate",
+    "eligibility.salary_certificate.description": "Upload your official salary certificate from your employer",
+    "eligibility.bank_statement.title": "Bank Statement",
+    "eligibility.bank_statement.description": "Upload your recent bank statement (last 3 months)",
+    "eligibility.upload.processing": "Processing document...",
+    "eligibility.upload.completed": "Document processed successfully",
+    "eligibility.upload.failed": "Upload failed",
+    "eligibility.results.title": "Document Analysis Results"
 }

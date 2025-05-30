@@ -1,4 +1,3 @@
-
 import React from 'react';
 import { Toaster } from "@/components/ui/toaster";
 import { Toaster as Sonner } from "@/components/ui/sonner";
@@ -18,6 +17,7 @@ import WaitlistSignup from "./pages/WaitlistSignup";
 import DealershipSignup from "./pages/DealershipSignup";
 import DealershipConfirmation from "./pages/DealershipConfirmation";
 import WaitlistStatus from "./pages/WaitlistStatus";
+import CheckEligibility from "./pages/CheckEligibility";
 
 const queryClient = new QueryClient();
 
@@ -39,6 +39,10 @@ const App = () => (
               <Route path="/en/speed" element={<Index variant="speed" lang="en" />} />
               <Route path="/en/offer" element={<Index variant="personal" lang="en" />} />
               <Route path="/en/budget" element={<Index variant="budget" lang="en" />} />
+              
+              {/* Check Eligibility routes */}
+              <Route path="/en/check-eligibility" element={<CheckEligibility />} />
+              <Route path="/ar/check-eligibility" element={<CheckEligibility />} />
               
               {/* Waitlist routes for all variants in English */}
               <Route path="/en/speed/waitlist-signup" element={<WaitlistSignup />} />
