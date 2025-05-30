@@ -256,7 +256,7 @@ serve(async (req) => {
         );
       }
       
-      if (!finalText || finalText.length < 20) {
+      if (!finalText || finalText.trim().length < 20) {
         await supabase
           .from('document_uploads')
           .update({
