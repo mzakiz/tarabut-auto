@@ -51,18 +51,49 @@ serve(async (req) => {
     
     console.log('File extension detected:', fileExtension);
 
-    // Check if file is a supported image format for OpenAI Vision
-    const supportedImageFormats = ['png', 'jpg', 'jpeg', 'gif', 'webp'];
-    const isPDF = fileExtension === 'pdf';
-    const isImage = supportedImageFormats.includes(fileExtension || '');
-
-    if (!isPDF && !isImage) {
-      throw new Error('Unsupported file format. Please upload PDF, PNG, JPG, or WEBP files.');
+    // Check if file is a supported format
+    const supportedFormats = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf'];
+    if (!supportedFormats.includes(fileExtension || '')) {
+      throw new Error('Unsupported file format. Please upload PDF, PNG, JPG, JPEG, GIF, or WEBP files.');
     }
+
+    // Fetch the file from Supabase storage
+    console.log('Fetching file from storage...');
+    const fileResponse = await fetch(fileUrl);
+    if (!fileResponse.ok) {
+      throw new Error(`Failed to fetch file: ${fileResponse.statusText}`);
+    }
+    
+    const fileBlob = await fileResponse.blob();
+    const fileName = `document_${documentId}.${fileExtension}`;
+    
+    // Upload file to OpenAI Files API
+    console.log('Uploading file to OpenAI...');
+    const formData = new FormData();
+    formData.append('file', fileBlob, fileName);
+    formData.append('purpose', 'vision');
+
+    const uploadResponse = await fetch('https://api.openai.com/v1/files', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIKey}`,
+      },
+      body: formData,
+    });
+
+    if (!uploadResponse.ok) {
+      const errorText = await uploadResponse.text();
+      console.error('OpenAI file upload error:', uploadResponse.status, errorText);
+      throw new Error(`Failed to upload file to OpenAI: ${uploadResponse.statusText}`);
+    }
+
+    const uploadData = await uploadResponse.json();
+    const fileId = uploadData.id;
+    console.log('File uploaded to OpenAI with ID:', fileId);
 
     // Prepare OpenAI prompt based on document type
     const prompt = documentType === 'salary_certificate' 
-      ? `Analyze this ${isPDF ? 'salary certificate document' : 'salary certificate image'} and extract the following information in JSON format:
+      ? `Analyze this salary certificate document and extract the following information in JSON format:
         {
           "monthly_gross_salary": number,
           "basic_salary": number,
@@ -77,7 +108,7 @@ serve(async (req) => {
         }
         
         Focus on extracting accurate salary amounts. If the document is in Arabic, translate the numerical values. Return only the JSON object, no additional text.`
-      : `Analyze this ${isPDF ? 'bank statement document' : 'bank statement image'} and extract salary-related information in JSON format:
+      : `Analyze this bank statement document and extract salary-related information in JSON format:
         {
           "monthly_salary_deposits": [
             {
@@ -99,81 +130,70 @@ serve(async (req) => {
         
         Focus on identifying recurring salary deposits. Return only the JSON object, no additional text.`;
 
-    console.log('Calling OpenAI API...');
+    console.log('Calling OpenAI API for document analysis...');
     
-    let openAIResponse;
-
-    if (isPDF) {
-      // For PDF files, we'll use a text-only approach since OpenAI vision doesn't support PDFs
-      openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAIKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o-mini',
-          messages: [
-            {
-              role: 'user',
-              content: `${prompt}\n\nNote: This is a PDF document. Please provide a reasonable estimate based on typical ${documentType.replace('_', ' ')} formats. Since I cannot process the actual PDF content, please return a sample response with placeholder values and set confidence_score to 0.1 to indicate this is a mock response.`
-            }
-          ],
-          max_tokens: 1000,
-          temperature: 0.1
-        }),
-      });
-    } else {
-      // For image files, use the vision API
-      openAIResponse = await fetch('https://api.openai.com/v1/chat/completions', {
-        method: 'POST',
-        headers: {
-          'Authorization': `Bearer ${openAIKey}`,
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          model: 'gpt-4o',
-          messages: [
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: prompt
-                },
-                {
-                  type: 'image_url',
-                  image_url: {
-                    url: fileUrl
-                  }
+    // Use GPT-4o with the uploaded file for analysis
+    const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Authorization': `Bearer ${openAIKey}`,
+        'Content-Type': 'application/json',
+      },
+      body: JSON.stringify({
+        model: 'gpt-4o',
+        messages: [
+          {
+            role: 'user',
+            content: [
+              {
+                type: 'text',
+                text: prompt
+              },
+              {
+                type: 'image_url',
+                image_url: {
+                  url: `data:${fileBlob.type};base64,${await blobToBase64(fileBlob)}`
                 }
-              ]
-            }
-          ],
-          max_tokens: 1000,
-          temperature: 0.1
-        }),
+              }
+            ]
+          }
+        ],
+        max_tokens: 1500,
+        temperature: 0.1
+      }),
+    });
+
+    // Clean up: Delete the uploaded file from OpenAI
+    try {
+      await fetch(`https://api.openai.com/v1/files/${fileId}`, {
+        method: 'DELETE',
+        headers: {
+          'Authorization': `Bearer ${openAIKey}`,
+        },
       });
+      console.log('Cleaned up uploaded file from OpenAI');
+    } catch (cleanupError) {
+      console.warn('Failed to cleanup file from OpenAI:', cleanupError);
     }
 
-    if (!openAIResponse.ok) {
-      const errorText = await openAIResponse.text();
-      console.error('OpenAI API error:', openAIResponse.status, errorText);
-      throw new Error(`OpenAI API error: ${openAIResponse.statusText}`);
+    if (!analysisResponse.ok) {
+      const errorText = await analysisResponse.text();
+      console.error('OpenAI analysis error:', analysisResponse.status, errorText);
+      throw new Error(`OpenAI analysis failed: ${analysisResponse.statusText}`);
     }
 
-    const openAIData = await openAIResponse.json();
-    const extractedText = openAIData.choices[0].message.content;
+    const analysisData = await analysisResponse.json();
+    const extractedText = analysisData.choices[0].message.content;
     
-    console.log('OpenAI response received:', extractedText.substring(0, 200) + '...');
+    console.log('OpenAI analysis completed:', extractedText.substring(0, 200) + '...');
     
     // Parse the JSON response
     let extractedData;
-    let confidenceScore = 0;
+    let confidenceScore = 0.8; // Default confidence for successful analysis
     
     try {
       extractedData = JSON.parse(extractedText);
-      confidenceScore = extractedData.confidence_score || (isPDF ? 0.1 : 0.8);
+      confidenceScore = extractedData.confidence_score || 0.8;
     } catch (parseError) {
       console.error('Failed to parse OpenAI response as JSON:', extractedText);
       throw new Error('Failed to extract structured data from document');
@@ -243,3 +263,14 @@ serve(async (req) => {
     );
   }
 });
+
+// Helper function to convert blob to base64
+async function blobToBase64(blob: Blob): Promise<string> {
+  const buffer = await blob.arrayBuffer();
+  const bytes = new Uint8Array(buffer);
+  let binary = '';
+  for (let i = 0; i < bytes.byteLength; i++) {
+    binary += String.fromCharCode(bytes[i]);
+  }
+  return btoa(binary);
+}
