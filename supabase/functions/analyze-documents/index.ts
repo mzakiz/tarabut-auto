@@ -66,61 +66,106 @@ serve(async (req) => {
     
     const fileBlob = await fileResponse.blob();
     
-    // Prepare OpenAI prompt based on document type
-    const prompt = documentType === 'salary_certificate' 
-      ? `Analyze this salary certificate document and extract the following information in JSON format:
-        {
-          "monthly_gross_salary": number,
-          "basic_salary": number,
-          "allowances": number,
-          "total_deductions": number,
-          "net_salary": number,
-          "currency": "SAR",
-          "employee_name": "string",
-          "company_name": "string",
-          "issue_date": "YYYY-MM-DD",
-          "confidence_score": number (0-1)
-        }
-        
-        Focus on extracting accurate salary amounts. If the document is in Arabic, translate the numerical values. Return only the JSON object, no additional text.`
-      : `Analyze this bank statement document and extract salary-related information in JSON format:
-        {
-          "monthly_salary_deposits": [
-            {
-              "amount": number,
-              "date": "YYYY-MM-DD",
-              "description": "string"
+    // Define function schemas for structured extraction
+    const salaryCertificateFunction = {
+      name: "extract_salary_certificate_data",
+      description: "Extract structured data from a salary certificate document",
+      parameters: {
+        type: "object",
+        properties: {
+          monthly_gross_salary: { type: "number", description: "Monthly gross salary amount" },
+          basic_salary: { type: "number", description: "Basic salary amount" },
+          allowances: { type: "number", description: "Total allowances amount" },
+          total_deductions: { type: "number", description: "Total deductions amount" },
+          net_salary: { type: "number", description: "Net salary after deductions" },
+          currency: { type: "string", description: "Currency code (e.g., SAR)" },
+          employee_name: { type: "string", description: "Employee full name" },
+          company_name: { type: "string", description: "Company name" },
+          issue_date: { type: "string", description: "Issue date in YYYY-MM-DD format" },
+          confidence_score: { type: "number", description: "Confidence score between 0 and 1" }
+        },
+        required: ["monthly_gross_salary", "currency", "confidence_score"]
+      }
+    };
+
+    const bankStatementFunction = {
+      name: "extract_bank_statement_data",
+      description: "Extract structured data from a bank statement document",
+      parameters: {
+        type: "object",
+        properties: {
+          monthly_salary_deposits: {
+            type: "array",
+            items: {
+              type: "object",
+              properties: {
+                amount: { type: "number" },
+                date: { type: "string" },
+                description: { type: "string" }
+              }
             }
-          ],
-          "average_monthly_income": number,
-          "currency": "SAR",
-          "account_holder_name": "string",
-          "bank_name": "string",
-          "statement_period": {
-            "from": "YYYY-MM-DD",
-            "to": "YYYY-MM-DD"
           },
-          "confidence_score": number (0-1)
-        }
-        
-        Focus on identifying recurring salary deposits. Return only the JSON object, no additional text.`;
+          average_monthly_income: { type: "number", description: "Average monthly income" },
+          currency: { type: "string", description: "Currency code (e.g., SAR)" },
+          account_holder_name: { type: "string", description: "Account holder name" },
+          bank_name: { type: "string", description: "Bank name" },
+          statement_period: {
+            type: "object",
+            properties: {
+              from: { type: "string", description: "Statement start date YYYY-MM-DD" },
+              to: { type: "string", description: "Statement end date YYYY-MM-DD" }
+            }
+          },
+          confidence_score: { type: "number", description: "Confidence score between 0 and 1" }
+        },
+        required: ["average_monthly_income", "currency", "confidence_score"]
+      }
+    };
 
     console.log('Calling OpenAI API for document analysis...');
     
-    // Convert file to base64 for direct analysis
-    const base64Data = await blobToBase64(fileBlob);
-    const mimeType = fileBlob.type || (fileExtension === 'pdf' ? 'application/pdf' : `image/${fileExtension}`);
-    
-    // For PDFs, we need to handle them differently since OpenAI vision doesn't support PDFs directly
     let analysisResponse;
-    
+    let extractedData;
+
     if (fileExtension === 'pdf') {
-      // For PDFs, we'll use a text-based approach with GPT-4o
-      // Note: This is a limitation - we can't directly process PDF content without OCR
-      // For now, we'll inform the user that PDF processing needs image conversion
-      throw new Error('PDF files need to be converted to images first. Please upload your document as a PNG or JPG image for accurate analysis.');
-    } else {
-      // Use GPT-4o with vision for image files
+      // For PDFs, extract text and use Chat Completions with function calling
+      console.log('Processing PDF file...');
+      
+      // Convert PDF to text using a simple approach
+      // Note: This is a basic implementation. For production, you might want to use a more robust PDF parser
+      const arrayBuffer = await fileBlob.arrayBuffer();
+      const uint8Array = new Uint8Array(arrayBuffer);
+      
+      // Try to extract text from PDF using a simple method
+      // This is a basic implementation - for better results, consider using a dedicated PDF parsing service
+      let textContent = '';
+      try {
+        // Convert to string and try to extract readable text
+        const decoder = new TextDecoder('utf-8', { fatal: false });
+        const rawText = decoder.decode(uint8Array);
+        
+        // Extract readable text using basic regex patterns
+        const textMatches = rawText.match(/[A-Za-z0-9\s\.,;:!?\-()]+/g);
+        if (textMatches) {
+          textContent = textMatches.join(' ').replace(/\s+/g, ' ').trim();
+        }
+        
+        // If no meaningful text found, throw error
+        if (textContent.length < 50) {
+          throw new Error('Could not extract sufficient text from PDF');
+        }
+        
+        console.log('Extracted text length:', textContent.length);
+      } catch (error) {
+        console.error('PDF text extraction failed:', error);
+        throw new Error('Failed to extract text from PDF. Please try uploading the document as an image (PNG/JPG) for better results.');
+      }
+
+      // Use Chat Completions with function calling for text-based analysis
+      const systemPrompt = documentType === 'salary_certificate' 
+        ? `You are a document analysis expert. Analyze the provided salary certificate text and extract structured information. Focus on identifying salary amounts, employee details, and company information. If the document is in Arabic, translate numerical values to English. Return accurate data with a confidence score based on text clarity and completeness.`
+        : `You are a document analysis expert. Analyze the provided bank statement text and extract salary-related transactions. Look for recurring deposits that appear to be salary payments. Calculate average monthly income based on identified salary deposits. Return accurate data with a confidence score.`;
+
       analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -131,11 +176,66 @@ serve(async (req) => {
           model: 'gpt-4o',
           messages: [
             {
+              role: 'system',
+              content: systemPrompt
+            },
+            {
+              role: 'user',
+              content: `Please analyze this ${documentType.replace('_', ' ')} text and extract the structured information:\n\n${textContent}`
+            }
+          ],
+          functions: [documentType === 'salary_certificate' ? salaryCertificateFunction : bankStatementFunction],
+          function_call: { name: documentType === 'salary_certificate' ? 'extract_salary_certificate_data' : 'extract_bank_statement_data' },
+          temperature: 0.1
+        }),
+      });
+
+      if (!analysisResponse.ok) {
+        const errorText = await analysisResponse.text();
+        console.error('OpenAI analysis error:', analysisResponse.status, errorText);
+        throw new Error(`OpenAI analysis failed: ${analysisResponse.statusText}`);
+      }
+
+      const analysisData = await analysisResponse.json();
+      const responseMessage = analysisData.choices[0].message;
+      
+      if (responseMessage.function_call) {
+        extractedData = JSON.parse(responseMessage.function_call.arguments);
+        console.log('Extracted data from PDF text:', extractedData);
+      } else {
+        throw new Error('Failed to extract structured data from document text');
+      }
+
+    } else {
+      // For images, use Vision API with function calling
+      console.log('Processing image file...');
+      
+      const base64Data = await blobToBase64(fileBlob);
+      const mimeType = fileBlob.type || `image/${fileExtension}`;
+      
+      const systemPrompt = documentType === 'salary_certificate' 
+        ? `You are a document analysis expert. Analyze this salary certificate image and extract structured information. Focus on identifying salary amounts, employee details, and company information. If the document is in Arabic, translate numerical values to English. Return accurate data with a confidence score based on image clarity and completeness.`
+        : `You are a document analysis expert. Analyze this bank statement image and extract salary-related transactions. Look for recurring deposits that appear to be salary payments. Calculate average monthly income based on identified salary deposits. Return accurate data with a confidence score.`;
+
+      analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+        method: 'POST',
+        headers: {
+          'Authorization': `Bearer ${openAIKey}`,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          model: 'gpt-4o',
+          messages: [
+            {
+              role: 'system',
+              content: systemPrompt
+            },
+            {
               role: 'user',
               content: [
                 {
                   type: 'text',
-                  text: prompt
+                  text: `Please analyze this ${documentType.replace('_', ' ')} image and extract the structured information.`
                 },
                 {
                   type: 'image_url',
@@ -147,34 +247,32 @@ serve(async (req) => {
               ]
             }
           ],
-          max_tokens: 1500,
+          functions: [documentType === 'salary_certificate' ? salaryCertificateFunction : bankStatementFunction],
+          function_call: { name: documentType === 'salary_certificate' ? 'extract_salary_certificate_data' : 'extract_bank_statement_data' },
           temperature: 0.1
         }),
       });
+
+      if (!analysisResponse.ok) {
+        const errorText = await analysisResponse.text();
+        console.error('OpenAI analysis error:', analysisResponse.status, errorText);
+        throw new Error(`OpenAI analysis failed: ${analysisResponse.statusText}`);
+      }
+
+      const analysisData = await analysisResponse.json();
+      const responseMessage = analysisData.choices[0].message;
+      
+      if (responseMessage.function_call) {
+        extractedData = JSON.parse(responseMessage.function_call.arguments);
+        console.log('Extracted data from image:', extractedData);
+      } else {
+        throw new Error('Failed to extract structured data from document image');
+      }
     }
 
-    if (!analysisResponse.ok) {
-      const errorText = await analysisResponse.text();
-      console.error('OpenAI analysis error:', analysisResponse.status, errorText);
-      throw new Error(`OpenAI analysis failed: ${analysisResponse.statusText}`);
-    }
-
-    const analysisData = await analysisResponse.json();
-    const extractedText = analysisData.choices[0].message.content;
+    const confidenceScore = extractedData.confidence_score || 0.8;
     
-    console.log('OpenAI analysis completed:', extractedText.substring(0, 200) + '...');
-    
-    // Parse the JSON response
-    let extractedData;
-    let confidenceScore = 0.8; // Default confidence for successful analysis
-    
-    try {
-      extractedData = JSON.parse(extractedText);
-      confidenceScore = extractedData.confidence_score || 0.8;
-    } catch (parseError) {
-      console.error('Failed to parse OpenAI response as JSON:', extractedText);
-      throw new Error('Failed to extract structured data from document');
-    }
+    console.log('Document analysis completed successfully');
 
     // Update document with extracted data
     const { error: updateError } = await supabase
@@ -190,8 +288,6 @@ serve(async (req) => {
     if (updateError) {
       throw new Error(`Database update error: ${updateError.message}`);
     }
-
-    console.log('Document analysis completed successfully');
 
     return new Response(
       JSON.stringify({
