@@ -1,5 +1,6 @@
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
+import { PDFDocument } from 'https://esm.sh/pdf-lib@1.17.1';
 
 const corsHeaders = {
   'Access-Control-Allow-Origin': '*',
@@ -12,8 +13,83 @@ interface DocumentAnalysisRequest {
   documentType: 'salary_certificate' | 'bank_statement';
 }
 
-// OCR.space fallback function
-async function callOcrSpace(buffer: ArrayBuffer, ocrApiKey: string) {
+// Split PDF into individual pages
+async function splitPdf(buffer: Uint8Array): Promise<Uint8Array[]> {
+  try {
+    const src = await PDFDocument.load(buffer);
+    const total = src.getPageCount();
+    const pages: Uint8Array[] = [];
+    
+    console.log(`Splitting PDF into ${total} pages`);
+    
+    for (let i = 0; i < total; i++) {
+      const dst = await PDFDocument.create();
+      const [page] = await dst.copyPages(src, [i]);
+      dst.addPage(page);
+      pages.push(await dst.save());
+    }
+    
+    return pages;
+  } catch (error) {
+    console.error('PDF splitting error:', error);
+    throw new Error(`Failed to split PDF: ${error.message}`);
+  }
+}
+
+// Call OCR.space for each page individually
+async function callOcrSpacePerPage(pages: Uint8Array[], ocrApiKey: string): Promise<string> {
+  try {
+    const texts: string[] = [];
+    
+    console.log(`Processing ${pages.length} pages with OCR.space`);
+    
+    for (let i = 0; i < pages.length; i++) {
+      console.log(`Processing page ${i + 1}/${pages.length}`);
+      
+      const pdfBytes = pages[i];
+      const base64 = btoa(String.fromCharCode(...pdfBytes));
+      
+      const resp = await fetch('https://api.ocr.space/parse/image', {
+        method: 'POST',
+        headers: {
+          'apikey': ocrApiKey,
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          base64Image: `data:application/pdf;base64,${base64}`,
+          language: 'eng',
+          isTable: true,
+          detectOrientation: true,
+          scale: true,
+          OCREngine: 2
+        }),
+      });
+
+      if (!resp.ok) {
+        console.warn(`OCR failed for page ${i + 1}: ${resp.status} ${resp.statusText}`);
+        texts.push(''); // Add empty text for failed pages
+        continue;
+      }
+
+      const json = await resp.json();
+      const pageText = json.ParsedResults?.[0]?.ParsedText || '';
+      texts.push(pageText);
+      
+      console.log(`Page ${i + 1} extracted ${pageText.length} characters`);
+    }
+    
+    const finalText = texts.join('\n');
+    console.log(`Total extracted text length: ${finalText.length}`);
+    
+    return finalText;
+  } catch (error) {
+    console.error('OCR per-page processing error:', error);
+    throw new Error(`OCR processing failed: ${error.message}`);
+  }
+}
+
+// OCR.space fallback function for images
+async function callOcrSpaceImage(buffer: ArrayBuffer, ocrApiKey: string) {
   try {
     const uint8Array = new Uint8Array(buffer);
     const base64Data = btoa(String.fromCharCode(...uint8Array));
@@ -25,7 +101,7 @@ async function callOcrSpace(buffer: ArrayBuffer, ocrApiKey: string) {
         'Content-Type': 'application/json',
       },
       body: JSON.stringify({
-        base64Image: `data:application/pdf;base64,${base64Data}`,
+        base64Image: `data:image/jpeg;base64,${base64Data}`,
         language: 'eng',
         isTable: true,
         detectOrientation: true,
@@ -140,14 +216,17 @@ serve(async (req) => {
     console.log('Analyzing document...');
     
     if (fileExtension === 'pdf') {
-      console.log('Processing PDF file with OCR...');
+      console.log('Processing PDF file with page-by-page OCR...');
       
       let finalText = '';
       
       try {
-        // For PDFs, use OCR.space directly
+        // For PDFs, split into pages and process each with OCR.space
         const arrayBuffer = await fileBlob.arrayBuffer();
-        finalText = await callOcrSpace(arrayBuffer, ocrSpaceKey);
+        const uint8Buffer = new Uint8Array(arrayBuffer);
+        
+        const pages = await splitPdf(uint8Buffer);
+        finalText = await callOcrSpacePerPage(pages, ocrSpaceKey);
         processingMethod = 'ocr_extraction';
         console.log(`OCR extraction successful, text length: ${finalText.length}`);
         
