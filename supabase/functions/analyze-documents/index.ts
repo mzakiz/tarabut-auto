@@ -1,5 +1,4 @@
 
-
 import { serve } from 'https://deno.land/std@0.177.0/http/server.ts';
 import { createClient } from 'https://esm.sh/@supabase/supabase-js@2.49.4';
 import { PDFDocument } from 'https://esm.sh/pdf-lib@1.17.1';
@@ -138,33 +137,89 @@ serve(async (req) => {
   let requestBody: DocumentAnalysisRequest;
   
   try {
+    console.log('=== Starting document analysis ===');
+    
     requestBody = await req.json() as DocumentAnalysisRequest;
     const { documentId, fileUrl, documentType } = requestBody;
     
     console.log('Processing document:', { documentId, documentType, hasFileUrl: !!fileUrl });
     
+    // Validate required fields
+    if (!documentId || !fileUrl || !documentType) {
+      console.error('Missing required fields:', { documentId: !!documentId, fileUrl: !!fileUrl, documentType: !!documentType });
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Missing required fields: documentId, fileUrl, or documentType'
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+    
     // Check if required API keys are available
     const openAIKey = Deno.env.get('OPENAI_API_KEY');
     if (!openAIKey) {
-      throw new Error('OpenAI API key is not configured');
+      console.error('OpenAI API key is not configured');
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'OpenAI API key is not configured'
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     const ocrSpaceKey = Deno.env.get('OCR_SPACE_API_KEY');
     if (!ocrSpaceKey) {
-      throw new Error('OCR.space API key is not configured');
+      console.error('OCR.space API key is not configured');
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'OCR.space API key is not configured'
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
     
     // Initialize Supabase client
-    const supabase = createClient(
-      Deno.env.get('SUPABASE_URL') ?? '',
-      Deno.env.get('SUPABASE_SERVICE_ROLE_KEY') ?? ''
-    );
+    const supabaseUrl = Deno.env.get('SUPABASE_URL');
+    const supabaseKey = Deno.env.get('SUPABASE_SERVICE_ROLE_KEY');
+    
+    if (!supabaseUrl || !supabaseKey) {
+      console.error('Supabase configuration missing');
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'Supabase configuration missing'
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
+    }
+    
+    const supabase = createClient(supabaseUrl, supabaseKey);
 
     // Update document status to processing
-    await supabase
+    console.log('Updating document status to processing...');
+    const { error: updateError } = await supabase
       .from('document_uploads')
       .update({ processing_status: 'processing' })
       .eq('id', documentId);
+      
+    if (updateError) {
+      console.error('Failed to update document status:', updateError);
+    }
 
     let extractedData;
     let processingMethod = 'vision_api';
@@ -178,13 +233,51 @@ serve(async (req) => {
 
     const supportedFormats = ['png', 'jpg', 'jpeg', 'gif', 'webp', 'pdf'];
     if (!supportedFormats.includes(fileExtension || '')) {
-      throw new Error('Unsupported file format. Please upload PDF, PNG, JPG, JPEG, GIF, or WEBP files.');
+      console.error('Unsupported file format:', fileExtension);
+      await supabase
+        .from('document_uploads')
+        .update({
+          processing_status: 'failed',
+          error_message: 'Unsupported file format. Please upload PDF, PNG, JPG, JPEG, GIF, or WEBP files.'
+        })
+        .eq('id', documentId);
+        
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'UNSUPPORTED_FORMAT',
+          message: 'Unsupported file format. Please upload PDF, PNG, JPG, JPEG, GIF, or WEBP files.'
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
     console.log('Fetching file from storage...');
     const fileResponse = await fetch(fileUrl);
     if (!fileResponse.ok) {
-      throw new Error(`Failed to fetch file: ${fileResponse.statusText}`);
+      console.error('Failed to fetch file:', fileResponse.status, fileResponse.statusText);
+      await supabase
+        .from('document_uploads')
+        .update({
+          processing_status: 'failed',
+          error_message: `Failed to fetch file: ${fileResponse.statusText}`
+        })
+        .eq('id', documentId);
+        
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'FILE_FETCH_FAILED',
+          message: `Failed to fetch file: ${fileResponse.statusText}`
+        }),
+        {
+          status: 400,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
     
     const fileBlob = await fileResponse.blob();
@@ -257,6 +350,7 @@ serve(async (req) => {
       }
       
       if (!finalText || finalText.trim().length < 20) {
+        console.log('Extracted text too short:', finalText.length);
         await supabase
           .from('document_uploads')
           .update({
@@ -338,6 +432,7 @@ serve(async (req) => {
         }
       }];
 
+      console.log('Calling OpenAI for analysis...');
       const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -358,7 +453,26 @@ serve(async (req) => {
       if (!analysisResponse.ok) {
         const errorText = await analysisResponse.text();
         console.error('OpenAI analysis error:', analysisResponse.status, errorText);
-        throw new Error(`OpenAI analysis failed: ${analysisResponse.statusText}`);
+        
+        await supabase
+          .from('document_uploads')
+          .update({
+            processing_status: 'failed',
+            error_message: `OpenAI analysis failed: ${analysisResponse.statusText}`
+          })
+          .eq('id', documentId);
+          
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'ANALYSIS_FAILED',
+            message: `OpenAI analysis failed: ${analysisResponse.statusText}`
+          }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
       }
 
       const analysisData = await analysisResponse.json();
@@ -368,7 +482,26 @@ serve(async (req) => {
         extractedData = JSON.parse(responseMessage.function_call.arguments);
         console.log(`Extracted data using ${processingMethod}:`, extractedData);
       } else {
-        throw new Error('Failed to extract structured data from document text');
+        console.error('Failed to extract structured data from document text');
+        await supabase
+          .from('document_uploads')
+          .update({
+            processing_status: 'failed',
+            error_message: 'Failed to extract structured data from document text'
+          })
+          .eq('id', documentId);
+          
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'EXTRACTION_FAILED',
+            message: 'Failed to extract structured data from document text'
+          }),
+          {
+            status: 422,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
       }
 
     } else {
@@ -451,6 +584,7 @@ serve(async (req) => {
         }
       }];
 
+      console.log('Calling OpenAI Vision API for analysis...');
       const analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -471,7 +605,26 @@ serve(async (req) => {
       if (!analysisResponse.ok) {
         const errorText = await analysisResponse.text();
         console.error('OpenAI analysis error:', analysisResponse.status, errorText);
-        throw new Error(`OpenAI analysis failed: ${analysisResponse.statusText}`);
+        
+        await supabase
+          .from('document_uploads')
+          .update({
+            processing_status: 'failed',
+            error_message: `OpenAI analysis failed: ${analysisResponse.statusText}`
+          })
+          .eq('id', documentId);
+          
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'ANALYSIS_FAILED',
+            message: `OpenAI analysis failed: ${analysisResponse.statusText}`
+          }),
+          {
+            status: 500,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
       }
 
       const analysisData = await analysisResponse.json();
@@ -481,7 +634,26 @@ serve(async (req) => {
         extractedData = JSON.parse(responseMessage.function_call.arguments);
         console.log('Extracted data from image:', extractedData);
       } else {
-        throw new Error('Failed to extract structured data from document image');
+        console.error('Failed to extract structured data from document image');
+        await supabase
+          .from('document_uploads')
+          .update({
+            processing_status: 'failed',
+            error_message: 'Failed to extract structured data from document image'
+          })
+          .eq('id', documentId);
+          
+        return new Response(
+          JSON.stringify({
+            success: false,
+            error: 'EXTRACTION_FAILED',
+            message: 'Failed to extract structured data from document image'
+          }),
+          {
+            status: 422,
+            headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+          }
+        );
       }
     }
 
@@ -490,7 +662,7 @@ serve(async (req) => {
     console.log('Document analysis completed successfully with confidence:', confidenceScore);
 
     // Update document with extracted data
-    const { error: updateError } = await supabase
+    const { error: finalUpdateError } = await supabase
       .from('document_uploads')
       .update({
         processing_status: 'completed',
@@ -500,10 +672,22 @@ serve(async (req) => {
       })
       .eq('id', documentId);
 
-    if (updateError) {
-      throw new Error(`Database update error: ${updateError.message}`);
+    if (finalUpdateError) {
+      console.error('Failed to update document with results:', finalUpdateError);
+      return new Response(
+        JSON.stringify({
+          success: false,
+          error: 'DATABASE_UPDATE_FAILED',
+          message: `Database update error: ${finalUpdateError.message}`
+        }),
+        {
+          status: 500,
+          headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+        }
+      );
     }
 
+    console.log('=== Document analysis completed successfully ===');
     return new Response(
       JSON.stringify({
         success: true,
@@ -519,6 +703,7 @@ serve(async (req) => {
 
   } catch (error) {
     console.error('Document analysis error:', error);
+    console.error('Error stack:', error.stack);
     
     // Try to update document status to failed if we have the documentId
     if (requestBody?.documentId) {
@@ -543,7 +728,8 @@ serve(async (req) => {
     return new Response(
       JSON.stringify({
         success: false,
-        error: error.message
+        error: 'INTERNAL_ERROR',
+        message: error.message
       }),
       {
         status: 500,
@@ -563,4 +749,3 @@ async function blobToBase64(blob: Blob): Promise<string> {
   }
   return btoa(binary);
 }
-
