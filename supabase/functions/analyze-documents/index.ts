@@ -13,6 +13,12 @@ interface DocumentAnalysisRequest {
   documentType: 'salary_certificate' | 'bank_statement';
 }
 
+interface TextQualityClassification {
+  is_garbage: boolean;
+  reason: string;
+  sample_excerpt: string;
+}
+
 serve(async (req) => {
   if (req.method === 'OPTIONS') {
     return new Response(null, { headers: corsHeaders });
@@ -78,34 +84,51 @@ serve(async (req) => {
       const arrayBuffer = await fileBlob.arrayBuffer();
       const uint8Array = new Uint8Array(arrayBuffer);
       
-      // Improved PDF text extraction using proper PDF parsing
+      // Enhanced PDF text extraction
       let textContent = '';
       try {
-        // Convert to text decoder and look for text objects in PDF
         const decoder = new TextDecoder('utf-8', { fatal: false });
         const pdfContent = decoder.decode(uint8Array);
         
-        // Extract text between BT and ET operators (text objects in PDF)
-        const textObjectRegex = /BT\s*(.*?)\s*ET/gs;
-        const textMatches = pdfContent.match(textObjectRegex);
+        // Look for stream objects and extract text between them
+        const streamRegex = /stream\s*(.*?)\s*endstream/gs;
+        const streamMatches = pdfContent.match(streamRegex);
         
-        if (textMatches) {
-          for (const match of textMatches) {
-            // Extract text within parentheses or brackets
-            const textRegex = /\((.*?)\)|<(.*?)>/g;
-            let textMatch;
-            while ((textMatch = textRegex.exec(match)) !== null) {
-              const extractedText = textMatch[1] || textMatch[2];
-              if (extractedText && extractedText.length > 1) {
-                textContent += extractedText + ' ';
+        if (streamMatches) {
+          for (const stream of streamMatches) {
+            // Extract content between stream tags
+            const content = stream.replace(/^stream\s*/, '').replace(/\s*endstream$/, '');
+            
+            // Look for readable text patterns
+            const textMatches = content.match(/[A-Za-z]{2,}(?:\s+[A-Za-z0-9,.\-:$%]+)*/g);
+            if (textMatches) {
+              textContent += textMatches.join(' ') + ' ';
+            }
+          }
+        }
+        
+        // Fallback: look for text objects and extract content
+        if (textContent.length < 50) {
+          const textObjectRegex = /BT\s*(.*?)\s*ET/gs;
+          const textMatches = pdfContent.match(textObjectRegex);
+          
+          if (textMatches) {
+            for (const match of textMatches) {
+              const textRegex = /\((.*?)\)|<(.*?)>/g;
+              let textMatch;
+              while ((textMatch = textRegex.exec(match)) !== null) {
+                const extractedText = textMatch[1] || textMatch[2];
+                if (extractedText && extractedText.length > 1) {
+                  textContent += extractedText + ' ';
+                }
               }
             }
           }
         }
         
-        // Fallback: look for readable text patterns
+        // Additional fallback: look for any readable text patterns
         if (textContent.length < 50) {
-          const readableTextRegex = /[A-Za-z]{3,}(?:\s+[A-Za-z0-9,.\-]+)*/g;
+          const readableTextRegex = /[A-Za-z]{3,}(?:\s+[A-Za-z0-9,.\-:$%]+)*/g;
           const readableMatches = pdfContent.match(readableTextRegex);
           if (readableMatches) {
             textContent = readableMatches.filter(text => text.length > 3).join(' ');
@@ -115,21 +138,78 @@ serve(async (req) => {
         // Clean up the extracted text
         textContent = textContent
           .replace(/\s+/g, ' ')
-          .replace(/[^\w\s\.,;:!?\-()]/g, ' ')
+          .replace(/[^\w\s\.,;:!?\-()$%]/g, ' ')
           .trim();
-        
-        if (textContent.length < 20) {
-          throw new Error('Could not extract sufficient readable text from PDF');
-        }
         
         console.log('Extracted text length:', textContent.length);
         console.log('First 500 chars of extracted text:', textContent.substring(0, 500));
+        
+        // Classify text quality before proceeding
+        if (textContent.length < 20) {
+          throw new Error('Could not extract sufficient text from PDF');
+        }
+        
+        // Use the text quality classifier
+        const classifierMessages = [
+          {
+            role: 'system',
+            content: `You are a PDF-text quality evaluator.  
+Your job is to inspect a block of extracted text and decide whether it is:
+
+1. **Garbage PDF syntax** (raw object streams, filters, binary keywords like FlateDecode, XObject, BitsPerComponent, etc.),  
+2. **Human-readable text** (actual words, sentences, numeric values like "Basic Salary: 45,000 SAR", etc.).
+
+Output **only** a JSON object with these three fields:
+{
+  "is_garbage": <boolean>,
+  "reason": "<very brief justification>",
+  "sample_excerpt": "<a 200-character snippet from the text that best illustrates your decision>"
+}
+
+Do not output anything else.`
+          },
+          {
+            role: 'user',
+            content: `Please evaluate the following extracted text block and classify it:
+
+\`\`\`
+${textContent}
+\`\`\``
+          }
+        ];
+
+        const classifierResponse = await fetch('https://api.openai.com/v1/chat/completions', {
+          method: 'POST',
+          headers: {
+            'Authorization': `Bearer ${openAIKey}`,
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            model: 'gpt-4o-mini',
+            messages: classifierMessages,
+            temperature: 0.1
+          }),
+        });
+
+        if (!classifierResponse.ok) {
+          throw new Error(`Text classifier failed: ${classifierResponse.statusText}`);
+        }
+
+        const classifierData = await classifierResponse.json();
+        const classification: TextQualityClassification = JSON.parse(classifierData.choices[0].message.content);
+        
+        console.log('Text quality classification:', classification);
+        
+        if (classification.is_garbage) {
+          throw new Error(`PDF text extraction failed: ${classification.reason}. Sample: "${classification.sample_excerpt}". Please try uploading the document as an image (PNG/JPG) for better results.`);
+        }
+        
       } catch (error) {
         console.error('PDF text extraction failed:', error);
-        throw new Error('Failed to extract text from PDF. Please try uploading the document as an image (PNG/JPG) for better results.');
+        throw new Error('Failed to extract readable text from PDF. Please try uploading the document as an image (PNG/JPG) for better results.');
       }
 
-      // Prepare messages following the integration guide format
+      // Prepare messages for document analysis
       const systemMessage = documentType === 'salary_certificate' 
         ? `You are an assistant that extracts salary information from a salary certificate. 
            Look for salary amounts, basic pay, allowances, deductions, and net pay.
@@ -143,7 +223,7 @@ serve(async (req) => {
         { role: 'user', content: `Please analyze this ${documentType.replace('_', ' ')} text and extract the information:\n\n${textContent}` }
       ];
 
-      // Define functions following the integration guide format (not tools)
+      // Define functions for the older OpenAI function calling format
       const functions = documentType === 'salary_certificate' ? [{
         name: "extract_salary_data",
         description: "Extract structured salary data from a salary certificate",
@@ -231,7 +311,7 @@ serve(async (req) => {
         }
       }];
 
-      // Use the older function calling format as per integration guide
+      // Use the older function calling format as per your guide
       analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
