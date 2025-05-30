@@ -72,26 +72,54 @@ serve(async (req) => {
     let extractedData;
 
     if (fileExtension === 'pdf') {
-      // For PDFs, extract text and use Chat Completions
+      // For PDFs, extract text and use Chat Completions with functions
       console.log('Processing PDF file...');
       
       const arrayBuffer = await fileBlob.arrayBuffer();
       const uint8Array = new Uint8Array(arrayBuffer);
       
-      // Extract text from PDF using a simple method
+      // Improved PDF text extraction using proper PDF parsing
       let textContent = '';
       try {
+        // Convert to text decoder and look for text objects in PDF
         const decoder = new TextDecoder('utf-8', { fatal: false });
-        const rawText = decoder.decode(uint8Array);
+        const pdfContent = decoder.decode(uint8Array);
         
-        // Extract readable text using basic regex patterns
-        const textMatches = rawText.match(/[A-Za-z0-9\s\.,;:!?\-()]+/g);
+        // Extract text between BT and ET operators (text objects in PDF)
+        const textObjectRegex = /BT\s*(.*?)\s*ET/gs;
+        const textMatches = pdfContent.match(textObjectRegex);
+        
         if (textMatches) {
-          textContent = textMatches.join(' ').replace(/\s+/g, ' ').trim();
+          for (const match of textMatches) {
+            // Extract text within parentheses or brackets
+            const textRegex = /\((.*?)\)|<(.*?)>/g;
+            let textMatch;
+            while ((textMatch = textRegex.exec(match)) !== null) {
+              const extractedText = textMatch[1] || textMatch[2];
+              if (extractedText && extractedText.length > 1) {
+                textContent += extractedText + ' ';
+              }
+            }
+          }
         }
         
+        // Fallback: look for readable text patterns
         if (textContent.length < 50) {
-          throw new Error('Could not extract sufficient text from PDF');
+          const readableTextRegex = /[A-Za-z]{3,}(?:\s+[A-Za-z0-9,.\-]+)*/g;
+          const readableMatches = pdfContent.match(readableTextRegex);
+          if (readableMatches) {
+            textContent = readableMatches.filter(text => text.length > 3).join(' ');
+          }
+        }
+        
+        // Clean up the extracted text
+        textContent = textContent
+          .replace(/\s+/g, ' ')
+          .replace(/[^\w\s\.,;:!?\-()]/g, ' ')
+          .trim();
+        
+        if (textContent.length < 20) {
+          throw new Error('Could not extract sufficient readable text from PDF');
         }
         
         console.log('Extracted text length:', textContent.length);
@@ -101,28 +129,109 @@ serve(async (req) => {
         throw new Error('Failed to extract text from PDF. Please try uploading the document as an image (PNG/JPG) for better results.');
       }
 
-      // Enhanced system prompt for better extraction
-      const systemPrompt = documentType === 'salary_certificate' 
-        ? `You are an expert document analyzer specializing in salary certificates. Your task is to extract specific financial information from the provided document text.
+      // Prepare messages following the integration guide format
+      const systemMessage = documentType === 'salary_certificate' 
+        ? `You are an assistant that extracts salary information from a salary certificate. 
+           Look for salary amounts, basic pay, allowances, deductions, and net pay.
+           Respond ONLY with a function call to extract_salary_data.`
+        : `You are an assistant that extracts salary-related transactions from bank statements.
+           Look for recurring deposits that appear to be salary payments.
+           Respond ONLY with a function call to extract_bank_data.`;
 
-IMPORTANT INSTRUCTIONS:
-- Look for salary amounts, basic pay, allowances, deductions, and net pay
-- Numbers may be in Arabic or English format
-- Look for currency indicators like SAR, SR, ريال
-- Look for keywords like "salary", "basic", "allowances", "gross", "net", "total"
-- If amounts are written in Arabic numerals or words, convert them to standard numbers
-- Return a confidence score based on how clearly you can identify the information
-- If you cannot find specific information, set it to null rather than 0`
-        : `You are an expert document analyzer specializing in bank statements. Your task is to extract salary-related transactions and calculate average income.
+      const messages = [
+        { role: 'system', content: systemMessage },
+        { role: 'user', content: `Please analyze this ${documentType.replace('_', ' ')} text and extract the information:\n\n${textContent}` }
+      ];
 
-IMPORTANT INSTRUCTIONS:
-- Look for recurring deposits that appear to be salary payments
-- Identify employer names or salary descriptions in transaction details
-- Calculate average monthly income from identified salary deposits
-- Look for currency indicators like SAR, SR, ريال
-- Return a confidence score based on the quality and clarity of the data`;
+      // Define functions following the integration guide format (not tools)
+      const functions = documentType === 'salary_certificate' ? [{
+        name: "extract_salary_data",
+        description: "Extract structured salary data from a salary certificate",
+        parameters: {
+          type: "object",
+          properties: {
+            monthly_gross_salary: { 
+              type: "number", 
+              description: "Monthly gross salary amount in numbers" 
+            },
+            basic_salary: { 
+              type: "number", 
+              description: "Basic salary amount" 
+            },
+            allowances: { 
+              type: "number", 
+              description: "Total allowances amount" 
+            },
+            total_deductions: { 
+              type: "number", 
+              description: "Total deductions amount" 
+            },
+            net_salary: { 
+              type: "number", 
+              description: "Net salary after deductions" 
+            },
+            currency: { 
+              type: "string", 
+              description: "Currency code (e.g., SAR)" 
+            },
+            employee_name: { 
+              type: "string", 
+              description: "Employee full name" 
+            },
+            company_name: { 
+              type: "string", 
+              description: "Company name" 
+            },
+            confidence_score: { 
+              type: "number", 
+              description: "Confidence score between 0 and 1" 
+            }
+          },
+          required: ["currency", "confidence_score"]
+        }
+      }] : [{
+        name: "extract_bank_data",
+        description: "Extract structured data from a bank statement",
+        parameters: {
+          type: "object",
+          properties: {
+            monthly_salary_deposits: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  amount: { type: "number" },
+                  date: { type: "string" },
+                  description: { type: "string" }
+                }
+              }
+            },
+            average_monthly_income: { 
+              type: "number", 
+              description: "Average monthly income calculated from salary deposits" 
+            },
+            currency: { 
+              type: "string", 
+              description: "Currency code (e.g., SAR)" 
+            },
+            account_holder_name: { 
+              type: "string", 
+              description: "Account holder name" 
+            },
+            bank_name: { 
+              type: "string", 
+              description: "Bank name" 
+            },
+            confidence_score: { 
+              type: "number", 
+              description: "Confidence score between 0 and 1" 
+            }
+          },
+          required: ["currency", "confidence_score"]
+        }
+      }];
 
-      // Use Chat Completions API with tools (newer function calling format)
+      // Use the older function calling format as per integration guide
       analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
         headers: {
@@ -131,121 +240,10 @@ IMPORTANT INSTRUCTIONS:
         },
         body: JSON.stringify({
           model: 'gpt-4o',
-          messages: [
-            {
-              role: 'system',
-              content: systemPrompt
-            },
-            {
-              role: 'user',
-              content: `Please analyze this ${documentType.replace('_', ' ')} text and extract the structured information. Be thorough in looking for salary amounts and financial data:\n\n${textContent}`
-            }
-          ],
-          tools: [{
-            type: "function",
-            function: documentType === 'salary_certificate' ? {
-              name: "extract_salary_certificate_data",
-              description: "Extract structured data from a salary certificate document",
-              parameters: {
-                type: "object",
-                properties: {
-                  monthly_gross_salary: { 
-                    type: ["number", "null"], 
-                    description: "Monthly gross salary amount in numbers" 
-                  },
-                  basic_salary: { 
-                    type: ["number", "null"], 
-                    description: "Basic salary amount" 
-                  },
-                  allowances: { 
-                    type: ["number", "null"], 
-                    description: "Total allowances amount" 
-                  },
-                  total_deductions: { 
-                    type: ["number", "null"], 
-                    description: "Total deductions amount" 
-                  },
-                  net_salary: { 
-                    type: ["number", "null"], 
-                    description: "Net salary after deductions" 
-                  },
-                  currency: { 
-                    type: "string", 
-                    description: "Currency code (e.g., SAR)" 
-                  },
-                  employee_name: { 
-                    type: ["string", "null"], 
-                    description: "Employee full name" 
-                  },
-                  company_name: { 
-                    type: ["string", "null"], 
-                    description: "Company name" 
-                  },
-                  issue_date: { 
-                    type: ["string", "null"], 
-                    description: "Issue date in YYYY-MM-DD format" 
-                  },
-                  confidence_score: { 
-                    type: "number", 
-                    description: "Confidence score between 0 and 1 based on data clarity" 
-                  }
-                },
-                required: ["currency", "confidence_score"]
-              }
-            } : {
-              name: "extract_bank_statement_data",
-              description: "Extract structured data from a bank statement document",
-              parameters: {
-                type: "object",
-                properties: {
-                  monthly_salary_deposits: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        amount: { type: "number" },
-                        date: { type: "string" },
-                        description: { type: "string" }
-                      }
-                    }
-                  },
-                  average_monthly_income: { 
-                    type: ["number", "null"], 
-                    description: "Average monthly income calculated from salary deposits" 
-                  },
-                  currency: { 
-                    type: "string", 
-                    description: "Currency code (e.g., SAR)" 
-                  },
-                  account_holder_name: { 
-                    type: ["string", "null"], 
-                    description: "Account holder name" 
-                  },
-                  bank_name: { 
-                    type: ["string", "null"], 
-                    description: "Bank name" 
-                  },
-                  statement_period: {
-                    type: ["object", "null"],
-                    properties: {
-                      from: { type: "string", description: "Statement start date YYYY-MM-DD" },
-                      to: { type: "string", description: "Statement end date YYYY-MM-DD" }
-                    }
-                  },
-                  confidence_score: { 
-                    type: "number", 
-                    description: "Confidence score between 0 and 1" 
-                  }
-                },
-                required: ["currency", "confidence_score"]
-              }
-            }
-          }],
-          tool_choice: {
-            type: "function",
-            function: {
-              name: documentType === 'salary_certificate' ? 'extract_salary_certificate_data' : 'extract_bank_statement_data'
-            }
+          messages,
+          functions,
+          function_call: { 
+            name: documentType === 'salary_certificate' ? 'extract_salary_data' : 'extract_bank_data' 
           },
           temperature: 0.1
         }),
@@ -262,39 +260,94 @@ IMPORTANT INSTRUCTIONS:
       
       const responseMessage = analysisData.choices[0].message;
       
-      if (responseMessage.tool_calls && responseMessage.tool_calls.length > 0) {
-        const toolCall = responseMessage.tool_calls[0];
-        extractedData = JSON.parse(toolCall.function.arguments);
+      if (responseMessage.function_call && responseMessage.function_call.arguments) {
+        extractedData = JSON.parse(responseMessage.function_call.arguments);
         console.log('Extracted data from PDF text:', extractedData);
       } else {
-        console.error('No tool calls in response:', responseMessage);
+        console.error('No function call in response:', responseMessage);
         throw new Error('Failed to extract structured data from document text');
       }
 
     } else {
-      // For images, use Vision API with tools
+      // For images, use Vision API with the older functions format
       console.log('Processing image file...');
       
       const base64Data = await blobToBase64(fileBlob);
       const mimeType = fileBlob.type || `image/${fileExtension}`;
       
-      const systemPrompt = documentType === 'salary_certificate' 
-        ? `You are an expert document analyzer specializing in salary certificates. Analyze this image carefully and extract all visible financial information.
+      const systemMessage = documentType === 'salary_certificate' 
+        ? `You are an assistant that extracts salary information from a salary certificate image.
+           Look carefully at all numbers and text in the image.
+           Respond ONLY with a function call to extract_salary_data.`
+        : `You are an assistant that extracts salary-related transactions from bank statement images.
+           Look for recurring deposits that appear to be salary payments.
+           Respond ONLY with a function call to extract_bank_data.`;
 
-IMPORTANT INSTRUCTIONS:
-- Look carefully at all numbers and text in the image
-- Look for salary amounts, basic pay, allowances, deductions, and net pay  
-- Numbers may be in Arabic or English format
-- Look for currency indicators like SAR, SR, ريال
-- If amounts are written in Arabic numerals, convert them to standard numbers
-- Return a confidence score based on image clarity and data completeness`
-        : `You are an expert document analyzer specializing in bank statements. Analyze this image carefully to extract salary-related transactions.
+      const messages = [
+        { role: 'system', content: systemMessage },
+        {
+          role: 'user',
+          content: [
+            {
+              type: 'text',
+              text: `Please analyze this ${documentType.replace('_', ' ')} image carefully and extract all the structured information you can see.`
+            },
+            {
+              type: 'image_url',
+              image_url: {
+                url: `data:${mimeType};base64,${base64Data}`,
+                detail: 'high'
+              }
+            }
+          ]
+        }
+      ];
 
-IMPORTANT INSTRUCTIONS:
-- Look for recurring deposits that appear to be salary payments
-- Identify employer names or salary descriptions in transaction details
-- Calculate average monthly income from identified salary deposits
-- Return a confidence score based on image clarity and data quality`;
+      // Use same functions as PDF processing
+      const functions = documentType === 'salary_certificate' ? [{
+        name: "extract_salary_data",
+        description: "Extract structured salary data from a salary certificate image",
+        parameters: {
+          type: "object",
+          properties: {
+            monthly_gross_salary: { type: "number", description: "Monthly gross salary amount" },
+            basic_salary: { type: "number", description: "Basic salary amount" },
+            allowances: { type: "number", description: "Total allowances amount" },
+            total_deductions: { type: "number", description: "Total deductions amount" },
+            net_salary: { type: "number", description: "Net salary after deductions" },
+            currency: { type: "string", description: "Currency code (e.g., SAR)" },
+            employee_name: { type: "string", description: "Employee full name" },
+            company_name: { type: "string", description: "Company name" },
+            confidence_score: { type: "number", description: "Confidence score between 0 and 1" }
+          },
+          required: ["currency", "confidence_score"]
+        }
+      }] : [{
+        name: "extract_bank_data",
+        description: "Extract structured data from a bank statement image",
+        parameters: {
+          type: "object",
+          properties: {
+            monthly_salary_deposits: {
+              type: "array",
+              items: {
+                type: "object",
+                properties: {
+                  amount: { type: "number" },
+                  date: { type: "string" },
+                  description: { type: "string" }
+                }
+              }
+            },
+            average_monthly_income: { type: "number", description: "Average monthly income" },
+            currency: { type: "string", description: "Currency code (e.g., SAR)" },
+            account_holder_name: { type: "string", description: "Account holder name" },
+            bank_name: { type: "string", description: "Bank name" },
+            confidence_score: { type: "number", description: "Confidence score between 0 and 1" }
+          },
+          required: ["currency", "confidence_score"]
+        }
+      }];
 
       analysisResponse = await fetch('https://api.openai.com/v1/chat/completions', {
         method: 'POST',
@@ -304,133 +357,10 @@ IMPORTANT INSTRUCTIONS:
         },
         body: JSON.stringify({
           model: 'gpt-4o',
-          messages: [
-            {
-              role: 'system',
-              content: systemPrompt
-            },
-            {
-              role: 'user',
-              content: [
-                {
-                  type: 'text',
-                  text: `Please analyze this ${documentType.replace('_', ' ')} image carefully and extract all the structured information you can see.`
-                },
-                {
-                  type: 'image_url',
-                  image_url: {
-                    url: `data:${mimeType};base64,${base64Data}`,
-                    detail: 'high'
-                  }
-                }
-              ]
-            }
-          ],
-          tools: [{
-            type: "function",
-            function: documentType === 'salary_certificate' ? {
-              name: "extract_salary_certificate_data",
-              description: "Extract structured data from a salary certificate image",
-              parameters: {
-                type: "object",
-                properties: {
-                  monthly_gross_salary: { 
-                    type: ["number", "null"], 
-                    description: "Monthly gross salary amount" 
-                  },
-                  basic_salary: { 
-                    type: ["number", "null"], 
-                    description: "Basic salary amount" 
-                  },
-                  allowances: { 
-                    type: ["number", "null"], 
-                    description: "Total allowances amount" 
-                  },
-                  total_deductions: { 
-                    type: ["number", "null"], 
-                    description: "Total deductions amount" 
-                  },
-                  net_salary: { 
-                    type: ["number", "null"], 
-                    description: "Net salary after deductions" 
-                  },
-                  currency: { 
-                    type: "string", 
-                    description: "Currency code (e.g., SAR)" 
-                  },
-                  employee_name: { 
-                    type: ["string", "null"], 
-                    description: "Employee full name" 
-                  },
-                  company_name: { 
-                    type: ["string", "null"], 
-                    description: "Company name" 
-                  },
-                  issue_date: { 
-                    type: ["string", "null"], 
-                    description: "Issue date in YYYY-MM-DD format" 
-                  },
-                  confidence_score: { 
-                    type: "number", 
-                    description: "Confidence score between 0 and 1" 
-                  }
-                },
-                required: ["currency", "confidence_score"]
-              }
-            } : {
-              name: "extract_bank_statement_data",
-              description: "Extract structured data from a bank statement image",
-              parameters: {
-                type: "object",
-                properties: {
-                  monthly_salary_deposits: {
-                    type: "array",
-                    items: {
-                      type: "object",
-                      properties: {
-                        amount: { type: "number" },
-                        date: { type: "string" },
-                        description: { type: "string" }
-                      }
-                    }
-                  },
-                  average_monthly_income: { 
-                    type: ["number", "null"], 
-                    description: "Average monthly income" 
-                  },
-                  currency: { 
-                    type: "string", 
-                    description: "Currency code (e.g., SAR)" 
-                  },
-                  account_holder_name: { 
-                    type: ["string", "null"], 
-                    description: "Account holder name" 
-                  },
-                  bank_name: { 
-                    type: ["string", "null"], 
-                    description: "Bank name" 
-                  },
-                  statement_period: {
-                    type: ["object", "null"],
-                    properties: {
-                      from: { type: "string", description: "Statement start date YYYY-MM-DD" },
-                      to: { type: "string", description: "Statement end date YYYY-MM-DD" }
-                    }
-                  },
-                  confidence_score: { 
-                    type: "number", 
-                    description: "Confidence score between 0 and 1" 
-                  }
-                },
-                required: ["currency", "confidence_score"]
-              }
-            }
-          }],
-          tool_choice: {
-            type: "function", 
-            function: {
-              name: documentType === 'salary_certificate' ? 'extract_salary_certificate_data' : 'extract_bank_statement_data'
-            }
+          messages,
+          functions,
+          function_call: { 
+            name: documentType === 'salary_certificate' ? 'extract_salary_data' : 'extract_bank_data' 
           },
           temperature: 0.1
         }),
@@ -447,12 +377,11 @@ IMPORTANT INSTRUCTIONS:
       
       const responseMessage = analysisData.choices[0].message;
       
-      if (responseMessage.tool_calls && responseMessage.tool_calls.length > 0) {
-        const toolCall = responseMessage.tool_calls[0];
-        extractedData = JSON.parse(toolCall.function.arguments);
+      if (responseMessage.function_call && responseMessage.function_call.arguments) {
+        extractedData = JSON.parse(responseMessage.function_call.arguments);
         console.log('Extracted data from image:', extractedData);
       } else {
-        console.error('No tool calls in response:', responseMessage);
+        console.error('No function call in response:', responseMessage);
         throw new Error('Failed to extract structured data from document image');
       }
     }
