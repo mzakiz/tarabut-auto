@@ -98,7 +98,7 @@ export const useDocumentUpload = () => {
       }
 
       if (!analysisData.success) {
-        if (analysisData.error === 'UNREADABLE_PDF') {
+        if (analysisData.error === 'UNABLE_TO_EXTRACT_TEXT') {
           setUploads(prev => ({
             ...prev,
             [uploadId]: {
@@ -110,8 +110,8 @@ export const useDocumentUpload = () => {
           }));
 
           toast({
-            title: "PDF Processing Failed",
-            description: "This PDF cannot be processed. Please upload the document as a high-resolution image (PNG/JPG) instead.",
+            title: "Document Processing Failed",
+            description: "We couldn't read your PDF. Please upload the document as a high-resolution image (PNG/JPG) instead.",
             variant: "destructive",
           });
           return;
@@ -120,7 +120,12 @@ export const useDocumentUpload = () => {
         throw new Error(analysisData.error || 'Analysis failed');
       }
 
-      const processingMethod = fileExtension === 'pdf' ? 'text_extraction' : 'vision_api';
+      // Determine processing method
+      const processingMethod = analysisData.processingMethod === 'hybrid_extraction' 
+        ? 'hybrid_extraction' 
+        : analysisData.processingMethod === 'vision_api'
+        ? 'vision_api'
+        : fileExtension === 'pdf' ? 'text_extraction' : 'vision_api';
 
       setUploads(prev => ({
         ...prev,
@@ -133,9 +138,15 @@ export const useDocumentUpload = () => {
         }
       }));
 
+      const methodDescription = processingMethod === 'hybrid_extraction' 
+        ? 'hybrid text extraction and OCR' 
+        : processingMethod === 'vision_api'
+        ? 'image analysis'
+        : 'text extraction';
+
       toast({
         title: "Document Processed Successfully",
-        description: `Your ${type.replace('_', ' ')} has been analyzed using ${processingMethod === 'text_extraction' ? 'text extraction' : 'image analysis'}.`,
+        description: `Your ${type.replace('_', ' ')} has been analyzed using ${methodDescription}.`,
       });
 
     } catch (error) {

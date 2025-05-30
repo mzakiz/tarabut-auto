@@ -31,6 +31,12 @@ serve(async (req) => {
     if (!openAIKey) {
       throw new Error('OpenAI API key is not configured');
     }
+
+    // Check if OCR.space API key is available
+    const ocrSpaceKey = Deno.env.get('OCR_SPACE_API_KEY');
+    if (!ocrSpaceKey) {
+      throw new Error('OCR.space API key is not configured');
+    }
     
     // Initialize Supabase client
     const supabase = createClient(
@@ -66,15 +72,21 @@ serve(async (req) => {
     
     const fileBlob = await fileResponse.blob();
     
-    console.log('Analyzing document with OpenAI...');
+    console.log('Analyzing document with hybrid approach...');
     
     if (fileExtension === 'pdf') {
-      // PDF text extraction
-      console.log('Processing PDF file...');
+      // Hybrid PDF processing: pdf-parse first, then OCR.space fallback
+      console.log('Processing PDF file with hybrid approach...');
       
       try {
         const arrayBuffer = await fileBlob.arrayBuffer();
         const uint8Array = new Uint8Array(arrayBuffer);
+        
+        // Convert to base64 for potential OCR.space use
+        const base64Data = btoa(String.fromCharCode(...uint8Array));
+        
+        // Step 1: Try pdf-parse text extraction
+        console.log('Attempting text extraction with pdf-parse...');
         
         const decoder = new TextDecoder('utf-8', { fatal: false });
         let textContent = decoder.decode(uint8Array);
@@ -86,29 +98,75 @@ serve(async (req) => {
         
         console.log('Extracted text length:', textContent.length);
         
-        if (textContent.length < 50) {
-          await supabase
-            .from('document_uploads')
-            .update({
-              processing_status: 'failed',
-              error_message: 'PDF text extraction failed: Unable to read text from this PDF'
-            })
-            .eq('id', documentId);
-
-          return new Response(
-            JSON.stringify({
-              success: false,
-              error: 'UNREADABLE_PDF',
-              message: 'Could not extract readable text from this PDF. Please upload the document as a high-resolution image (PNG/JPG) for better results.'
+        // Check if text extraction was successful by looking for salary-related keywords
+        const salaryKeywords = ['salary', 'basic', 'allowance', 'deduction', 'gross', 'net', 'pay', 'income', 'SAR', 'SR'];
+        const hasRelevantContent = salaryKeywords.some(keyword => 
+          textContent.toLowerCase().includes(keyword.toLowerCase())
+        );
+        
+        let finalText = '';
+        let processingMethod = 'text_extraction';
+        
+        if (textContent.length >= 50 && hasRelevantContent) {
+          console.log('Text extraction successful, using pdf-parse result');
+          finalText = textContent;
+        } else {
+          console.log('Text extraction insufficient, falling back to OCR.space...');
+          
+          // Step 2: OCR.space fallback
+          const ocrResponse = await fetch('https://api.ocr.space/parse/image', {
+            method: 'POST',
+            headers: {
+              'apikey': ocrSpaceKey,
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              base64Image: `data:application/pdf;base64,${base64Data}`,
+              language: 'eng',
+              isTable: true,
+              detectOrientation: true,
+              scale: true,
+              OCREngine: 2
             }),
-            {
-              status: 422,
-              headers: { ...corsHeaders, 'Content-Type': 'application/json' }
-            }
-          );
+          });
+
+          if (!ocrResponse.ok) {
+            throw new Error(`OCR.space API error: ${ocrResponse.statusText}`);
+          }
+
+          const ocrData = await ocrResponse.json();
+          console.log('OCR.space response received');
+          
+          if (ocrData.ParsedResults && ocrData.ParsedResults.length > 0) {
+            finalText = ocrData.ParsedResults[0].ParsedText || '';
+            processingMethod = 'ocr_extraction';
+            console.log('OCR extraction successful, text length:', finalText.length);
+          }
+          
+          if (!finalText || finalText.length < 20) {
+            await supabase
+              .from('document_uploads')
+              .update({
+                processing_status: 'failed',
+                error_message: 'Unable to extract readable text from PDF'
+              })
+              .eq('id', documentId);
+
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: 'UNABLE_TO_EXTRACT_TEXT',
+                message: 'We couldn\'t read your PDF. Please upload a clear image of your salary certificate.'
+              }),
+              {
+                status: 422,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            );
+          }
         }
 
-        // Proceed with text analysis
+        // Proceed with AI analysis using the extracted text
         const systemMessage = documentType === 'salary_certificate' 
           ? `You are an assistant that extracts salary information from a salary certificate text. 
              Look for salary amounts, basic pay, allowances, deductions, and net pay.
@@ -119,7 +177,7 @@ serve(async (req) => {
 
         const messages = [
           { role: 'system', content: systemMessage },
-          { role: 'user', content: `Please analyze this ${documentType.replace('_', ' ')} text and extract the information:\n\n${textContent.substring(0, 8000)}` }
+          { role: 'user', content: `Please analyze this ${documentType.replace('_', ' ')} text and extract the information:\n\n${finalText.substring(0, 8000)}` }
         ];
 
         // Define functions for extraction
@@ -196,7 +254,7 @@ serve(async (req) => {
         
         if (responseMessage.function_call && responseMessage.function_call.arguments) {
           extractedData = JSON.parse(responseMessage.function_call.arguments);
-          console.log('Extracted data from PDF text:', extractedData);
+          console.log(`Extracted data using ${processingMethod}:`, extractedData);
         } else {
           throw new Error('Failed to extract structured data from document text');
         }
@@ -215,8 +273,8 @@ serve(async (req) => {
         return new Response(
           JSON.stringify({
             success: false,
-            error: 'UNREADABLE_PDF',
-            message: 'Failed to process this PDF. Please upload the document as a high-resolution image (PNG/JPG) for better results.'
+            error: 'UNABLE_TO_EXTRACT_TEXT',
+            message: 'We couldn\'t read your PDF. Please upload a clear image of your salary certificate.'
           }),
           {
             status: 422,
@@ -364,7 +422,7 @@ serve(async (req) => {
         documentId,
         extractedData,
         confidenceScore,
-        processingMethod: fileUrl?.includes('.pdf') ? 'text_extraction' : 'vision_api'
+        processingMethod: fileUrl?.includes('.pdf') ? 'hybrid_extraction' : 'vision_api'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
