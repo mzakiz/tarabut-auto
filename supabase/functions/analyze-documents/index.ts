@@ -37,7 +37,7 @@ interface ExtractedData {
 // Helper function for chunked base64 conversion
 function toBase64(buffer: ArrayBuffer): string {
   const bytes = new Uint8Array(buffer);
-  const chunkSize = 8192; // 8KB chunks
+  const chunkSize = 8192;
   let result = '';
   
   for (let i = 0; i < bytes.length; i += chunkSize) {
@@ -48,9 +48,9 @@ function toBase64(buffer: ArrayBuffer): string {
   return btoa(result);
 }
 
-// OCR processing for PDFs
+// OCR processing for PDFs with fallback
 async function extractTextFromPDF(pdfBuffer: Uint8Array, apiKey: string): Promise<string> {
-  console.log('Starting PDF text extraction');
+  console.log('Starting PDF text extraction with OCR');
   
   try {
     const pdfDoc = await PDFDocument.load(pdfBuffer);
@@ -72,7 +72,7 @@ async function extractTextFromPDF(pdfBuffer: Uint8Array, apiKey: string): Promis
         // Convert to base64
         const base64 = toBase64(pageBuffer.buffer);
         
-        // OCR the page
+        // OCR the page with improved settings
         const response = await fetch('https://api.ocr.space/parse/image', {
           method: 'POST',
           headers: {
@@ -85,15 +85,23 @@ async function extractTextFromPDF(pdfBuffer: Uint8Array, apiKey: string): Promis
             isTable: true,
             detectOrientation: true,
             scale: true,
-            OCREngine: 2
+            OCREngine: 2,
+            isCreateSearchablePdf: false,
+            isSearchablePdfHideTextLayer: false
           }),
         });
 
         if (response.ok) {
           const result = await response.json();
-          const pageText = result.ParsedResults?.[0]?.ParsedText || '';
-          extractedTexts.push(pageText);
-          console.log(`Page ${i + 1} extracted ${pageText.length} characters`);
+          
+          if (result.ParsedResults && result.ParsedResults.length > 0) {
+            const pageText = result.ParsedResults[0].ParsedText || '';
+            extractedTexts.push(pageText);
+            console.log(`Page ${i + 1} extracted ${pageText.length} characters`);
+          } else {
+            console.warn(`No parsed results for page ${i + 1}`);
+            extractedTexts.push('');
+          }
         } else {
           console.warn(`OCR failed for page ${i + 1}: ${response.status}`);
           extractedTexts.push('');
@@ -107,14 +115,14 @@ async function extractTextFromPDF(pdfBuffer: Uint8Array, apiKey: string): Promis
     const fullText = extractedTexts.join('\n').trim();
     console.log(`Total extracted text: ${fullText.length} characters`);
     
-    if (fullText.length < 50) {
-      throw new Error('Insufficient text extracted from PDF');
+    if (fullText.length < 20) {
+      throw new Error('UNABLE_TO_EXTRACT_TEXT');
     }
     
     return fullText;
   } catch (error) {
     console.error('PDF text extraction failed:', error);
-    throw new Error(`PDF processing failed: ${error.message}`);
+    throw error;
   }
 }
 
@@ -148,7 +156,7 @@ async function extractTextFromImage(imageBuffer: ArrayBuffer, apiKey: string, mi
     const result = await response.json();
     const extractedText = result.ParsedResults?.[0]?.ParsedText || '';
     
-    if (extractedText.length < 20) {
+    if (extractedText.length < 10) {
       throw new Error('Insufficient text extracted from image');
     }
     
@@ -156,7 +164,7 @@ async function extractTextFromImage(imageBuffer: ArrayBuffer, apiKey: string, mi
     return extractedText;
   } catch (error) {
     console.error('Image text extraction failed:', error);
-    throw new Error(`Image OCR failed: ${error.message}`);
+    throw error;
   }
 }
 
@@ -171,7 +179,7 @@ async function analyzeWithOpenAI(
   console.log('Starting OpenAI analysis');
   
   const systemMessage = documentType === 'salary_certificate' 
-    ? 'Extract salary information from this document. Look for salary amounts, allowances, deductions, and employee details.'
+    ? 'Extract salary information from this document. Look for salary amounts, allowances, deductions, and employee details. If text is unclear or incomplete, make reasonable extractions based on visible content.'
     : 'Extract salary-related transactions from this bank statement. Look for recurring deposits that appear to be salary payments.';
 
   const functionName = documentType === 'salary_certificate' ? 'extract_salary_data' : 'extract_bank_data';
@@ -281,7 +289,7 @@ async function analyzeWithOpenAI(
     return extractedData;
   } catch (error) {
     console.error('OpenAI analysis failed:', error);
-    throw new Error(`AI analysis failed: ${error.message}`);
+    throw error;
   }
 }
 
@@ -422,12 +430,42 @@ serve(async (req) => {
     const arrayBuffer = await fileBlob.arrayBuffer();
 
     if (fileExtension === 'pdf') {
-      // Process PDF with OCR
-      const extractedText = await extractTextFromPDF(new Uint8Array(arrayBuffer), ocrKey);
-      extractedData = await analyzeWithOpenAI(extractedText, documentType, openAIKey);
+      try {
+        // Try OCR text extraction first
+        const extractedText = await extractTextFromPDF(new Uint8Array(arrayBuffer), ocrKey);
+        extractedData = await analyzeWithOpenAI(extractedText, documentType, openAIKey);
+        console.log('Successfully processed PDF with text extraction');
+      } catch (error) {
+        console.log('PDF text extraction failed, falling back to Vision API');
+        
+        if (error.message === 'UNABLE_TO_EXTRACT_TEXT') {
+          // Fallback to Vision API for unreadable PDFs
+          try {
+            extractedData = await analyzeWithOpenAI(arrayBuffer, documentType, openAIKey, true, 'application/pdf');
+            console.log('Successfully processed PDF with Vision API fallback');
+          } catch (visionError) {
+            console.error('Vision API fallback also failed:', visionError);
+            await updateDocumentStatus(supabase, documentId, 'failed', undefined, 'UNREADABLE_PDF');
+            return new Response(
+              JSON.stringify({
+                success: false,
+                error: 'UNABLE_TO_EXTRACT_TEXT',
+                message: 'PDF could not be processed. Please upload the document as a high-resolution image (PNG/JPG) instead.'
+              }),
+              {
+                status: 422,
+                headers: { ...corsHeaders, 'Content-Type': 'application/json' }
+              }
+            );
+          }
+        } else {
+          throw error;
+        }
+      }
     } else {
       // Process image directly with Vision API
       extractedData = await analyzeWithOpenAI(arrayBuffer, documentType, openAIKey, true, fileBlob.type);
+      console.log('Successfully processed image with Vision API');
     }
 
     // Update document with results
@@ -439,7 +477,8 @@ serve(async (req) => {
         success: true,
         documentId,
         extractedData,
-        confidenceScore: extractedData.confidence_score
+        confidenceScore: extractedData.confidence_score,
+        processingMethod: fileExtension === 'pdf' ? 'hybrid_extraction' : 'vision_api'
       }),
       {
         headers: { ...corsHeaders, 'Content-Type': 'application/json' }
