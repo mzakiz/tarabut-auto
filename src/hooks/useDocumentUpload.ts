@@ -33,14 +33,8 @@ export const useDocumentUpload = () => {
     }));
 
     try {
-      // Get current user
-      const { data: { user }, error: userError } = await supabase.auth.getUser();
-      if (userError || !user) {
-        throw new Error('User not authenticated');
-      }
-
-      // Upload file to Supabase Storage
-      const fileName = `${user.id}/${uploadId}_${file.name}`;
+      // Upload file to Supabase Storage without authentication
+      const fileName = `${uploadId}_${file.name}`;
       const { data: uploadData, error: uploadError } = await supabase.storage
         .from('documents')
         .upload(fileName, file);
@@ -54,11 +48,11 @@ export const useDocumentUpload = () => {
         [uploadId]: { ...prev[uploadId], progress: 50 }
       }));
 
-      // Create document record in database
+      // Create document record in database (without user_id for anonymous uploads)
       const { data: documentRecord, error: dbError } = await supabase
         .from('document_uploads')
         .insert({
-          user_id: user.id,
+          user_id: '00000000-0000-0000-0000-000000000000', // Placeholder for anonymous uploads
           document_type: type,
           file_name: file.name,
           file_path: uploadData.path,
